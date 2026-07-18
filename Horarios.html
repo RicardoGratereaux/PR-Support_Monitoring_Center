@@ -69,6 +69,43 @@
       </div>
     </div>
 
+    <!-- -------- DASHBOARD DE MONITOREO VIVO -------- -->
+    <div id="liveDashboard" class="dashboard-container" style="display: none;">
+      <div class="dashboard-header">
+        <div class="live-indicator">MONITOREO EN VIVO</span></div>
+        <div id="live-clock" class="live-clock">
+          <span id="clk-h">00</span><span class="blink">:</span><span id="clk-m">00</span><span class="blink">:</span><span id="clk-s">00</span>
+        </div>
+      </div>
+      <div class="dashboard-cards">
+        <div class="db-card card-trabajando" onclick="filtrarPorEstadoLive('trabajando')"
+          title="Haz clic para ver solo los que operan ahora">
+          <div class="db-card-icon">
+            <span class="material-symbols-outlined" style="font-size:22px;">desktop_windows</span>
+          </div>
+          <div class="db-card-info">
+            <span class="db-counter" id="count-working">0</span><span class="db-label">Trabajando Ahora</span>
+          </div>
+        </div>
+        <div class="db-card card-break" onclick="filtrarPorEstadoLive('break')"
+          title="Haz clic para ver solo los que están en break">
+          <div class="db-card-icon"><span class="material-symbols-outlined" style="font-size:22px;">coffee</span></div>
+          <div class="db-card-info">
+            <span class="db-counter" id="count-break">0</span><span class="db-label">En Almuerzo / Break</span>
+          </div>
+        </div>
+        <div class="db-card card-fuera" onclick="filtrarPorEstadoLive('fuera')"
+          title="Haz clic para ver ausentes, libres o fuera de turno">
+          <div class="db-card-icon"><span class="material-symbols-outlined" style="font-size:22px;">person_off</span>
+          </div>
+          <div class="db-card-info">
+            <span class="db-counter" id="count-inactive">0</span><span class="db-label">Fuera de Turno / Libres</span>
+          </div>
+        </div>
+      </div>
+      <div id="active-avatars" class="active-avatars-row"></div>
+    </div>
+
     <div class="timeline-container">
       <div class="timeline-header-grid">
         <div style="padding-left:10px;">Colaborador</div>
