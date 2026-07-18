@@ -21,7 +21,7 @@
     function mostrarModalSincronizando(titulo = 'Sincronizando...') {
       Swal.fire({
         title: titulo,
-        html: `<div style="color: #a1a1aa; font-size: 13px; margin-top: 5px;">Guardando de forma segura en la base de datos...</div><div class="progress-container-swal"><div id="loading-bar" class="progress-bar-swal"></div></div>`,
+        html: `<div style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Guardando de forma segura en la base de datos...</div><div class="progress-container-swal"><div id="loading-bar" class="progress-bar-swal"></div></div>`,
         background: 'transparent', customClass: { popup: 'swal-dark-popup' }, allowOutsideClick: false, allowEscapeKey: false, showConfirmButton: false,
         didOpen: () => {
           const bar = document.getElementById('loading-bar'); if (!bar) return;
@@ -42,7 +42,7 @@
         bar.style.width = '100%'; bar.style.background = '#6ee7b7'; bar.style.boxShadow = '0 0 15px #6ee7b7';
       }
       setTimeout(() => {
-        Swal.fire({ title: tituloExito, text: textoExito, icon: 'success', customClass: { popup: 'swal-dark-popup' }, background: 'transparent', confirmButtonColor: 'rgba(255,255,255,0.1)' });
+        Swal.fire({ title: tituloExito, text: textoExito, icon: 'success', customClass: { popup: 'swal-dark-popup' }, background: 'transparent', confirmButtonColor: 'var(--glass-border)' });
       }, 400);
     }
 
@@ -69,9 +69,9 @@
       if (EXCEPCIONES.includes(item.entrada)) {
         html += `<div class="tooltip-row"><strong style="color:#fca5a5;">Estado:</strong> ${item.entrada}</div>`;
       } else {
-        html += `<div class="tooltip-row"><strong style="color:#deff9a;">Horario:</strong> ${item.entrada} a ${item.salida}</div>`;
+        html += `<div class="tooltip-row"><strong style="color:var(--neon-green);">Horario:</strong> ${item.entrada} a ${item.salida}</div>`;
         if (item.breakIn && item.breakOut) {
-          html += `<div class="tooltip-row"><strong style="color:#fcd34d;">Break:</strong> ${item.breakIn} a ${item.breakOut}</div>`;
+          html += `<div class="tooltip-row"><strong style="color:var(--warning);">Break:</strong> ${item.breakIn} a ${item.breakOut}</div>`;
         }
       }
 
@@ -121,11 +121,11 @@
     }
 
     function cargarHorarios() {
-      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a');
+      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
       const fechaInput = document.getElementById('fechaFiltro').value; const spanDia = document.getElementById('dia-semana-toolbar');
       if (fechaInput && spanDia) { const partes = fechaInput.split('-'); const diaTexto = new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('es-ES', {weekday: 'long'}).toUpperCase(); spanDia.innerText = diaTexto; }
       const contenedor = document.getElementById("contenedorRows");
-      if (contenedor) contenedor.innerHTML = `<div style="padding: 30px; color:#9ca3af; text-align:center; font-size:13px; width: 90%;">Buscando turnos en Google Sheets...</div>`;
+      if (contenedor) contenedor.innerHTML = `<div style="padding: 30px; color:var(--text-muted); text-align:center; font-size:13px; width: 90%;">Buscando turnos en Google Sheets...</div>`;
       google.script.run
         .withSuccessHandler(function(datosDeLaHoja) { turnosActuales = Array.isArray(datosDeLaHoja) ? datosDeLaHoja : []; renderizarTimeline(turnosActuales); analizarCobertura(); })
         .withFailureHandler(manejarErrorServidor)
@@ -143,7 +143,7 @@
   // Mostramos el botón de pegar
   document.getElementById('btn-pegar-dia').style.display = 'flex';
   
-  const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: 'rgba(15, 15, 18, 0.9)', color: '#deff9a' });
+  const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: 'rgba(15, 15, 18, 0.9)', color: 'var(--neon-green)' });
   Toast.fire({ icon: 'success', title: `¡${portapapelesTurnos.length} turnos copiados!` });
 }
 
@@ -159,7 +159,7 @@ function pegarTurnosDia() {
     customClass: { popup: 'swal-dark-popup' },
     showCancelButton: true,
     confirmButtonColor: 'rgba(222, 255, 154, 0.2)',
-    confirmButtonText: '<span style="color:#deff9a;">Sí, pegar aquí</span>'
+    confirmButtonText: '<span style="color:var(--neon-green);">Sí, pegar aquí</span>'
   }).then((result) => {
     if (result.isConfirmed) {
       mostrarModalSincronizando('Pegando Cronograma...');
@@ -176,10 +176,10 @@ function pegarTurnosDia() {
 
     function renderizarTimeline(lista) {
       const contenedor = document.getElementById("contenedorRows"); if (!contenedor) return;
-      if (!Array.isArray(lista)) lista = []; contenedor.innerHTML = ""; filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a');
+      if (!Array.isArray(lista)) lista = []; contenedor.innerHTML = ""; filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
       if (lista.length === 0) {
         document.getElementById('liveDashboard').style.display = 'none';
-        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #71717a; font-size: 13px; background: rgba(255,255,255,0.01); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: #3f3f46; display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: #deff9a; font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
+        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: #3f3f46; display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--neon-green); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
         return;
       }
 
@@ -189,7 +189,7 @@ function pegarTurnosDia() {
         let barrasHTML = ""; let nombreEscapado = escaparHTML(item.nombre);
         
         // INDICADOR DE NOTA: Ahora está diseñado para ir al lado del nombre
-        let iconoNotaHtml = (item.nota && item.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:#fcd34d; cursor:help;" title="Tiene una nota en su turno">edit_note</span>` : '';
+        let iconoNotaHtml = (item.nota && item.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Tiene una nota en su turno">edit_note</span>` : '';
 
         // BARRAS LIMPIAS: Ya no llevan el icono por dentro
         if (EXCEPCIONES.includes(item.entrada)) {
@@ -233,8 +233,8 @@ function pegarTurnosDia() {
     function animarContadorDash(id, nuevoValor, llave) {
       if (memoriaContadores[llave] === nuevoValor) return; memoriaContadores[llave] = nuevoValor;
       const el = document.getElementById(id); if (!el) return;
-      el.innerText = nuevoValor; el.style.transition = 'none'; el.style.transform = 'scale(1.5)'; el.style.color = '#ffffff';
-      setTimeout(() => { el.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; el.style.transform = 'scale(1)'; el.style.color = '#f4f4f5'; }, 50);
+      el.innerText = nuevoValor; el.style.transition = 'none'; el.style.transform = 'scale(1.5)'; el.style.color = 'var(--text-main)';
+      setTimeout(() => { el.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; el.style.transform = 'scale(1)'; el.style.color = 'var(--text-main)'; }, 50);
     }
 
     function actualizarDashboardVivo() {
@@ -249,8 +249,8 @@ function pegarTurnosDia() {
       const isToday = (fechaFiltro === hoyStr); const dotLive = document.querySelector('.dot-live'); const textLive = document.getElementById('live-text');
 
       if (dotLive && textLive) {
-        if (isToday) { dotLive.className = 'dot-live'; textLive.innerText = 'MONITOREO EN VIVO'; textLive.style.color = '#f4f4f5'; } 
-        else { dotLive.className = 'dot-live simulated'; textLive.innerText = 'VISTA SIMULADA (SEGÚN HORA ACTUAL)'; textLive.style.color = '#f59e0b'; }
+        if (isToday) { dotLive.className = 'dot-live'; textLive.innerText = 'MONITOREO EN VIVO'; textLive.style.color = 'var(--text-main)'; } 
+        else { dotLive.className = 'dot-live simulated'; textLive.innerText = 'VISTA SIMULADA (SEGÚN HORA ACTUAL)'; textLive.style.color = 'var(--warning)'; }
       }
 
       let trabajando = 0, enBreak = 0, fuera = 0; let avatarsHTML = `<span style="margin-right:8px; font-weight:700; color:#52525b; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Monitoreando:</span>`;
@@ -267,7 +267,7 @@ function pegarTurnosDia() {
         if (estado === 'trabajando' || estado === 'break') {
           let dotClass = estado === 'trabajando' ? 'breathe-green' : 'breathe-amber';
           let fotoUrl = t.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(t.nombre)+'&background=27272a&color=fff';
-          avatarsHTML += `<div class="avatar-live-badge" title="${escaparHTML(t.nombre)} | ${estado==='trabajando'?'Operando':'En Break'}"><img src="${fotoUrl}"><span style="color:#e4e4e7; font-size:11px; font-weight:600;">${escaparHTML(t.nombre)}</span>
+          avatarsHTML += `<div class="avatar-live-badge" title="${escaparHTML(t.nombre)} | ${estado==='trabajando'?'Operando':'En Break'}"><img src="${fotoUrl}"><span style="color:var(--text-main); font-size:11px; font-weight:600;">${escaparHTML(t.nombre)}</span>
           </div>`;
         }
       });
@@ -280,8 +280,8 @@ function pegarTurnosDia() {
 
     function filtrarPorEstadoLive(estado) {
       if (modoOrden || modoSeleccion) return;
-      if (filtroEstadoLiveActual === estado) { filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a'); } 
-      else { filtroEstadoLiveActual = estado; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a'); let card = document.querySelector(`.card-${estado}`); if (card) card.style.borderColor = estado === 'trabajando' ? '#deff9a' : (estado === 'break' ? '#fcd34d' : '#71717a'); }
+      if (filtroEstadoLiveActual === estado) { filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)'); } 
+      else { filtroEstadoLiveActual = estado; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)'); let card = document.querySelector(`.card-${estado}`); if (card) card.style.borderColor = estado === 'trabajando' ? 'var(--neon-green)' : (estado === 'break' ? 'var(--warning)' : 'var(--text-muted)'); }
       const filas = document.querySelectorAll(".timeline-row");
       turnosActuales.forEach((t, idx) => {
         if (!filas[idx]) return;
@@ -299,7 +299,7 @@ function pegarTurnosDia() {
     }
 
     function filtrarTimeline() {
-      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a');
+      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
       const buscar = document.getElementById("buscarColaborador").value.toLowerCase(); const filas = document.querySelectorAll(".timeline-row");
       filas.forEach(fila => { const span = fila.querySelector(".colaborador-name"); if (!span) return; const nombre = span.innerText.toLowerCase(); fila.style.display = nombre.includes(buscar) ? "grid" : "none"; });
     }
@@ -371,7 +371,7 @@ function pegarTurnosDia() {
       const sugerencia = sugerirBreak(ent, sal, turnosActuales, editIndex);
       if(sugerencia.breakIn && inputIn && inputOut) {
         inputIn.value = sugerencia.breakIn; inputOut.value = sugerencia.breakOut; if(textoAuto) textoAuto.style.display = "inline";
-        inputIn.style.boxShadow = inputOut.style.boxShadow = "0 0 10px rgba(222, 255, 154, 0.4)"; inputIn.style.borderColor = inputOut.style.borderColor = "#deff9a"; setTimeout(() => { inputIn.style.boxShadow = inputOut.style.boxShadow = "none"; inputIn.style.borderColor = "rgba(255,255,255,0.1)"; }, 600);
+        inputIn.style.boxShadow = inputOut.style.boxShadow = "0 0 10px var(--neon-green-glow)"; inputIn.style.borderColor = inputOut.style.borderColor = "var(--neon-green)"; setTimeout(() => { inputIn.style.boxShadow = inputOut.style.boxShadow = "none"; inputIn.style.borderColor = "var(--glass-border)"; }, 600);
       }
     }
 
@@ -397,7 +397,7 @@ function pegarTurnosDia() {
         title: `Editar Turno: ${escaparHTML(turno.nombre)}`,
         customClass: { popup: 'swal-dark-popup' },
         background: 'transparent',
-        html: `<div style="text-align:left; color:#e4e4e7;"><div style="margin-bottom: 15px; font-size: 13px; color: #e4e4e7; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:#deff9a; margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:#fcd34d; font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:#a1a1aa; font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
+        html: `<div style="text-align:left; color:var(--text-main);"><div style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: rgba(255, 255, 255, 0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--neon-green); margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:var(--warning); font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
@@ -419,8 +419,8 @@ function pegarTurnosDia() {
 
             <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
 
-              <input type="checkbox" id="edit-main-aplica-break" style="accent-color:#deff9a; width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('edit-main', ${index})">
-                <label for="edit-main-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:#deff9a; user-select:none;">
+              <input type="checkbox" id="edit-main-aplica-break" style="accent-color:var(--neon-green); width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('edit-main', ${index})">
+                <label for="edit-main-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:var(--neon-green); user-select:none;">
                   ¿APLICAR ALMUERZO?
                 </label>
             </div>
@@ -434,7 +434,7 @@ function pegarTurnosDia() {
             <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
           </div>
         </div>`,
-        showCancelButton: true, showDenyButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', denyButtonColor: 'rgba(239, 68, 68, 0.2)', confirmButtonText: '<span style="color:#deff9a; font-weight:bold;">Guardar</span>', cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>', denyButtonText: '<span style="color:#fca5a5; font-weight:bold;">Eliminar</span>',
+        showCancelButton: true, showDenyButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', denyButtonColor: 'rgba(239, 68, 68, 0.2)', confirmButtonText: '<span style="color:var(--neon-green); font-weight:bold;">Guardar</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>', denyButtonText: '<span style="color:#fca5a5; font-weight:bold;">Eliminar</span>',
         preConfirm: () => {
           const tipo = document.getElementById('edit-main-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" }; const aplica = document.getElementById('edit-main-aplica-break').checked;
@@ -458,7 +458,7 @@ function pegarTurnosDia() {
             .withFailureHandler(manejarErrorServidor)
             .actualizarTurnoExistente(turnoAct);
         } else if (result.isDenied) {
-          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, eliminar</span>' }).then((deleteResult) => {
+          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, eliminar</span>' }).then((deleteResult) => {
             if (deleteResult.isConfirmed) {
               mostrarModalSincronizando('Eliminando...');
               google.script.run.withSuccessHandler(function() { turnosActuales.splice(index, 1); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Eliminado!', 'El turno fue borrado correctamente.'); }).withFailureHandler(manejarErrorServidor).eliminarTurno(turno.id);
@@ -476,11 +476,11 @@ function pegarTurnosDia() {
         title: 'Asignar Nuevo Turno',
         customClass: { popup: 'swal-dark-popup' },
         background: 'transparent',
-        html: `<div style="text-align:left; color:#e4e4e7;">
+        html: `<div style="text-align:left; color:var(--text-main);">
               <label style="font-size:12px; font-weight:700;">COLABORADOR</label><input type="text" id="swal-monitor" class="input-filtro" list="lista-empleados" style="width:100%; margin-bottom:5px; box-sizing:border-box;" placeholder="Escribe o selecciona un nombre..." oninput="ejecutarPrediccionIA(this.value, 'swal')"><datalist
                 id="lista-empleados">${opcionesHTML}</datalist>
               <div id="swal-ia-status"
-                style="font-size:11px; color:#a1a1aa; font-style:italic; margin-bottom:15px; display:flex; align-items:center; gap:4px; min-height:16px;">
+                style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:flex; align-items:center; gap:4px; min-height:16px;">
                 Selecciona un colaborador para predecir su horario...</div>
               <label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><select id="swal-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('swal')"><option value="Normal" selected>Horario Laboral Regular</option><option value="Licencia">Licencia (L)</option><option value="Vacaciones">Vacaciones (V)</option><option value="Libre Cumpleaños">Libre Cumpleaños (LC)</option><option value="Clases">Clases (C)</option><option value="Ausencia">Ausencia (A)</option><option value="Feriado">Feriado (F)</option><option value="Dia Libre">Dia Libre (DL)</option></select>
               <div id="swal-contenedor-tiempos">
@@ -491,7 +491,7 @@ function pegarTurnosDia() {
                   </div>
                 </div>
                 <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
-                  <input type="checkbox" id="swal-aplica-break" style="accent-color:#deff9a; width:16px; height:16px; cursor:pointer;" checked onchange="toggleBreakFields('swal', -1)"><label for="swal-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:#deff9a; user-select:none;">¿APLICAR ALMUERZO?</label><span id="swal-texto-auto" style="color:#71717a; font-size:11px; font-style:italic;">Sugerencia aplicada automáticamente...</span>
+                  <input type="checkbox" id="swal-aplica-break" style="accent-color:var(--neon-green); width:16px; height:16px; cursor:pointer;" checked onchange="toggleBreakFields('swal', -1)"><label for="swal-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:var(--neon-green); user-select:none;">¿APLICAR ALMUERZO?</label><span id="swal-texto-auto" style="color:var(--text-muted); font-size:11px; font-style:italic;">Sugerencia aplicada automáticamente...</span>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
                   <input type="time" id="swal-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s;" value="" onchange="autoCompletarAlmuerzo('swal')"><input type="time" id="swal-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s;" value="">
@@ -499,7 +499,7 @@ function pegarTurnosDia() {
                 <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="swal-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Escribe alguna instrucción, tardanza o detalle..."></textarea></div>
               </div>
             </div>`,
-        showCancelButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#deff9a; font-weight:bold;">Guardar Turno</span>', cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>',
+        showCancelButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--neon-green); font-weight:bold;">Guardar Turno</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>',
         didOpen: () => { setTimeout(() => triggerAutoSugerencia('swal', -1), 50); },
         preConfirm: () => {
           const tipo = document.getElementById('swal-tipo').value;
@@ -533,23 +533,23 @@ function pegarTurnosDia() {
       const statusDiv = document.getElementById(`${prefix}-ia-status`); if (!statusDiv) return;
       if(debounceTimers[prefix]) clearTimeout(debounceTimers[prefix]);
       if (!nombre || nombre.trim() === "") {
-        if (prefix === 'swal') ultimasBusquedasIA[prefix] = ""; statusDiv.style.color = "#a1a1aa"; statusDiv.innerHTML = prefix === 'swal' ? "Selecciona un colaborador para predecir su horario..." : "";
+        if (prefix === 'swal') ultimasBusquedasIA[prefix] = ""; statusDiv.style.color = "var(--text-muted)"; statusDiv.innerHTML = prefix === 'swal' ? "Selecciona un colaborador para predecir su horario..." : "";
         if (prefix === 'swal') { document.getElementById("swal-entrada").value = "07:30"; document.getElementById("swal-salida").value = "19:00"; document.getElementById("swal-aplica-break").checked = true; toggleBreakFields('swal', -1); }
         return; 
       }
       if (prefix === 'swal') ultimasBusquedasIA[prefix] = nombre;
-      statusDiv.style.display = "flex"; statusDiv.style.color = "#a1a1aa"; statusDiv.innerHTML = "Teclando..."; 
+      statusDiv.style.display = "flex"; statusDiv.style.color = "var(--text-muted)"; statusDiv.innerHTML = "Teclando..."; 
 
       debounceTimers[prefix] = setTimeout(() => {
         if (prefix === 'swal' && ultimasBusquedasIA[prefix] !== nombre) return;
         const fechaSel = document.getElementById('fechaFiltro').value; const diasSemana = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
         const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const nombreDia = diasSemana[objetoFecha.getDay()];
-        statusDiv.style.color = "#fcd34d"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s linear infinite; display:inline-block;">sync</span> Analizando historial de los ${nombreDia}...`;
+        statusDiv.style.color = "var(--warning)"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s linear infinite; display:inline-block;">sync</span> Analizando historial de los ${nombreDia}...`;
 
         google.script.run
           .withSuccessHandler(function(sugerencia) {
             if (prefix === 'swal' && ultimasBusquedasIA[prefix] !== nombre) return;
-            if (!sugerencia) { statusDiv.style.color = "#a1a1aa"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">info</span> Sin historial previo para ${nombreDia}.`; return; }
+            if (!sugerencia) { statusDiv.style.color = "var(--text-muted)"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">info</span> Sin historial previo para ${nombreDia}.`; return; }
 
             const selectTipo = document.getElementById(`${prefix}-tipo`); const inpEntrada = document.getElementById(`${prefix}-entrada`); const inpSalida = document.getElementById(`${prefix}-salida`); const chkBreak = document.getElementById(`${prefix}-aplica-break`); const inpBreakIn = document.getElementById(`${prefix}-break-in`); const inpBreakOut = document.getElementById(`${prefix}-break-out`); const txtSugerenciaAutomatica = document.getElementById(`${prefix}-texto-auto`);
             if(txtSugerenciaAutomatica) txtSugerenciaAutomatica.style.display = "none";
@@ -575,11 +575,11 @@ function pegarTurnosDia() {
               if (chkBreak && chkBreak.checked) { if (inpBreakIn) inputsToGlow.push(inpBreakIn); if (inpBreakOut) inputsToGlow.push(inpBreakOut); }
             }
             inputsToGlow.forEach(input => {
-              input.style.boxShadow = "0 0 12px rgba(222, 255, 154, 0.4)"; input.style.borderColor = "#deff9a";
+              input.style.boxShadow = "0 0 12px var(--neon-green-glow)"; input.style.borderColor = "var(--neon-green)";
               setTimeout(() => { input.style.boxShadow = "none"; input.style.borderColor = "rgba(255, 255, 255, 0.1)"; }, 800); 
             });
 
-            statusDiv.style.color = "#deff9a"; 
+            statusDiv.style.color = "var(--neon-green)"; 
             if (sugerencia.esFallback) statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón general sugerido.`;
             else statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón sugerido basado en sus últimos ${nombreDia}.`;
           })
@@ -596,8 +596,8 @@ function pegarTurnosDia() {
 
     function toggleModoOrden() {
       if (!Array.isArray(turnosActuales)) turnosActuales = []; modoOrden = !modoOrden; let targetBtn = document.getElementById("btn-modo-orden"); if (!targetBtn) return; 
-      if (modoOrden) { targetBtn.style.background = "rgba(245, 158, 11, 0.15)"; targetBtn.style.color = "#fcd34d"; targetBtn.style.borderColor = "#fcd34d"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>lock_open</span> Terminar de Ordenar"; } 
-      else { targetBtn.style.background = "transparent"; targetBtn.style.color = "#a1a1aa"; targetBtn.style.borderColor = "#27272a"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>swap_vert</span> Reordenar"; }
+      if (modoOrden) { targetBtn.style.background = "rgba(245, 158, 11, 0.15)"; targetBtn.style.color = "var(--warning)"; targetBtn.style.borderColor = "var(--warning)"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>lock_open</span> Terminar de Ordenar"; } 
+      else { targetBtn.style.background = "transparent"; targetBtn.style.color = "var(--text-muted)"; targetBtn.style.borderColor = "var(--glass-border)"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>swap_vert</span> Reordenar"; }
       renderizarTimeline(turnosActuales);
     }
 
@@ -624,8 +624,8 @@ function pegarTurnosDia() {
         if (btnAsignar) btnAsignar.style.display = "none"; 
         
         if (btnSeleccion) {
-          btnSeleccion.style.color = "#a1a1aa"; 
-          btnSeleccion.style.borderColor = "#27272a"; 
+          btnSeleccion.style.color = "var(--text-muted)"; 
+          btnSeleccion.style.borderColor = "var(--glass-border)"; 
           btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">close</span> Cancelar`; 
         }
         
@@ -637,8 +637,8 @@ function pegarTurnosDia() {
         if (btnOrden) btnOrden.style.display = "flex"; 
         
         if (btnSeleccion) {
-          btnSeleccion.style.color = "#a1a1aa"; 
-          btnSeleccion.style.borderColor = "#27272a"; 
+          btnSeleccion.style.color = "var(--text-muted)"; 
+          btnSeleccion.style.borderColor = "var(--glass-border)"; 
           btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">checklist</span> Selección Múltiple`; 
         }
         
@@ -689,7 +689,7 @@ function pegarTurnosDia() {
         customClass: { popup: 'swal-dark-popup' },
         background: 'transparent',
         html: `
-          <div style="text-align:left; color:#e4e4e7;">
+          <div style="text-align:left; color:var(--text-main);">
             <label style="font-size:12px; font-weight:700;">NUEVO ESTADO O TURNO</label>
             <select id="masivo-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('masivo')">
               <option value="Normal">Horario Laboral Regular</option>
@@ -724,7 +724,7 @@ function pegarTurnosDia() {
           </div>`,
         showCancelButton: true,
         confirmButtonColor: 'rgba(245, 158, 11, 0.2)',
-        confirmButtonText: '<span style="color:#fcd34d; font-weight:bold;">Aplicar a Todos</span>',
+        confirmButtonText: '<span style="color:var(--warning); font-weight:bold;">Aplicar a Todos</span>',
         preConfirm: () => {
           const tipo = document.getElementById('masivo-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
@@ -794,7 +794,7 @@ function pegarTurnosDia() {
         customClass: { popup: 'swal-dark-popup' },
         background: 'transparent',
         html: `
-          <div style="text-align:left; color:#e4e4e7;">
+          <div style="text-align:left; color:var(--text-main);">
             <label style="font-size:12px; font-weight:700;">NUEVO ESTADO O TURNO</label>
             <select id="masivo-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('masivo')">
               <option value="Normal">Horario Laboral Regular</option>
@@ -829,7 +829,7 @@ function pegarTurnosDia() {
           </div>`,
         showCancelButton: true,
         confirmButtonColor: 'rgba(245, 158, 11, 0.2)',
-        confirmButtonText: '<span style="color:#fcd34d; font-weight:bold;">Aplicar a Todos</span>',
+        confirmButtonText: '<span style="color:var(--warning); font-weight:bold;">Aplicar a Todos</span>',
         preConfirm: () => {
           const tipo = document.getElementById('masivo-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
@@ -857,7 +857,7 @@ function pegarTurnosDia() {
 
     function ejecutarEliminacionMasiva() {
       if (turnosSeleccionados.length === 0) return;
-      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, borrar todo</span>', cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>' }).then((result) => {
+      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, borrar todo</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>' }).then((result) => {
         if (result.isConfirmed) {
           mostrarModalSincronizando('Eliminando...');
           google.script.run.withSuccessHandler(function() { turnosActuales = turnosActuales.filter(t => !turnosSeleccionados.includes(String(t.id))); toggleModoSeleccion(); analizarCobertura(); completarBarraYMostrarExito('¡Eliminados!', 'Se ha limpiado la base de datos.'); }).withFailureHandler(manejarErrorServidor).eliminarTurnosMasivo(turnosSeleccionados); 
@@ -884,15 +884,15 @@ function pegarTurnosDia() {
         html: `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
             <div style="display:flex; align-items:center; gap:15px; text-align: left;">
-              <img src="${fotoUrl}" style="width:52px; height:52px; border-radius:50%; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; transition: transform 0.3s; cursor:pointer;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <img src="${fotoUrl}" style="width:52px; height:52px; border-radius:50%; border: 2px solid var(--glass-border); flex-shrink: 0; transition: transform 0.3s; cursor:pointer;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
               <div>
-                <div style="color:#a1a1aa; font-size:10px; text-transform:uppercase; letter-spacing:1px; line-height: 1.2;">Historial de Asignaciones</div>
-                <div style="color:#deff9a; font-size:22px; font-weight:bold; letter-spacing:0.5px; line-height:1.1;">${escaparHTML(nombre)}</div>
+                <div style="color:var(--text-muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; line-height: 1.2;">Historial de Asignaciones</div>
+                <div style="color:var(--neon-green); font-size:22px; font-weight:bold; letter-spacing:0.5px; line-height:1.1;">${escaparHTML(nombre)}</div>
               </div>
             </div>
             <div style="text-align:right; display: flex; flex-direction: column; align-items: flex-end;">
-              <label style="font-size:10px; color:#a1a1aa; font-weight:bold; margin-bottom:4px; letter-spacing: 0.5px;">FILTRAR POR MES</label>
-              <input type="month" id="filtro-mes-perfil" class="input-date-seamless" style="cursor:pointer; font-size: 13px; color-scheme: dark; background: transparent; border: none; outline: none; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 0; padding: 4px 2px; width: 135px; color: #f4f4f5; text-align: right;" value="${mesActual}" onchange="renderizarFilasPerfil(this.value)">
+              <label style="font-size:10px; color:var(--text-muted); font-weight:bold; margin-bottom:4px; letter-spacing: 0.5px;">FILTRAR POR MES</label>
+              <input type="month" id="filtro-mes-perfil" class="input-date-seamless" style="cursor:pointer; font-size: 13px; color-scheme: dark; background: transparent; border: none; outline: none; border-bottom: 1px solid var(--glass-border); border-radius: 0; padding: 4px 2px; width: 135px; color: var(--text-main); text-align: right;" value="${mesActual}" onchange="renderizarFilasPerfil(this.value)">
             </div>
           </div>
           
@@ -905,7 +905,7 @@ function pegarTurnosDia() {
               <tbody id="tbody-perfil"></tbody>
             </table>
           </div>`,
-        showConfirmButton: true, confirmButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#e4e4e7;">Cerrar Panel</span>', width: '650px',
+        showConfirmButton: true, confirmButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--text-main);">Cerrar Panel</span>', width: '650px',
         didOpen: () => { renderizarFilasPerfil(mesActual); }
       });
     }
@@ -982,8 +982,8 @@ function pegarTurnosDia() {
         // EXTRACCIÓN SEGURA DEL DÍA
         let diaDelMes = parseInt(partes[2], 10);
         
-        let descAlmuerzo = (t.breakIn && t.breakOut) ? `${t.breakIn} - ${t.breakOut}` : '<span style="color:#71717a; font-style:italic;">Sin almuerzo</span>';
-        let turnoLabel = EXCEPCIONES.includes(t.entrada) ? `<span style="color:#fcd34d; font-weight:bold;">${t.entrada}</span>` : `${t.entrada} a ${t.salida}`;
+        let descAlmuerzo = (t.breakIn && t.breakOut) ? `${t.breakIn} - ${t.breakOut}` : '<span style="color:var(--text-muted); font-style:italic;">Sin almuerzo</span>';
+        let turnoLabel = EXCEPCIONES.includes(t.entrada) ? `<span style="color:var(--warning); font-weight:bold;">${t.entrada}</span>` : `${t.entrada} a ${t.salida}`;
         
         if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
           let minEntrada = aMinutos(t.entrada);
@@ -1008,11 +1008,11 @@ function pegarTurnosDia() {
           }
         }
 
-        trs += `<tr><td style="white-space: nowrap; color: #a1a1aa;">${t.fecha} <span style="color:#deff9a; font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td>${turnoLabel}</td><td>${descAlmuerzo}</td><td style="width:40px;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
+        trs += `<tr><td style="white-space: nowrap; color: var(--text-muted);">${t.fecha} <span style="color:var(--neon-green); font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td>${turnoLabel}</td><td>${descAlmuerzo}</td><td style="width:40px;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
       });
       
       if (trs === "") {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; color:#71717a;">No hay registros guardados para este mes.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; color:var(--text-muted);">No hay registros guardados para este mes.</td></tr>`;
         statsDiv.innerHTML = ""; 
       } else {
         tbody.innerHTML = trs;
@@ -1030,17 +1030,17 @@ function pegarTurnosDia() {
         let minsSemana = minTrabajadosSemana % 60;
 
         statsDiv.innerHTML = `
-          <div style="background: rgba(255,255,255,0.02); border: 1px solid #27272a; padding: 12px 10px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">1ra Quincena (1 - 15)</div>
-            <div style="font-size: 18px; font-weight: bold; color: #f4f4f5;">${horasQ1}h ${minsQ1 > 0 ? minsQ1 + 'm' : ''}</div>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">1ra Quincena (1 - 15)</div>
+            <div style="font-size: 18px; font-weight: bold; color: var(--text-main);">${horasQ1}h ${minsQ1 > 0 ? minsQ1 + 'm' : ''}</div>
           </div>
-          <div style="background: rgba(255,255,255,0.02); border: 1px solid #27272a; padding: 12px 10px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">2da Quincena (16 - ${ultimoDiaMes})</div>
-            <div style="font-size: 18px; font-weight: bold; color: #f4f4f5;">${horasQ2}h ${minsQ2 > 0 ? minsQ2 + 'm' : ''}</div>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">2da Quincena (16 - ${ultimoDiaMes})</div>
+            <div style="font-size: 18px; font-weight: bold; color: var(--text-main);">${horasQ2}h ${minsQ2 > 0 ? minsQ2 + 'm' : ''}</div>
           </div>
           <div style="background: rgba(222, 255, 154, 0.05); border: 1px solid rgba(222, 255, 154, 0.3); padding: 12px 10px; border-radius: 8px; text-align: center;" title="Semana del Lunes ${strLunes.substring(8)} al Domingo ${strDomingo.substring(8)}">
-            <div style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Semana (En curso)</div>
-            <div style="font-size: 18px; font-weight: bold; color: #deff9a; display: flex; justify-content: center; align-items: center; gap: 4px;">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Semana (En curso)</div>
+            <div style="font-size: 18px; font-weight: bold; color: var(--neon-green); display: flex; justify-content: center; align-items: center; gap: 4px;">
               <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> ${horasSemana}h ${minsSemana > 0 ? minsSemana + 'm' : ''}
             </div>
           </div>
@@ -1058,10 +1058,10 @@ function pegarTurnosDia() {
         title: `Editar Registro: ${escaparHTML(turno.nombre)}`,
         customClass: { popup: 'swal-dark-popup' },
         background: 'transparent',
-        html: `<div style="text-align:left; color:#e4e4e7;">
+        html: `<div style="text-align:left; color:var(--text-main);">
               <div
-                style="margin-bottom: 15px; font-size: 13px; color: #e4e4e7; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:#deff9a; margin-right:4px;">calendar_today</span>
+                style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: rgba(255, 255, 255, 0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);">
+                <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--neon-green); margin-right:4px;">calendar_today</span>
                 Editando: <b>${turno.fecha}</b>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
@@ -1069,7 +1069,7 @@ function pegarTurnosDia() {
               </div>
               <select id="${prefix}-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('${prefix}'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-${prefix}').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select>
               <div id="${prefix}-ia-status"
-                style="font-size:11px; color:#a1a1aa; font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;">
+                style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;">
               </div>
               <div id="${prefix}-contenedor-tiempos" style="display: ${displayTiempos};">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -1079,7 +1079,7 @@ function pegarTurnosDia() {
                   </div>
                 </div>
                 <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
-                  <input type="checkbox" id="${prefix}-aplica-break" style="accent-color:#deff9a; width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('${prefix}', ${index})"><label for="${prefix}-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:#deff9a; user-select:none;">¿APLICAR ALMUERZO?</label>
+                  <input type="checkbox" id="${prefix}-aplica-break" style="accent-color:var(--neon-green); width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('${prefix}', ${index})"><label for="${prefix}-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:var(--neon-green); user-select:none;">¿APLICAR ALMUERZO?</label>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
                   <input type="time" id="${prefix}-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ''}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('${prefix}')"><input type="time" id="${prefix}-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ''}" ${desactivadoInicial}>
@@ -1095,9 +1095,9 @@ function pegarTurnosDia() {
               </div>
             </div>`,
         showCancelButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)',
-        cancelButtonColor: 'rgba(255,255,255,0.05)',
-        confirmButtonText: '<span style="color:#deff9a; font-weight:bold;">Guardar Cambios</span>',
-        cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>',
+        cancelButtonColor: 'rgba(255, 255, 255, 0.05)',
+        confirmButtonText: '<span style="color:var(--neon-green); font-weight:bold;">Guardar Cambios</span>',
+        cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>',
         preConfirm: () => {
             const tipo = document.getElementById(`${prefix}-tipo`).value;
             const notaValue = document.getElementById(`${prefix}-nota`).value;
