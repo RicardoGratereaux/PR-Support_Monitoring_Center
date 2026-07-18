@@ -26,7 +26,7 @@ function generarIdSeguro(prefijo, hojaOp) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000); // Wait up to 10 seconds for other processes to finish
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = hojaOp || ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     if (!prefijo) {
       const hoy = new Date();

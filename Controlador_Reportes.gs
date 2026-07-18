@@ -2,7 +2,7 @@ const ID_CARPETA_RAIZ = CONFIG.ID_CARPETA_RAIZ;
 
 function guardarReporte(datos, files) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     if (!hoja) throw new Error("No se encontró la pestaña 'Hoja 1'.");
 
@@ -67,7 +67,7 @@ function getReportes() {
   }
 
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     const data = hoja.getDataRange().getValues();
     
@@ -107,7 +107,7 @@ function getReportes() {
 
 
 function _cambiarEstadoReporte(idReporte, estado) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
   const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
   const data = hoja.getDataRange().getValues();
   

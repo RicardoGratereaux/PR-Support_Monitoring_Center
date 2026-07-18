@@ -1,6 +1,6 @@
 function getDashboardData() {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     const data = hoja.getDataRange().getValues();
     const zona = Session.getScriptTimeZone();
@@ -71,7 +71,7 @@ function getDashboardData() {
 function agregarObservacionSupervisor(idReporte, observacion) {
   try {
     verificarSupervisor("agregarObservacionSupervisor");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     const data = hoja.getDataRange().getValues();
     
@@ -102,7 +102,7 @@ function agregarObservacionSupervisor(idReporte, observacion) {
 function borrarReporte(idReporte) {
   try {
     verificarSupervisor("borrarReporte");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     const data = hoja.getDataRange().getValues();
     

@@ -1,7 +1,7 @@
 // 1. Obtener los turnos de un día específico
 function getHorariosPorFecha(fechaStr) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) return [];
 
@@ -43,7 +43,7 @@ function getHorariosPorFecha(fechaStr) {
 function guardarTurnoNuevo(turnoData) {
   try {
     verificarSupervisor("guardar nuevo turno");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     let ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) throw new Error("No existe la hoja 'Horarios'.");
 
@@ -71,7 +71,7 @@ function guardarTurnoNuevo(turnoData) {
 function actualizarTurnoExistente(turnoData) {
   try {
     verificarSupervisor("actualizar turno");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
 
     const data = ws.getDataRange().getValues();
@@ -100,7 +100,7 @@ function actualizarTurnoExistente(turnoData) {
 function eliminarTurno(id) {
   try {
     verificarSupervisor("eliminar turno");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
 
     if (!ws) throw new Error("No existe la hoja 'Horarios'.");
@@ -123,7 +123,7 @@ function eliminarTurno(id) {
 function actualizarOrdenTurnos(idsOrdenados) {
   try {
     verificarSupervisor("actualizar orden");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) return false;
 
@@ -149,7 +149,7 @@ function actualizarOrdenTurnos(idsOrdenados) {
 function eliminarTurnosMasivo(idsArray) {
   try {
     verificarSupervisor("eliminar turnos");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) return false;
 
@@ -172,7 +172,7 @@ function eliminarTurnosMasivo(idsArray) {
 // 7. Obtener el historial completo de un colaborador
 function getHorariosPorColaborador(nombre) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) return [];
 
@@ -206,7 +206,7 @@ function getHorariosPorColaborador(nombre) {
 
 function predecirHorarioColaborador(nombre, fechaStr) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) return null;
 
@@ -299,7 +299,7 @@ function predecirHorarioColaborador(nombre, fechaStr) {
 function pegarTurnosMasivosBackend(fechaDestino, turnosCopiados) {
   try {
     verificarSupervisor("pegar turnos masivos");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) throw new Error("No existe la hoja 'Horarios'.");
 
@@ -336,7 +336,7 @@ function pegarTurnosMasivosBackend(fechaDestino, turnosCopiados) {
 function actualizarTurnosMasivoBackend(idsArray, turnoData) {
   try {
     verificarSupervisor("actualizar turnos masivos");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const ws = ss.getSheetByName(CONFIG.HOJAS.HORARIOS);
     if (!ws) return false;
 

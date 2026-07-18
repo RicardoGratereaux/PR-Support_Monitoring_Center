@@ -11,7 +11,7 @@ function getMisReportes() {
   }
 
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     if (!hoja) return JSON.stringify([]);
     
@@ -54,7 +54,7 @@ function getMisReportes() {
 
 function corregirReporteMonitor(idReporte, datos, files, archivosAEliminar) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     const data = hoja.getDataRange().getValues();
     const miCorreo = obtenerEmailUsuario();
@@ -118,7 +118,7 @@ function corregirReporteMonitor(idReporte, datos, files, archivosAEliminar) {
 
 function agregarObservacionMonitor(idReporte, observacion) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = SpreadsheetApp.openById(CONFIG.ID_SPREADSHEET_PRINCIPAL);
     const hoja = ss.getSheetByName(CONFIG.HOJAS.PRINCIPAL);
     const data = hoja.getDataRange().getValues();
     

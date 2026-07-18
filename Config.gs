@@ -6,6 +6,7 @@
 const CONFIG = {
   // IDs de Spreadsheets y Carpetas
   ID_CARPETA_RAIZ: "1kuePSEk3H7XXLntS7YFCC-qLVAUxUIlH",
+  ID_SPREADSHEET_PRINCIPAL: "1B0Sg3_1RgZkwUGjqh54_CMZzNdHCiAr21I366F32LI8",
   ID_SPREADSHEET_REPOSICION: "1neZoocmPwyMYa-31dbfUqSv0IsXHP8tp8Xvwj7MadLw",
   CARPETA_PROTOCOLOS_EVIDENCIAS: "Protocolos_Reposicion_Evidencias",
   
