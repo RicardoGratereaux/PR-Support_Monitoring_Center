@@ -511,13 +511,29 @@
     }
 
     .swal-dark-popup {
-      background: rgba(15, 15, 18, 0.65) !important;
-      backdrop-filter: blur(16px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      color: var(--text-muted) !important;
+      background: #181825 !important; /* Mantle */
+      border: 1px solid #313244 !important; /* Surface 0 */
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      color: var(--text-main) !important;
       border-radius: 16px !important;
+    }
+    .swal-dark-popup .swal2-confirm {
+      background: var(--accent-primary) !important;
+      color: var(--bg-main) !important;
+      border-radius: 8px !important;
+      font-weight: 700 !important;
+      padding: 10px 24px !important;
+      font-size: 14px !important;
+      border: none !important;
+    }
+    
+    .swal-dark-popup .swal2-cancel {
+      background: #313244 !important;
+      color: var(--text-main) !important;
+      border-radius: 8px !important;
+      padding: 10px 24px !important;
+      font-size: 14px !important;
+      border: 1px solid #45475a !important;
     }
 
     .swal-dark-popup .input-filtro,
@@ -1130,3 +1146,48 @@
       line-height: 1.4;
     }
   </style>
+
+
+    /* TOOLBAR HORARIOS ESTÁTICO */
+    .toolbar-horarios {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: #12121a;
+      border: 1px solid #232330;
+      border-radius: 12px;
+    }
+    
+    .toolbar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1e1e2e; /* Base */
+      border: 1px solid #313244; /* Surface 0 */
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+    
+    .toolbar-btn:hover {
+      background: #313244; /* Surface 0 */
+      border-color: #45475a; /* Surface 1 */
+    }
+    
+    .toolbar-btn-primary {
+      background: var(--accent-primary) !important;
+      color: var(--bg-main) !important;
+      border-color: var(--accent-primary) !important;
+    }
+    
+    .toolbar-btn-primary:hover {
+      background: #b4befe !important; /* Lavender */
+      border-color: #b4befe !important;
+    }
