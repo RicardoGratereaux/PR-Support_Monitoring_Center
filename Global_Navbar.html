@@ -4,6 +4,14 @@
       <span class="material-symbols-outlined">menu</span>
     </button>
     <span>Centro de Monitoreo</span>
+
+    <!-- THEME TOGGLE -->
+    <div style="margin-top: 20px; padding: 0 16px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+      <button onclick="toggleTheme()" class="nav-link" style="width: 100%; border: none; background: transparent; cursor: pointer;">
+        <span class="material-symbols-outlined" id="theme-icon">light_mode</span> 
+        <span id="theme-text">Modo Claro</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -36,6 +44,14 @@
         <span class="material-symbols-outlined">edit_calendar</span>Horarios
       </a>
     <? } ?>
+
+    <!-- THEME TOGGLE -->
+    <div style="margin-top: 20px; padding: 0 16px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+      <button onclick="toggleTheme()" class="nav-link" style="width: 100%; border: none; background: transparent; cursor: pointer;">
+        <span class="material-symbols-outlined" id="theme-icon">light_mode</span> 
+        <span id="theme-text">Modo Claro</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -51,4 +67,33 @@ function closeSidenav() {
   document.getElementById("mySidenav").classList.remove("open");
   document.getElementById("sidenavOverlay").classList.remove("show");
 }
+</script>
+<script>
+// Theme Management
+function initTheme() {
+  const savedTheme = localStorage.getItem('pr_theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-mode');
+    document.getElementById('theme-icon').innerText = 'dark_mode';
+    document.getElementById('theme-text').innerText = 'Modo Oscuro';
+  }
+}
+
+function toggleTheme() {
+  const body = document.body;
+  const isLight = body.classList.toggle('light-mode');
+  
+  if (isLight) {
+    localStorage.setItem('pr_theme', 'light');
+    document.getElementById('theme-icon').innerText = 'dark_mode';
+    document.getElementById('theme-text').innerText = 'Modo Oscuro';
+  } else {
+    localStorage.setItem('pr_theme', 'dark');
+    document.getElementById('theme-icon').innerText = 'light_mode';
+    document.getElementById('theme-text').innerText = 'Modo Claro';
+  }
+}
+
+// Ensure theme is set immediately on load
+initTheme();
 </script>
