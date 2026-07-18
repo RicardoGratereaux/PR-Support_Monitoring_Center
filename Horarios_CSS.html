@@ -1,7 +1,7 @@
   <style>
     body {
-      background-color: #050505;
-      color: #e4e4e7;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
     }
@@ -100,7 +100,7 @@
     }
 
     .breathe-green {
-      background-color: #deff9a;
+      background-color: var(--neon-green);
       animation: breatheG 1.5s infinite alternate ease-in-out;
     }
 
@@ -143,9 +143,9 @@
     }
 
     .input-filtro {
-      background: #0a0a0a;
-      border: 1px solid #27272a;
-      color: #e4e4e7;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
       padding: 10px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -154,13 +154,13 @@
     }
 
     .input-filtro:focus {
-      border-color: #deff9a;
+      border-color: var(--neon-green);
       box-shadow: 0 0 8px rgba(222, 255, 154, 0.1);
     }
 
     .btn-neon {
       background: rgba(222, 255, 154, 0.1);
-      color: #deff9a;
+      color: var(--neon-green);
       border: 1px solid rgba(222, 255, 154, 0.4);
       border-radius: 8px;
       padding: 10px 16px;
@@ -190,7 +190,7 @@
 
     .btn-neon:hover {
       background: rgba(222, 255, 154, 0.2);
-      border-color: #deff9a;
+      border-color: var(--neon-green);
       box-shadow: 0 0 15px rgba(222, 255, 154, 0.2);
       transform: translateY(-1px);
     }
@@ -203,15 +203,15 @@
     .date-nav-group {
       display: flex;
       align-items: stretch;
-      background: #0a0a0a;
-      border: 1px solid #27272a;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 8px;
       overflow: hidden;
       transition: all 0.3s ease;
     }
 
     .date-nav-group:focus-within {
-      border-color: #deff9a;
+      border-color: var(--neon-green);
       box-shadow: 0 0 10px rgba(222, 255, 154, 0.1);
     }
 
@@ -229,7 +229,7 @@
 
     .btn-date-nav:hover {
       background: rgba(222, 255, 154, 0.15);
-      color: #deff9a;
+      color: var(--neon-green);
     }
 
     .input-date-seamless {
@@ -237,7 +237,7 @@
       border: none;
       border-left: 1px solid #27272a;
       border-right: 1px solid #27272a;
-      color: #e4e4e7;
+      color: var(--text-main);
       padding: 10px 14px;
       font-size: 13px;
       outline: none;
@@ -245,8 +245,8 @@
     }
 
     .timeline-container {
-      background: #0a0a0a;
-      border: 1px solid #27272a;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 20px;
       overflow-x: auto;
@@ -335,14 +335,14 @@
     }
 
     .colaborador-info:hover .colaborador-name {
-      color: #deff9a;
+      color: var(--neon-green);
     }
 
     .shift-track {
       position: relative;
       width: 100%;
       height: 28px;
-      background-color: #050505;
+      background-color: var(--bg-dark);
       border-radius: 6px;
       border-top: 1px solid #18181b;
       border-bottom: 1px solid #18181b;
@@ -374,7 +374,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #deff9a;
+      color: var(--neon-green);
       font-size: 10px;
       font-weight: 700;
       box-shadow: 0 0 10px rgba(222, 255, 154, 0.05);
@@ -416,7 +416,7 @@
       padding: 12px 15px;
       margin: 15px 0 25px 0;
       background: rgba(20, 20, 22, 0.6);
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
@@ -524,7 +524,7 @@
       background: rgba(0, 0, 0, 0.3) !important;
       border: 1px solid rgba(255, 255, 255, 0.1) !important;
       backdrop-filter: blur(5px);
-      color: #e4e4e7;
+      color: var(--text-main);
     }
 
     .swal-dark-popup .input-filtro:focus {
@@ -635,13 +635,13 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      color: #e4e4e7;
+      color: var(--text-main);
       font-size: 12px;
     }
 
     .table-perfil th {
       background: rgba(222, 255, 154, 0.05);
-      color: #deff9a;
+      color: var(--neon-green);
       padding: 10px;
       text-align: left;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -661,7 +661,7 @@
     .btn-edit-micro {
       background: rgba(222, 255, 154, 0.1);
       border: 1px solid rgba(222, 255, 154, 0.3);
-      color: #deff9a;
+      color: var(--neon-green);
       border-radius: 4px;
       padding: 4px 8px;
       cursor: pointer;
@@ -708,8 +708,8 @@
     }
 
     .dashboard-container {
-      background: #0a0a0a;
-      border: 1px solid #27272a;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 14px 18px;
       margin-bottom: 20px;
@@ -752,7 +752,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #deff9a;
+      color: var(--neon-green);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
       cursor: grab;
       user-select: none;
@@ -763,7 +763,7 @@
     .assistive-container:hover .assistive-button,
     .assistive-container.open .assistive-button {
       opacity: 1;
-      border-color: #deff9a;
+      border-color: var(--neon-green);
       box-shadow: 0 4px 25px rgba(222, 255, 154, 0.2);
     }
 
@@ -831,7 +831,7 @@
 
     .live-clock {
       font-family: monospace;
-      color: #deff9a;
+      color: var(--neon-green);
       font-size: 13px;
       font-weight: bold;
       letter-spacing: 1px;
@@ -846,7 +846,7 @@
 
     .db-card {
       background: rgba(255, 255, 255, 0.01);
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       border-radius: 8px;
       padding: 10px 14px;
       display: flex;
@@ -863,7 +863,7 @@
     }
 
     .card-trabajando:hover {
-      border-color: #deff9a;
+      border-color: var(--neon-green);
       background: rgba(222, 255, 154, 0.03);
     }
 
@@ -885,7 +885,7 @@
     }
 
     .card-trabajando .db-card-icon {
-      color: #deff9a;
+      color: var(--neon-green);
     }
 
     .card-break .db-card-icon {
@@ -933,7 +933,7 @@
       align-items: center;
       gap: 6px;
       background: rgba(255, 255, 255, 0.02);
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       padding: 4px 10px;
       border-radius: 20px;
       transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1035,7 +1035,7 @@
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-      color: #e4e4e7;
+      color: var(--text-main);
       padding: 12px 16px;
       border-radius: 10px;
       font-size: 12px;
@@ -1058,7 +1058,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #deff9a;
+      color: var(--neon-green);
       font-weight: 700;
       margin-bottom: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
