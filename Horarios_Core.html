@@ -1,5 +1,4 @@
-<script>
-    // TODO: TODOS_LOS_EMPLEADOS should come from backend
+  <script>
     const TODOS_LOS_EMPLEADOS = ["Angel", "Daniel", "Gary", "Jose Luis", "Britniel", "Maxwell", "Jelissa", "Omar", "Diego", "Katherine", "Oliver", "Ricardo"];
 
     let portapapelesTurnos = null;
@@ -99,7 +98,16 @@
       if (tooltip) tooltip.classList.remove('visible');
     }
 
-    
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('fechaFiltro').value = formatearFechaLocal(new Date());
+      cargarHorarios();
+      const contenedorRows = document.getElementById("contenedorRows");
+      if (contenedorRows) {
+        contenedorRows.addEventListener("dragover", e => {
+          if(!modoOrden) return; e.preventDefault(); 
+          const afterElement = getDragAfterElement(contenedorRows, e.clientY);
+          if (afterElement == null) { contenedorRows.appendChild(draggedRow); } else { contenedorRows.insertBefore(draggedRow, afterElement); }
+        });
       }
       setInterval(() => { actualizarDashboardVivo(); }, 1000);
     });
@@ -123,6 +131,48 @@
         .withFailureHandler(manejarErrorServidor)
         .getHorariosPorFecha(fechaInput); 
     }
+    
+    
+  function copiarTurnosDia() {
+  if (!turnosActuales || turnosActuales.length === 0) {
+    return Swal.fire({ title: "Día Vacío", text: "No hay turnos para copiar en este día.", icon: "info", background: 'transparent', customClass: { popup: 'swal-dark-popup' } });
+  }
+  // Hacemos una copia profunda de los turnos actuales
+  portapapelesTurnos = JSON.parse(JSON.stringify(turnosActuales));
+  
+  // Mostramos el botón de pegar
+  document.getElementById('btn-pegar-dia').style.display = 'flex';
+  
+  const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: 'rgba(15, 15, 18, 0.9)', color: '#deff9a' });
+  Toast.fire({ icon: 'success', title: `¡${portapapelesTurnos.length} turnos copiados!` });
+}
+
+function pegarTurnosDia() {
+  if (!portapapelesTurnos || portapapelesTurnos.length === 0) return;
+  const fechaDestino = document.getElementById('fechaFiltro').value;
+  
+  Swal.fire({
+    title: '¿Pegar Turnos?',
+    text: `Se insertarán ${portapapelesTurnos.length} turnos en el día ${fechaDestino}.`,
+    icon: 'question',
+    background: 'transparent',
+    customClass: { popup: 'swal-dark-popup' },
+    showCancelButton: true,
+    confirmButtonColor: 'rgba(222, 255, 154, 0.2)',
+    confirmButtonText: '<span style="color:#deff9a;">Sí, pegar aquí</span>'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      mostrarModalSincronizando('Pegando Cronograma...');
+      google.script.run
+        .withSuccessHandler(function() {
+          cargarHorarios();
+          completarBarraYMostrarExito('¡Completado!', 'Los turnos fueron clonados exitosamente.');
+        })
+        .withFailureHandler(manejarErrorServidor)
+        .pegarTurnosMasivosBackend(fechaDestino, portapapelesTurnos);
+    }
+  });
+}
 
     function renderizarTimeline(lista) {
       const contenedor = document.getElementById("contenedorRows"); if (!contenedor) return;
@@ -479,6 +529,65 @@
 
     const debounceTimers = {}; const ultimasBusquedasIA = {};
 
+    function ejecutarPrediccionIA(nombre, prefix = 'swal') {
+      const statusDiv = document.getElementById(`${prefix}-ia-status`); if (!statusDiv) return;
+      if(debounceTimers[prefix]) clearTimeout(debounceTimers[prefix]);
+      if (!nombre || nombre.trim() === "") {
+        if (prefix === 'swal') ultimasBusquedasIA[prefix] = ""; statusDiv.style.color = "#a1a1aa"; statusDiv.innerHTML = prefix === 'swal' ? "Selecciona un colaborador para predecir su horario..." : "";
+        if (prefix === 'swal') { document.getElementById("swal-entrada").value = "07:30"; document.getElementById("swal-salida").value = "19:00"; document.getElementById("swal-aplica-break").checked = true; toggleBreakFields('swal', -1); }
+        return; 
+      }
+      if (prefix === 'swal') ultimasBusquedasIA[prefix] = nombre;
+      statusDiv.style.display = "flex"; statusDiv.style.color = "#a1a1aa"; statusDiv.innerHTML = "Teclando..."; 
+
+      debounceTimers[prefix] = setTimeout(() => {
+        if (prefix === 'swal' && ultimasBusquedasIA[prefix] !== nombre) return;
+        const fechaSel = document.getElementById('fechaFiltro').value; const diasSemana = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
+        const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const nombreDia = diasSemana[objetoFecha.getDay()];
+        statusDiv.style.color = "#fcd34d"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s linear infinite; display:inline-block;">sync</span> Analizando historial de los ${nombreDia}...`;
+
+        google.script.run
+          .withSuccessHandler(function(sugerencia) {
+            if (prefix === 'swal' && ultimasBusquedasIA[prefix] !== nombre) return;
+            if (!sugerencia) { statusDiv.style.color = "#a1a1aa"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">info</span> Sin historial previo para ${nombreDia}.`; return; }
+
+            const selectTipo = document.getElementById(`${prefix}-tipo`); const inpEntrada = document.getElementById(`${prefix}-entrada`); const inpSalida = document.getElementById(`${prefix}-salida`); const chkBreak = document.getElementById(`${prefix}-aplica-break`); const inpBreakIn = document.getElementById(`${prefix}-break-in`); const inpBreakOut = document.getElementById(`${prefix}-break-out`); const txtSugerenciaAutomatica = document.getElementById(`${prefix}-texto-auto`);
+            if(txtSugerenciaAutomatica) txtSugerenciaAutomatica.style.display = "none";
+
+            if (EXCEPCIONES.includes(sugerencia.entrada)) {
+              if (selectTipo) { selectTipo.value = sugerencia.entrada; toggleTipoTurno(prefix); }
+            } else {
+              if (selectTipo) { selectTipo.value = "Normal"; toggleTipoTurno(prefix); }
+              if (inpEntrada) inpEntrada.value = sugerencia.entrada; if (inpSalida) inpSalida.value = sugerencia.salida;
+              if (sugerencia.breakIn && sugerencia.breakOut) {
+                if (chkBreak) chkBreak.checked = true;
+                if (inpBreakIn && inpBreakOut) { inpBreakIn.disabled = inpBreakOut.disabled = false; inpBreakIn.style.opacity = inpBreakOut.style.opacity = "1"; inpBreakIn.value = sugerencia.breakIn; inpBreakOut.value = sugerencia.breakOut; }
+              } else {
+                if (chkBreak) chkBreak.checked = false;
+                if (inpBreakIn && inpBreakOut) { inpBreakIn.disabled = inpBreakOut.disabled = true; inpBreakIn.style.opacity = inpBreakOut.style.opacity = "0.4"; inpBreakIn.value = ""; inpBreakOut.value = ""; }
+              }
+            }
+
+            const inputsToGlow = [];
+            if (selectTipo && EXCEPCIONES.includes(sugerencia.entrada)) inputsToGlow.push(selectTipo);
+            if (!EXCEPCIONES.includes(sugerencia.entrada)) {
+              if (inpEntrada) inputsToGlow.push(inpEntrada); if (inpSalida) inputsToGlow.push(inpSalida);
+              if (chkBreak && chkBreak.checked) { if (inpBreakIn) inputsToGlow.push(inpBreakIn); if (inpBreakOut) inputsToGlow.push(inpBreakOut); }
+            }
+            inputsToGlow.forEach(input => {
+              input.style.boxShadow = "0 0 12px rgba(222, 255, 154, 0.4)"; input.style.borderColor = "#deff9a";
+              setTimeout(() => { input.style.boxShadow = "none"; input.style.borderColor = "rgba(255, 255, 255, 0.1)"; }, 800); 
+            });
+
+            statusDiv.style.color = "#deff9a"; 
+            if (sugerencia.esFallback) statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón general sugerido.`;
+            else statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón sugerido basado en sus últimos ${nombreDia}.`;
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .predecirHorarioColaborador(nombre, fechaSel);
+      }, 500); 
+    }
+
     function toggleTipoTurno(prefix) {
       const tipo = document.getElementById(`${prefix}-tipo`).value; const contenedorTiempos = document.getElementById(`${prefix}-contenedor-tiempos`); const btnIA = document.getElementById(`btn-ia-${prefix}`);
       if (EXCEPCIONES.includes(tipo)) { if (contenedorTiempos) contenedorTiempos.style.display = "none"; if (btnIA) btnIA.style.display = "none"; } 
@@ -542,9 +651,109 @@
     }
 
     // 2. ACTUALIZACIÓN DE LOS BOTONES
-    
+    function actualizarBotonEliminar() {
+      const btnEliminar = document.getElementById("btn-eliminar-masivo");
+      const btnEditar = document.getElementById("btn-editar-masivo"); 
+      
+      if (btnEliminar) { 
+        btnEliminar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar (${turnosSeleccionados.length})`;
+        if (turnosSeleccionados.length > 0) { 
+          btnEliminar.style.opacity = "1"; 
+          btnEliminar.style.pointerEvents = "auto"; 
+        } else { 
+          btnEliminar.style.opacity = "0.5"; 
+          btnEliminar.style.pointerEvents = "none"; 
+        }
+      }
+      
+      if (btnEditar) {
+        btnEditar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Asignar (${turnosSeleccionados.length})`;
+        if (turnosSeleccionados.length > 0) { 
+          btnEditar.style.display = "flex"; 
+          btnEditar.style.opacity = "1"; 
+          btnEditar.style.pointerEvents = "auto";
+        } else { 
+          btnEditar.style.display = "flex"; 
+          btnEditar.style.opacity = "0.5"; 
+          btnEditar.style.pointerEvents = "none";
+        }
+      }
+    }
 
     // 3. MODAL DE ASIGNACIÓN MASIVA
+    function abrirModalEdicionMasiva() {
+      if (turnosSeleccionados.length === 0) return;
+      
+      Swal.fire({
+        title: `Asignación Masiva (${turnosSeleccionados.length} cols.)`,
+        customClass: { popup: 'swal-dark-popup' },
+        background: 'transparent',
+        html: `
+          <div style="text-align:left; color:#e4e4e7;">
+            <label style="font-size:12px; font-weight:700;">NUEVO ESTADO O TURNO</label>
+            <select id="masivo-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('masivo')">
+              <option value="Normal">Horario Laboral Regular</option>
+              <option value="Licencia">Licencia (L)</option>
+              <option value="Vacaciones">Vacaciones (V)</option>
+              <option value="Feriado">Feriado (F)</option>
+              <option value="Clases">Clases (C)</option>
+            </select>
+            
+            <div id="masivo-contenedor-tiempos">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                  <label style="font-size:12px; font-weight:700;">ENTRADA</label>
+                  <input type="time" id="masivo-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="08:00">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:700;">SALIDA</label>
+                  <input type="time" id="masivo-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="17:00">
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                <div>
+                  <label style="font-size:12px; font-weight:700;">BREAK IN</label>
+                  <input type="time" id="masivo-break-in" class="input-filtro" style="width:100%; box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:700;">BREAK OUT</label>
+                  <input type="time" id="masivo-break-out" class="input-filtro" style="width:100%; box-sizing:border-box;">
+                </div>
+              </div>
+            </div>
+          </div>`,
+        showCancelButton: true,
+        confirmButtonColor: 'rgba(245, 158, 11, 0.2)',
+        confirmButtonText: '<span style="color:#fcd34d; font-weight:bold;">Aplicar a Todos</span>',
+        preConfirm: () => {
+          const tipo = document.getElementById('masivo-tipo').value;
+          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
+          return { 
+            entrada: document.getElementById('masivo-entrada').value, 
+            salida: document.getElementById('masivo-salida').value, 
+            breakIn: document.getElementById('masivo-break-in').value, 
+            breakOut: document.getElementById('masivo-break-out').value 
+          };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          mostrarModalSincronizando('Actualizando Turnos...');
+          google.script.run
+            .withSuccessHandler(function() { 
+              toggleModoSeleccion(); 
+              cargarHorarios();      
+              completarBarraYMostrarExito('¡Actualizados!', 'Los turnos seleccionados fueron modificados.'); 
+            })
+            .withFailureHandler(manejarErrorServidor)
+            .actualizarTurnosMasivoBackend(turnosSeleccionados, result.value);
+        }
+      });
+    }
+
+    function toggleSeleccionTurno(id) {
+      const idStr = String(id); const index = turnosSeleccionados.indexOf(idStr);
+      if (index === -1) turnosSeleccionados.push(idStr); else turnosSeleccionados.splice(index, 1); actualizarBotonEliminar();
+    }
 
 // 2. ACTUALIZACIÓN DE LOS BOTONES
     function actualizarBotonEliminar() {
@@ -646,4 +855,436 @@
       });
     }
 
+    function ejecutarEliminacionMasiva() {
+      if (turnosSeleccionados.length === 0) return;
+      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, borrar todo</span>', cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>' }).then((result) => {
+        if (result.isConfirmed) {
+          mostrarModalSincronizando('Eliminando...');
+          google.script.run.withSuccessHandler(function() { turnosActuales = turnosActuales.filter(t => !turnosSeleccionados.includes(String(t.id))); toggleModoSeleccion(); analizarCobertura(); completarBarraYMostrarExito('¡Eliminados!', 'Se ha limpiado la base de datos.'); }).withFailureHandler(manejarErrorServidor).eliminarTurnosMasivo(turnosSeleccionados); 
+        }
+      });
+    }
+
     let historialActual = [];
+
+    function verPerfilColaborador(nombre) {
+      if (modoOrden || modoSeleccion) return; 
+      Swal.fire({ title: 'Cargando historial...', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, didOpen: () => Swal.showLoading() });
+      google.script.run.withSuccessHandler(function(historial) { historialActual = historial; dibujarModalPerfil(nombre); }).withFailureHandler(manejarErrorServidor).getHorariosPorColaborador(nombre);
+    }
+
+    function dibujarModalPerfil(nombre) {
+      let turnoHoy = turnosActuales.find(t => t.nombre === nombre); 
+      let fotoUrl = (turnoHoy && turnoHoy.foto) ? turnoHoy.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=27272a&color=fff`; 
+      let fechaMain = document.getElementById('fechaFiltro').value; 
+      let mesActual = fechaMain.substring(0, 7); 
+      
+      Swal.fire({
+        title: '', customClass: { popup: 'swal-dark-popup' }, background: 'transparent',
+        html: `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
+            <div style="display:flex; align-items:center; gap:15px; text-align: left;">
+              <img src="${fotoUrl}" style="width:52px; height:52px; border-radius:50%; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; transition: transform 0.3s; cursor:pointer;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+              <div>
+                <div style="color:#a1a1aa; font-size:10px; text-transform:uppercase; letter-spacing:1px; line-height: 1.2;">Historial de Asignaciones</div>
+                <div style="color:#deff9a; font-size:22px; font-weight:bold; letter-spacing:0.5px; line-height:1.1;">${escaparHTML(nombre)}</div>
+              </div>
+            </div>
+            <div style="text-align:right; display: flex; flex-direction: column; align-items: flex-end;">
+              <label style="font-size:10px; color:#a1a1aa; font-weight:bold; margin-bottom:4px; letter-spacing: 0.5px;">FILTRAR POR MES</label>
+              <input type="month" id="filtro-mes-perfil" class="input-date-seamless" style="cursor:pointer; font-size: 13px; color-scheme: dark; background: transparent; border: none; outline: none; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 0; padding: 4px 2px; width: 135px; color: #f4f4f5; text-align: right;" value="${mesActual}" onchange="renderizarFilasPerfil(this.value)">
+            </div>
+          </div>
+          
+          <!-- CONTENEDOR NUEVO: TARJETAS DE ESTADÍSTICAS -->
+          <div id="stats-perfil" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom: 15px;"></div>
+
+          <div style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+            <table class="table-perfil">
+              <thead><tr><th>Fecha / Día</th><th>Asignación</th><th>Break</th><th>Editar</th></tr></thead>
+              <tbody id="tbody-perfil"></tbody>
+            </table>
+          </div>`,
+        showConfirmButton: true, confirmButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#e4e4e7;">Cerrar Panel</span>', width: '650px',
+        didOpen: () => { renderizarFilasPerfil(mesActual); }
+      });
+    }
+
+    function renderizarFilasPerfil(mesAnio) {
+      const tbody = document.getElementById('tbody-perfil'); 
+      const statsDiv = document.getElementById('stats-perfil'); 
+      if (!tbody || !statsDiv) return;
+      
+      let historialFiltrado = historialActual.filter(t => t.fecha && t.fecha.startsWith(mesAnio)); 
+      const diasTexto = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]; 
+      let trs = "";
+
+      // Variables exclusivas para cada quincena
+      let totalMinutosQ1 = 0;
+      let totalMinutosQ2 = 0;
+
+      // 0. CALCULAR EL ÚLTIMO DÍA DEL MES DINÁMICAMENTE
+      let partesMes = mesAnio.split('-');
+      let anioSelect = parseInt(partesMes[0], 10);
+      let mesSelect = parseInt(partesMes[1], 10);
+      // Al pasar 0 como día, JS retrocede al último día del mes anterior (que es el mes actual que queremos)
+      let ultimoDiaMes = new Date(anioSelect, mesSelect, 0).getDate(); 
+
+      const aMinutos = (hora) => { 
+        if(!hora || !hora.includes(':')) return 0; 
+        let [h, m] = hora.split(':').map(Number); 
+        return (h * 60) + m; 
+      };
+
+      // 1. OBTENER LÍMITES DE LA SEMANA LITERAL
+      let fechaMain = document.getElementById('fechaFiltro').value;
+      let pMain = fechaMain.split('-');
+      let dMain = new Date(pMain[0], pMain[1] - 1, pMain[2]);
+      let diaSemana = dMain.getDay();
+      
+      let diffLunes = dMain.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+      let dLunes = new Date(dMain.getFullYear(), dMain.getMonth(), diffLunes);
+      let dDomingo = new Date(dLunes); 
+      dDomingo.setDate(dLunes.getDate() + 6);
+      
+      const fmtD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      let strLunes = fmtD(dLunes);
+      let strDomingo = fmtD(dDomingo);
+
+      // 2. CALCULAR HORAS DE LA SEMANA ACTUAL
+      let minTrabajadosSemana = 0;
+      historialActual.forEach(t => {
+        if (t.fecha >= strLunes && t.fecha <= strDomingo) {
+          if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
+            let mE = aMinutos(t.entrada); 
+            let mS = aMinutos(t.salida);
+            if(mS < mE) mS += 24 * 60; 
+            
+            let mB = 0;
+            if (t.breakIn && t.breakOut) {
+              let mBi = aMinutos(t.breakIn); 
+              let mBo = aMinutos(t.breakOut);
+              if(mBo < mBi) mBo += 24 * 60;
+              mB = mBo - mBi;
+            }
+            minTrabajadosSemana += (mS - mE - mB);
+          }
+        }
+      });
+
+      // 3. PROCESAR TABLA Y QUINCENAS
+      historialFiltrado.forEach((t) => {
+        let indexReal = historialActual.indexOf(t); 
+        let partes = t.fecha.split('-'); 
+        let objFecha = new Date(partes[0], partes[1] - 1, partes[2]); 
+        let diaSemanaTexto = diasTexto[objFecha.getDay()];
+        
+        // EXTRACCIÓN SEGURA DEL DÍA
+        let diaDelMes = parseInt(partes[2], 10);
+        
+        let descAlmuerzo = (t.breakIn && t.breakOut) ? `${t.breakIn} - ${t.breakOut}` : '<span style="color:#71717a; font-style:italic;">Sin almuerzo</span>';
+        let turnoLabel = EXCEPCIONES.includes(t.entrada) ? `<span style="color:#fcd34d; font-weight:bold;">${t.entrada}</span>` : `${t.entrada} a ${t.salida}`;
+        
+        if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
+          let minEntrada = aMinutos(t.entrada);
+          let minSalida = aMinutos(t.salida);
+          if(minSalida < minEntrada) minSalida += 24 * 60; 
+
+          let minBreak = 0;
+          if (t.breakIn && t.breakOut) {
+            let mBi = aMinutos(t.breakIn);
+            let mBo = aMinutos(t.breakOut);
+            if(mBo < mBi) mBo += 24 * 60;
+            minBreak = mBo - mBi;
+          }
+          
+          let minNetosTurno = (minSalida - minEntrada - minBreak);
+
+          // LÓGICA ESTRICTA DE QUINCENAS
+          if (diaDelMes >= 1 && diaDelMes <= 15) {
+            totalMinutosQ1 += minNetosTurno; // Suma a 1ra Quincena
+          } else if (diaDelMes >= 16 && diaDelMes <= ultimoDiaMes) {
+            totalMinutosQ2 += minNetosTurno; // Suma a 2da Quincena (Hasta fin de mes exacto)
+          }
+        }
+
+        trs += `<tr><td style="white-space: nowrap; color: #a1a1aa;">${t.fecha} <span style="color:#deff9a; font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td>${turnoLabel}</td><td>${descAlmuerzo}</td><td style="width:40px;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
+      });
+      
+      if (trs === "") {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; color:#71717a;">No hay registros guardados para este mes.</td></tr>`;
+        statsDiv.innerHTML = ""; 
+      } else {
+        tbody.innerHTML = trs;
+
+        // Horas Quincena 1
+        let horasQ1 = Math.floor(totalMinutosQ1 / 60);
+        let minsQ1 = totalMinutosQ1 % 60;
+
+        // Horas Quincena 2
+        let horasQ2 = Math.floor(totalMinutosQ2 / 60);
+        let minsQ2 = totalMinutosQ2 % 60;
+        
+        // Horas Semana Actual
+        let horasSemana = Math.floor(minTrabajadosSemana / 60);
+        let minsSemana = minTrabajadosSemana % 60;
+
+        statsDiv.innerHTML = `
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid #27272a; padding: 12px 10px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">1ra Quincena (1 - 15)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #f4f4f5;">${horasQ1}h ${minsQ1 > 0 ? minsQ1 + 'm' : ''}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid #27272a; padding: 12px 10px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">2da Quincena (16 - ${ultimoDiaMes})</div>
+            <div style="font-size: 18px; font-weight: bold; color: #f4f4f5;">${horasQ2}h ${minsQ2 > 0 ? minsQ2 + 'm' : ''}</div>
+          </div>
+          <div style="background: rgba(222, 255, 154, 0.05); border: 1px solid rgba(222, 255, 154, 0.3); padding: 12px 10px; border-radius: 8px; text-align: center;" title="Semana del Lunes ${strLunes.substring(8)} al Domingo ${strDomingo.substring(8)}">
+            <div style="font-size: 10px; color: #a1a1aa; text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Semana (En curso)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #deff9a; display: flex; justify-content: center; align-items: center; gap: 4px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> ${horasSemana}h ${minsSemana > 0 ? minsSemana + 'm' : ''}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function editarTurnoHistorial(index) {
+      const turno = historialActual[index]; if (!turno) return;
+      let tieneAlmuerzo = (turno.breakIn && turno.breakOut) ? 'checked' : ''; let opacidadInicial = tieneAlmuerzo ? '1' : '0.4'; let desactivadoInicial = tieneAlmuerzo ? '' : 'disabled';
+      let esExcepcion = EXCEPCIONES.includes(turno.entrada); let displayTiempos = esExcepcion ? 'none' : 'block'; let displayBotonIA = esExcepcion ? 'none' : 'flex'; 
+      let nombreEscapado = turno.nombre.replace(/'/g, "\\'"); let prefix = 'edit-history';
+
+      Swal.fire({
+        title: `Editar Registro: ${escaparHTML(turno.nombre)}`,
+        customClass: { popup: 'swal-dark-popup' },
+        background: 'transparent',
+        html: `<div style="text-align:left; color:#e4e4e7;">
+              <div
+                style="margin-bottom: 15px; font-size: 13px; color: #e4e4e7; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:#deff9a; margin-right:4px;">calendar_today</span>
+                Editando: <b>${turno.fecha}</b>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-${prefix}" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA('${nombreEscapado}', '${prefix}')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button>
+              </div>
+              <select id="${prefix}-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('${prefix}'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-${prefix}').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select>
+              <div id="${prefix}-ia-status"
+                style="font-size:11px; color:#a1a1aa; font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;">
+              </div>
+              <div id="${prefix}-contenedor-tiempos" style="display: ${displayTiempos};">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div><label style="font-size:12px; font-weight:700;">ENTRADA</label><input type="time" id="${prefix}-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : '07:30'}">
+                  </div>
+                  <div><label style="font-size:12px; font-weight:700;">SALIDA</label><input type="time" id="${prefix}-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : '19:00'}">
+                  </div>
+                </div>
+                <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" id="${prefix}-aplica-break" style="accent-color:#deff9a; width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('${prefix}', ${index})"><label for="${prefix}-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:#deff9a; user-select:none;">¿APLICAR ALMUERZO?</label>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+                  <input type="time" id="${prefix}-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ''}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('${prefix}')"><input type="time" id="${prefix}-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ''}" ${desactivadoInicial}>
+                </div>
+              </div>
+
+              <div style="margin-top:15px;">
+                <label style="font-size:12px; font-weight:700;">
+                  NOTAS / OBSERVACIONES
+                </label>
+                <!-- Se quitan los espacios para que no se guarde con saltos de línea -->
+                <textarea id="${prefix}-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea>
+              </div>
+            </div>`,
+        showCancelButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)',
+        cancelButtonColor: 'rgba(255,255,255,0.05)',
+        confirmButtonText: '<span style="color:#deff9a; font-weight:bold;">Guardar Cambios</span>',
+        cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>',
+        preConfirm: () => {
+            const tipo = document.getElementById(`${prefix}-tipo`).value;
+            const notaValue = document.getElementById(`${prefix}-nota`).value;
+
+            // Si es una excepción (Vacaciones, Ausencia, etc.)
+            if (tipo !== "Normal") {
+              return { 
+                entrada: tipo, 
+                salida: "",
+                breakIn: "",
+                breakOut: "",
+                nota: notaValue
+              };
+            }
+            
+            // Si es turno normal
+            const aplica = document.getElementById(`${prefix}-aplica-break`).checked;
+            return { 
+              entrada: document.getElementById(`${prefix}-entrada`).value,
+              salida: document.getElementById(`${prefix}-salida`).value,
+              breakIn: aplica ? document.getElementById(`${prefix}-break-in`).value : "",
+              breakOut: aplica ? document.getElementById(`${prefix}-break-out`).value : "",
+              nota: notaValue
+            };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const turnoAct = { 
+            id: turno.id, 
+            entrada: result.value.entrada, 
+            salida: result.value.salida, 
+            breakIn: result.value.breakIn, 
+            breakOut: result.value.breakOut,
+            nota: result.value.nota
+          };
+          mostrarModalSincronizando('Guardando en Historial...');
+          google.script.run.withSuccessHandler(function() {
+            // Actualizamos la memoria local
+            historialActual[index].entrada = turnoAct.entrada; 
+            historialActual[index].salida = turnoAct.salida; 
+            historialActual[index].breakIn = turnoAct.breakIn; 
+            historialActual[index].breakOut = turnoAct.breakOut;
+            historialActual[index].nota = turnoAct.nota; // <--- Actualizamos la nota localmente
+
+            if (turno.fecha === document.getElementById('fechaFiltro').value) cargarHorarios();
+            const bar = document.getElementById('loading-bar'); if (bar) { if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId)); bar.style.width = '100%'; bar.style.background = '#6ee7b7'; }
+            setTimeout(() => { dibujarModalPerfil(turno.nombre); }, 350);
+          }).withFailureHandler(manejarErrorServidor).actualizarTurnoExistente(turnoAct);
+        } else { 
+          dibujarModalPerfil(turno.nombre); 
+        }
+      });
+    }
+
+    // =========================================================
+    // 🕹️ INICIALIZADOR DEL PANEL MÓVIL
+    // =========================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      initPanelComandoArrastrable();
+    });
+
+  // =========================================================
+    // 🕹️ MOTOR ASISTIVO DE ARRASTRE Y DESPLIEGUE
+    // =========================================================
+    let assistiveDragged = false; // Bandera para bloquear el clic si hubo arrastre
+
+function toggleAssistiveMenu(e) {
+      if (assistiveDragged) {
+        assistiveDragged = false; // Cancelar apertura si solo se estaba arrastrando
+        return;
+      }
+      
+      const panel = document.getElementById("panel-comando-flotante");
+      const container = document.getElementById("assistive-container");
+      const button = document.getElementById("assistive-button");
+      if (!panel || !container || !button) return;
+
+      if (panel.style.display === "none") {
+        // 1. Mostrar temporalmente para poder medir sus dimensiones reales
+        panel.style.display = "flex";
+        container.classList.add("open");
+
+        const botonRect = button.getBoundingClientRect();
+        const centroPantallaX = window.innerWidth / 2;
+
+        // 2. CORRECCIÓN HORIZONTAL: Cambiar alineación según el lado de la pantalla
+        if (botonRect.left + botonRect.width / 2 < centroPantallaX) {
+          container.style.alignItems = "flex-start"; // Se despliega a la derecha del botón
+        } else {
+          container.style.alignItems = "flex-end";   // Se despliega a la izquierda del botón
+        }
+
+        // 3. CORRECCIÓN VERTICAL: Cambiar dirección si no cabe abajo
+        const panelAlto = panel.offsetHeight || 300;
+        if (botonRect.top + panelAlto + 60 > window.innerHeight) {
+          container.style.flexDirection = "column-reverse";
+        } else {
+          container.style.flexDirection = "column";
+        }
+
+        // 4. EMPUJE MAGNÉTICO: Reajustar posición si el contenedor completo se sale de la pantalla
+        const margenSeguro = 15;
+        const containerRect = container.getBoundingClientRect();
+        let nuevoTop = container.offsetTop;
+        let nuevoLeft = container.offsetLeft;
+
+        // Corregir desborde vertical
+        if (containerRect.top < margenSeguro) {
+          nuevoTop = margenSeguro;
+        } else if (containerRect.bottom > window.innerHeight - margenSeguro) {
+          nuevoTop = window.innerHeight - containerRect.height - margenSeguro;
+        }
+
+        // Corregir desborde horizontal
+        if (containerRect.left < margenSeguro) {
+          nuevoLeft = margenSeguro;
+        } else if (containerRect.right > window.innerWidth - margenSeguro) {
+          nuevoLeft = window.innerWidth - containerRect.width - margenSeguro;
+        }
+
+        // Aplicar los ajustes de posición corregidos
+        container.style.top = nuevoTop + "px";
+        container.style.left = nuevoLeft + "px";
+
+      } else {
+        // Cerrar el panel
+        panel.style.display = "none";
+        container.classList.remove("open");
+      }
+    } 
+
+    function initPanelComandoArrastrable() {
+      const container = document.getElementById("assistive-container");
+      const handle = document.getElementById("assistive-button");
+      if (!container || !handle) return;
+
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      handle.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e = e || window.event;
+        if (e.button !== 0) return; // Solo clic izquierdo arrastra
+        
+        assistiveDragged = false;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        
+        // Tolerancia: Si se mueve más de 4px, la computadora sabe que es un arrastre libre
+        if (Math.abs(pos3 - e.clientX) > 4 || Math.abs(pos4 - e.clientY) > 4) {
+          assistiveDragged = true;
+        }
+
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        let nuevoTop = container.offsetTop - pos2;
+        let nuevoLeft = container.offsetLeft - pos1;
+
+        // Límites de colisión con los bordes de la ventana del navegador
+        const margenSeguro = 10;
+        if (nuevoTop < margenSeguro) nuevoTop = margenSeguro;
+        if (nuevoTop > window.innerHeight - container.offsetHeight - margenSeguro) {
+          nuevoTop = window.innerHeight - container.offsetHeight - margenSeguro;
+        }
+        if (nuevoLeft < margenSeguro) nuevoLeft = margenSeguro;
+        if (nuevoLeft > window.innerWidth - container.offsetWidth - margenSeguro) {
+          nuevoLeft = window.innerWidth - container.offsetWidth - margenSeguro;
+        }
+
+        container.style.top = nuevoTop + "px";
+        container.style.left = nuevoLeft + "px";
+        container.style.bottom = "auto";
+        container.style.right = "auto";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+  </script>
