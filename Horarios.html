@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Horarios - Centro de Monitoreo</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <?!= include('Global_CSS'); ?>
+
+  <?!= include('Horarios_CSS'); ?>
+</head>
+
+<body>
+
+ 
+
+  <?!= include('Global_Navbar', 'horarios'); ?>
+
+  <div class="content-container">
+    <!-- SECTOR ASISTIVO INTERACTIVO -->
+    <div id="assistive-container" class="assistive-container">
+      
+      <!-- El Botón Circular (Timón de arrastre y activador) -->
+      <div id="assistive-button" class="assistive-button" onclick="toggleAssistiveMenu(event)" title="Centro de comandos">
+        <span class="material-symbols-outlined" style="font-size: 24px;">apps</span>
+      </div>
+
+      <!-- El Panel de Comandos (Oculto por defecto) -->
+      <div id="panel-comando-flotante" class="floating-panel" style="display: none;">
+        
+        <div style="font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #71717a; text-align: center; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 2px;">
+          Comandos
+        </div>
+        
+        <!-- Acción Principal -->
+        <button id="btn-asignar-turno" class="btn-neon btn-primary-neon widget-btn" onclick="abrirModalNuevoHorario()">
+          <span class="material-symbols-outlined" style="font-size:18px;">add</span> Asignar Turno
+        </button>
+        
+        <div class="widget-divider"></div>
+        
+        <!-- Controles de Vista -->
+        <button id="btn-modo-orden" class="btn-neon widget-btn" style="background: transparent; color:#a1a1aa; border-color:#27272a;" onclick="toggleModoOrden()">
+          <span class="material-symbols-outlined" style="font-size:18px;">swap_vert</span> Reordenar Lista
+        </button>
+        <button id="btn-modo-seleccion" class="btn-neon widget-btn" style="background: transparent; color:#a1a1aa; border-color:#27272a;" onclick="toggleModoSeleccion()">
+          <span class="material-symbols-outlined" style="font-size:18px;">checklist</span> Seleccionar Múltiple
+        </button>
+        
+        <div class="widget-divider"></div>
+        
+        <!-- Portapapeles del Día -->
+        <button id="btn-copiar-dia" class="btn-neon widget-btn" style="background: transparent; color:#6ee7b7; border-color:#065f46;" onclick="copiarTurnosDia()">
+          <span class="material-symbols-outlined" style="font-size:18px;">content_copy</span> Copiar Turnos
+        </button>
+        <button id="btn-pegar-dia" class="btn-neon widget-btn" style="background: transparent; color:#fcd34d; border-color:#b45309; display:none;" onclick="pegarTurnosDia()">
+          <span class="material-symbols-outlined" style="font-size:18px;">content_paste</span> Pegar Turnos
+        </button>
+        
+        <!-- Acciones Contextuales -->
+        <button id="btn-editar-masivo" class="btn-neon widget-btn" style="background: rgba(245, 158, 11, 0.12); color: #fcd34d; border-color: #f59e0b; display:none;" onclick="abrirModalEdicionMasiva()">
+          <span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Cambiar Grupo
+        </button>
+        <button id="btn-eliminar-masivo" class="btn-neon widget-btn" style="background: rgba(239, 68, 68, 0.12); color: #fca5a5; border-color: #ef4444; display:none;" onclick="ejecutarEliminacionMasiva()">
+          <span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar Grupo (0)
+        </button>
+
+      </div>
+    </div>
+
+
+    <!-- -------- DASHBOARD DE MONITOREO VIVO -------- -->
+    <div id="liveDashboard" class="dashboard-container" style="display: none;">
+      <div class="dashboard-header">
+        <div class="live-indicator">MONITOREO EN VIVO</span></div>
+        <div id="live-clock" class="live-clock">
+          <span id="clk-h">00</span><span class="blink">:</span><span id="clk-m">00</span><span class="blink">:</span><span id="clk-s">00</span>
+        </div>
+      </div>
+      <div class="dashboard-cards">
+        <div class="db-card card-trabajando" onclick="filtrarPorEstadoLive('trabajando')"
+          title="Haz clic para ver solo los que operan ahora">
+          <div class="db-card-icon">
+            <span class="material-symbols-outlined" style="font-size:22px;">desktop_windows</span>
+          </div>
+          <div class="db-card-info">
+            <span class="db-counter" id="count-working">0</span><span class="db-label">Trabajando Ahora</span>
+          </div>
+        </div>
+        <div class="db-card card-break" onclick="filtrarPorEstadoLive('break')"
+          title="Haz clic para ver solo los que están en break">
+          <div class="db-card-icon"><span class="material-symbols-outlined" style="font-size:22px;">coffee</span></div>
+          <div class="db-card-info">
+            <span class="db-counter" id="count-break">0</span><span class="db-label">En Almuerzo / Break</span>
+          </div>
+        </div>
+        <div class="db-card card-fuera" onclick="filtrarPorEstadoLive('fuera')"
+          title="Haz clic para ver ausentes, libres o fuera de turno">
+          <div class="db-card-icon"><span class="material-symbols-outlined" style="font-size:22px;">person_off</span>
+          </div>
+          <div class="db-card-info">
+            <span class="db-counter" id="count-inactive">0</span><span class="db-label">Fuera de Turno / Libres</span>
+          </div>
+        </div>
+      </div>
+      <div id="active-avatars" class="active-avatars-row"></div>
+    </div>
+
+    <div class="timeline-container">
+      <div class="timeline-header-grid">
+        <div style="padding-left:10px;">Colaborador</div>
+        <div class="time-scale">
+          <span style="left: 0%;">07:00</span><span style="left: calc((100% / 13) * 1);">08:00</span><span style="left: calc((100% / 13) * 2);">09:00</span><span style="left: calc((100% / 13) * 3);">10:00</span><span style="left: calc((100% / 13) * 4);">11:00</span><span style="left: calc((100% / 13) * 5);">12:00</span><span style="left: calc((100% / 13) * 6);">13:00</span><span style="left: calc((100% / 13) * 7);">14:00</span><span style="left: calc((100% / 13) * 8);">15:00</span><span style="left: calc((100% / 13) * 9);">16:00</span><span style="left: calc((100% / 13) * 10);">17:00</span><span style="left: calc((100% / 13) * 11);">18:00</span><span style="left: calc((100% / 13) * 12);">19:00</span><span style="left: 100%;">20:00</span>
+        </div>
+      </div>
+      <div id="diagnosticoTrack"></div>
+      <div id="contenedorRows"></div>
+        <!-- LEYENDA, FECHA Y BUSCADOR (BARRA INFERIOR) -->
+      <div class="legend" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; padding-top: 15px; border-top: 1px solid #18181b;">
+        
+        <!-- LADO IZQUIERDO: Viñetas de colores -->
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <div class="legend-item">
+            <div class="dot" style="background:#deff9a;"></div> Horario Laboral
+          </div>
+          <div class="legend-item">
+            <div class="dot" style="border: 1px dashed #ef4444; background: rgba(239,68,68,0.1); "></div> Almuerzo
+          </div>
+        </div>
+
+        <!-- CENTRO: Navegador de Fechas + Buscador Integrado -->
+        <div style="display: flex; align-items: center; gap: 20px;">
+          
+          <!-- Selector de Fecha -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="date-nav-group">
+              <button class="btn-date-nav" onclick="cambiarDia(-1)" title="Día Anterior">
+                <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+              </button>
+              <input type="date" id="fechaFiltro" class="input-date-seamless" onchange="cargarHorarios()">
+              <button class="btn-date-nav" onclick="cambiarDia(1)" title="Día Siguiente">
+                <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+              </button>
+            </div>
+            <span id="dia-semana-toolbar" style="color: #deff9a; font-size: 13px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;"></span>
+          </div>
+
+          <!-- Divisor vertical sutil entre herramientas -->
+          <div style="width: 1px; height: 20px; background: rgba(255, 255, 255, 0.1);"></div>
+
+          <!-- Buscador de Colaboradores -->
+          <input type="text" id="buscarColaborador" class="input-filtro" placeholder="Buscar colaborador..." oninput="filtrarTimeline()" style="width: 220px; padding: 8px 12px;">
+        </div>
+
+        <!-- LADO DERECHO: Texto de ayuda -->
+        <div class="legend-item" style="color:#9ca3af;">
+          <i>💡 Haz clic en cualquier barra para editar</i>
+        </div>
+
+      </div>
+
+      </div>
+    </div>
+  </div>
+
+  <?!= include('Global_JS'); ?>
+<?!= include('Horarios_Core'); ?>
+<?!= include('Horarios_Advanced'); ?>
+</body>
+
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Formulario de Reportes</title>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+<?!= include('Global_CSS'); ?>
+<?!= include('Global_JS'); ?>
+<?!= include('Global_Datos'); ?>
+
+<style>
+/* --- SCROLL SUAVE GLOBAL --- */
+html {
+  scroll-behavior: smooth;
+}
+
+
+
+.container { max-width: 1200px; margin: 85px auto 40px; padding: 0 20px; }
+
+/* --- CONTENEDOR PRINCIPAL GLASSMORPHISM --- */
+.form-container {
+  margin-top: 95px !important;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 35px;
+  border-radius: 12px;
+  
+  /* Efecto Cristal */
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(222, 255, 154, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  
+  /* Animación de entrada */
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-container h2 {
+  margin-top: 0;
+  color: #f3f4f6; 
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  border-left: 4px solid #deff9a; 
+  padding-left: 12px;
+}
+
+label {
+  display: block;
+  margin-top: 18px;
+  font-weight: 600;
+  color: #daffde;
+  font-size: 14px;
+}
+
+/* --- INPUTS ESTÁNDAR --- */
+input[type="text"], textarea, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+  background: rgba(0, 0, 0, 0.2); /* Fondo oscuro */
+  color: #ffffff;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus, select:focus, textarea:focus {
+  border-color: #deff9a; /* Brillo Neón */
+  box-shadow: 0 0 0 3px rgba(222, 255, 154, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+/* --- GRUPO DE INPUTS UNIDOS --- */
+.grupo-inputs-unidos {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.grupo-inputs-unidos select, .grupo-inputs-unidos input {
+  flex: 1;
+  min-width: 0;
+  border: none !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  background: transparent;
+  color: #ffffff;
+}
+
+.grupo-inputs-unidos select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23daffde' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+  cursor: pointer;
+}
+
+.grupo-inputs-unidos select:hover {
+  background-color: rgba(222, 255, 154, 0.05) !important;
+}
+
+.grupo-inputs-unidos *:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.input-iniciales {
+  flex: none !important;
+  width: 90px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #deff9a !important; 
+  font-weight: 700;
+  text-align: center;
+  cursor: not-allowed;
+}
+
+
+
+/* --- BOTÓN ENVIAR --- */
+.btn-enviar {
+  margin-top: 25px;
+  background: #deff9a; 
+  color: #050505; 
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  width: 100%;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.btn-enviar:hover {
+  background: #c3e67b;
+  box-shadow: 0 0 15px rgba(222, 255, 154, 0.4);
+  transform: translateY(-2px);
+}
+
+
+</style>
+</head>
+<body>
+
+<?!= include('Global_Navbar', 'index'); ?>
+
+<div class="form-container">
+  <h2>Formulario reportes por tienda</h2>
+  
+  <label>Operación y Tienda</label>
+  <div class="grupo-inputs-unidos text">
+    <select id="empresa" onchange="cargarTiendas('empresa', 'tienda', 'posicion')">
+        <option value="">Seleccione una Operación</option>
+        <option value="farmacias">Farmacias</option>
+        <option value="chinatown">Chinatown</option>
+        <option value="exchange">Exchange</option>
+    </select>
+    <select id="tienda" onchange="actualizarPosicion('tienda', 'posicion')">
+        <option value="">Seleccione una tienda</option>
+    </select>
+  </div>
+
+  <label>Puesto</label>
+  <input type="text" id="posicion" readonly placeholder="Se autocompleta según la tienda...">
+
+  <label>Tipo de Reporte</label>
+  <input type="text" id="tipoReporte" placeholder="Ej. Robo, Incidencia, Control, Servicio al Cliente...">
+
+  <label>Nombre Completo</label>
+  <div class="grupo-inputs-unidos text">
+    <input type="text" id="empleado" oninput="generarIniciales('empleado', 'iniciales')" placeholder="Nombre completo del monitor...">
+    <input type="text" id="iniciales" class="input-iniciales" maxlength="4" readonly placeholder="Auto">
+  </div>
+
+  <label>Observaciones</label>
+  <textarea id="observaciones" placeholder="Escriba los detalles analíticos del evento..."></textarea>
+
+  <label>Evidencias / Archivos</label>
+  <div class="file-upload-wrapper">
+    <input type="file" id="files" multiple onchange="manejarSeleccionArchivos()">
+    <label for="files" class="file-upload-label">
+      <span class="material-symbols-outlined upload-icon">cloud_upload</span>
+      <span style="font-size: 14px; color: #daffde;"><strong>Haz clic para cargar</strong> o arrastra los archivos aquí</span>
+      <span id="file-counter" class="file-counter">Ningún archivo seleccionado</span>
+    </label>
+  </div>
+  <div id="lista-archivos" class="lista-archivos"></div>
+
+  <button class="btn-enviar" onclick="enviarReporte()">Enviar Reporte</button>
+</div>
+
+<script>
+
+
+let archivosSeleccionados = [];
+
+
+
+  const codigoLimpio = tiendaValue.split(" ")[0].toUpperCase().replace("-", "");
+  let puestoFinal = "Personal de Turno";
+
+  for (const [puesto, lista] of Object.entries(puestos)) {
+    if (lista.some(t => t.toUpperCase().replace("-", "") === codigoLimpio)) {
+      puestoFinal = puesto; break;
+    }
+  }
+  posicionInput.value = puestoFinal;
+}
+
+
+function manejarSeleccionArchivos() {
+  const input = document.getElementById("files");
+  const MAX_FILE_SIZE_MB = 30;
+  const MAX_TOTAL_SIZE_MB = 150;
+  let currentTotalSize = archivosSeleccionados.reduce((sum, f) => sum + f.size, 0);
+  let rechazados = [];
+
+  for (let i = 0; i < input.files.length; i++) {
+    const file = input.files[i];
+    if (file.size / (1024 * 1024) > MAX_FILE_SIZE_MB) { rechazados.push(`<b>${file.name}</b> (>15MB)`); continue; }
+    if (file.name.toLowerCase().endsWith('.exe')) { rechazados.push(`<b>${file.name}</b> (Ejecutable bloqueado)`); continue; }
+    if (currentTotalSize + file.size > MAX_TOTAL_SIZE_MB * 1024 * 1024) {
+      Swal.fire({ ...SWAL_GLASS_CONFIG, icon: 'warning', title: 'Límite de Capacidad', html: `Máximo ${MAX_TOTAL_SIZE_MB}MB permitidos por envío.` }); 
+      break;
+    }
+    archivosSeleccionados.push(file);
+    currentTotalSize += file.size;
+  }
+  input.value = "";
+  if (rechazados.length > 0) {
+    Swal.fire({ ...SWAL_GLASS_CONFIG, icon: 'error', title: 'Archivos no permitidos', html: rechazados.join('<br>') });
+  }
+  renderizarListaArchivos();
+}
+
+function renderizarListaArchivos() {
+  const container = document.getElementById("lista-archivos");
+  const counter = document.getElementById("file-counter");
+  
+  if (archivosSeleccionados.length === 0) {
+    counter.textContent = "Ningún archivo seleccionado";
+    counter.classList.remove("has-files");
+  } else {
+    const totalMB = (archivosSeleccionados.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024)).toFixed(2);
+    counter.textContent = `${archivosSeleccionados.length} archivo(s) | Total: ${totalMB} MB`;
+    counter.classList.add("has-files");
+  }
+
+  container.innerHTML = "";
+  archivosSeleccionados.forEach((archivo, index) => {
+    const div = document.createElement("div");
+    div.className = "archivo-item";
+    const nombreCorto = archivo.name.length > 35 ? archivo.name.substring(0, 32) + '...' : archivo.name;
+    const peso = archivo.size > 1024 * 1024 ? (archivo.size / (1024 * 1024)).toFixed(2) + ' MB' : (archivo.size / 1024).toFixed(1) + ' KB';
+    
+    let iconHtml = `<span class="material-symbols-outlined icono-doc">description</span>`;
+    if (archivo.type.startsWith('image/')) {
+      iconHtml = `<img src="${URL.createObjectURL(archivo)}" class="thumbnail-preview">`;
+    } else if (archivo.type === 'application/pdf') {
+      iconHtml = `<span class="material-symbols-outlined icono-pdf">picture_as_pdf</span>`;
+    } else if (archivo.type.startsWith('video/')) {
+      iconHtml = `<span class="material-symbols-outlined icono-video">movie</span>`;
+    }
+
+    div.innerHTML = `
+      <div class="archivo-info">
+        ${iconHtml}
+        <div class="archivo-detalles">
+          <span class="archivo-nombre">${nombreCorto}</span>
+          <span class="archivo-peso">${peso}</span>
+        </div>
+      </div>
+      <button type="button" class="btn-eliminar-archivo" onclick="eliminarArchivo(${index})"><span class="material-symbols-outlined">close</span></button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function eliminarArchivo(i) { archivosSeleccionados.splice(i, 1); renderizarListaArchivos(); }
+
+function enviarReporte() {
+  const datos = {
+    empresa: document.getElementById("empresa").value,
+    tienda: document.getElementById("tienda").value,
+    posicion: document.getElementById("posicion").value,
+    tipoReporte: document.getElementById("tipoReporte").value,
+    empleado: document.getElementById("empleado").value,
+    iniciales: document.getElementById("iniciales").value,
+    observaciones: document.getElementById("observaciones").value
+  };
+
+  if (!datos.empresa || !datos.tienda || !datos.empleado) {
+    Swal.fire({ ...SWAL_GLASS_CONFIG, icon: 'warning', title: 'Campos Obligatorios', html: 'Por favor complete Operación, Tienda y Nombre Completo.' }); 
+    return;
+  }
+
+  const tienePDF = archivosSeleccionados.some(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+  if (!tienePDF) {
+      Swal.fire({ ...SWAL_GLASS_CONFIG, icon: 'error', title: 'Falta Evidencia', html: 'Es obligatorio adjuntar el reporte de Smartsheet en formato PDF para poder enviar.' }); 
+      return;
+    }
+
+  Swal.fire({ 
+    ...SWAL_GLASS_CONFIG, 
+    title: 'Guardando reporte...', 
+    html: 'Subiendo datos y emitiendo evidencias a Drive.', 
+    allowOutsideClick: false, 
+    didOpen: () => Swal.showLoading() 
+  });
+
+  let fileData = [];
+  if (archivosSeleccionados.length === 0) {
+    ejecutarEnvioServidor(datos, []);
+  } else {
+    let cargados = 0;
+    for (let i = 0; i < archivosSeleccionados.length; i++) {
+      let reader = new FileReader();
+      reader.onload = e => {
+        fileData.push({ name: archivosSeleccionados[i].name, type: archivosSeleccionados[i].type, data: e.target.result.split(",")[1] });
+        cargados++;
+        if (cargados === archivosSeleccionados.length) { ejecutarEnvioServidor(datos, fileData); }
+      };
+      reader.readAsDataURL(archivosSeleccionados[i]);
+    }
+  }
+}
+
+function ejecutarEnvioServidor(datos, files) {
+  google.script.run
+    .withSuccessHandler(res => {
+      if(res.success) {
+        Swal.fire({ 
+          ...SWAL_GLASS_CONFIG, 
+          icon: 'success', 
+          title: '¡Enviado!', 
+          html: `El reporte ha sido guardado bajo el ID: <b>${res.id}</b>` 
+        }).then(() => {
+          limpiarFormulario();
+        });
+      } else { 
+        Swal.fire({ ...SWAL_GLASS_CONFIG, icon: 'error', title: 'Error', html: res.message }); 
+      }
+    })
+    .withFailureHandler(err => {
+      Swal.fire({ ...SWAL_GLASS_CONFIG, icon: 'error', title: 'Error Crítico', html: err.message });
+    })
+    .guardarReporte(datos, files);
+}
+
+function limpiarFormulario() {
+  document.getElementById("empresa").value = "";
+  document.getElementById("tienda").innerHTML = '<option value="">Seleccione una tienda</option>';
+  document.getElementById("posicion").value = "";
+  document.getElementById("tipoReporte").value = "";
+  document.getElementById("empleado").value = "";
+  document.getElementById("iniciales").value = "";
+  document.getElementById("observaciones").value = "";
+  document.getElementById("files").value = "";
+  
+  archivosSeleccionados = [];
+  renderizarListaArchivos();
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

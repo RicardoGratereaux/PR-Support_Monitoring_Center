@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Reposición Diaria</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <?!= include('Global_CSS'); ?>
+<?!= include('Global_JS'); ?>
+
+  <style>
+    /* =========================================
+   GLOBAL & LAYOUT DARK
+   ========================================= */
+    
+
+    .content-container {
+      padding: 95px 24px 30px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    h2.section-title {
+      color: #f3f4f6;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      border-left: 3px solid #deff9a;
+      padding-left: 12px;
+    }
+
+    .fecha-badge {
+      background: #111111;
+      color: #a1a1aa;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #27272a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* -------- TIENDAS GRID (GLASSMORPHISM) -------- */
+    .tiendas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .tienda-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.4s ease; /* Transición suave para el brillo */
+      position: relative;
+    }
+
+    /* =========================================
+       ESTADOS DE TARJETA CON EFECTO GLOW 
+       ========================================= */
+    .card-pendiente {
+      border: 1px solid rgba(250, 204, 21, 0.4) !important;
+      border-left: 4px solid #facc15 !important;
+      background: rgba(250, 204, 21, 0.03);
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.15), inset 0 0 20px rgba(250, 204, 21, 0.02) !important;
+    }
+
+    .card-cumplido {
+      border: 1px solid rgba(222, 255, 154, 0.4) !important;
+      border-left: 4px solid #deff9a !important;
+      background: rgba(222, 255, 154, 0.03);
+      box-shadow: 0 0 15px rgba(222, 255, 154, 0.15), inset 0 0 20px rgba(222, 255, 154, 0.02) !important;
+    }
+
+    .card-incumplido {
+      border: 1px solid rgba(248, 113, 113, 0.4) !important;
+      border-left: 4px solid #f87171 !important;
+      background: rgba(248, 113, 113, 0.03);
+      box-shadow: 0 0 15px rgba(248, 113, 113, 0.15), inset 0 0 20px rgba(248, 113, 113, 0.02) !important;
+    }
+
+    /* Títulos: Gris neutro para no saturar con el verde */
+    .card-header .tienda-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e4e4e7;
+    }
+
+    .hora-badge {
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: #9ca3af;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .control-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #52525b;
+      text-transform: uppercase;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .obs-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #27272a;
+      background: rgba(0, 0, 0, 0.2);
+      color: #111827;
+      font-size: 13px;
+      box-sizing: border-box;
+      resize: none;
+      height: 55px;
+      transition: all 0.3s ease;
+    }
+    
+    .obs-input:focus {
+      outline: none;
+      border-color: #9ca3af;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    /* SELECTOR PERSONALIZADO */
+    .custom-select-wrapper {
+      position: relative;
+      width: 100%;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+
+    .custom-select-trigger {
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #e4e4e7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-icon-selected {
+      font-size: 18px;
+      margin-right: 8px;
+    }
+
+    .arrow-icon {
+      color: #9ca3af;
+      font-size: 18px;
+    }
+
+    .custom-select-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: #111111;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 100;
+      margin: 5px 0 0 0;
+      padding: 0;
+      list-style-type: none;
+    }
+
+    .custom-select-dropdown li {
+      padding: 12px 15px;
+      font-size: 14px;
+      color: #e4e4e7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #27272a;
+    }
+
+    .custom-select-dropdown li:hover {
+      background: rgba(222, 255, 154, 0.05);
+    }
+
+    /* ZONA DE CARGA DE ARCHIVOS - CORREGIDA */
+    .file-upload-wrapper-inline {
+      position: relative;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* Ocultamos el input nativo que genera el "Choose File" */
+    .file-upload-input-inline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .file-upload-label-inline {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 2px dashed #27272a;
+      border-radius: 12px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    /* Estado cuando tiene archivo */
+    .file-upload-label-inline.has-file {
+      background: rgba(222, 255, 154, 0.05) !important;
+      border: 2px solid #deff9a !important;
+    }
+
+    .upload-icon-inline {
+      font-size: 32px;
+      color: #deff9a;
+      margin-bottom: 5px;
+    }
+
+    .file-counter-inline {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+
+    .file-counter-inline.has-file {
+      background: rgba(222, 255, 154, 0.15);
+      color: #deff9a;
+    }
+
+    /* CORRECCIÓN DE IMAGEN: Se limita al ancho de la tarjeta */
+    .thumbnail-preview-inline {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #27272a;
+      cursor: pointer;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .btn-save-card {
+      margin-top: 15px;
+      background: #deff9a;
+      color: #050505;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: 0.3s;
+    }
+
+    .btn-save-card:hover {
+      background: #c3e67b;
+      box-shadow: 0 0 10px rgba(222, 255, 154, 0.3);
+    }
+
+    /* BOTÓN: Ver captura anterior (Minimalista) */
+    .btn-ver-anterior {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #9ca3af;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #27272a;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      margin-top: 8px;
+    }
+
+    .btn-ver-anterior:hover {
+      border-color: #deff9a;
+      color: #deff9a;
+      background: rgba(222, 255, 154, 0.05);
+    }
+
+    /* MODAL DE IMAGEN */
+    .modal-overlay-preview {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 5, 5, 0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-content-preview {
+      background: #111111;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 800px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header-preview {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #050505;
+      border-bottom: 1px solid #27272a;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .btn-close-modal-preview {
+      background: rgba(220, 38, 38, 0.1);
+      border: none;
+      border-radius: 6px;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      color: #f87171;
+    }
+
+    .modal-body-preview {
+      padding: 20px;
+      background: #050505;
+    }
+
+    .full-image-preview {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: 8px;
+      border: 1px solid #27272a;
+    }
+
+    
+  </style>
+</head>
+
+<body>
+
+  <?!= include('Global_Navbar', 'reposicion'); ?>
+
+  <div class="content-container">
+    <div class="header-info">
+      <h2 class="section-title">Reposición de tiendas</h2>
+      <div class="fecha-badge">
+        <span class="material-symbols-outlined" style="font-size:18px;">calendar_today</span>
+        <span id="fechaHoyText">Cargando...</span>
+      </div>
+    </div>
+
+    <div id="gridTiendas" class="tiendas-grid">
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280; font-weight: 500;">
+        Buscando la agenda de protocolos para el día de hoy...
+      </div>
+    </div>
+  </div>
+
+  <div id="modalPreview" class="modal-overlay-preview" onclick="handleOutsideModalPreviewClick(event)">
+    <div class="modal-content-preview">
+      <div class="modal-header-preview">
+        <div class="modal-title-preview">
+          <span class="material-symbols-outlined" style="font-size:18px;">image</span> Vista rápida de Captura
+        </div>
+        <button class="btn-close-modal-preview" onclick="closeImagePreviewModal()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="modal-body-preview">
+        <img id="modalPreviewImage" src="" class="full-image-preview">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let imagenesCargadasMemoria = {};
+
+    document.addEventListener("DOMContentLoaded", cargarAgendaHoy);
+
+    
+    
+    function cargarAgendaHoy() {
+      google.script.run
+        .withSuccessHandler(res => {
+          const agenda = JSON.parse(res);
+          const grid = document.getElementById("gridTiendas");
+          
+          if(agenda.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280; font-weight: 500;">No hay alertas de reposición registradas para la fecha de hoy o ya concluyó el turno.</div>`;
+            return;
+          }
+
+          document.getElementById("fechaHoyText").innerText = agenda[0].fecha;
+
+          let tarjetasHTML = "";
+
+          agenda.forEach(item => {
+            const est = item.estado.toLowerCase();
+            let claseEstadoCard = "card-pendiente";
+            let statusIcon = "schedule"; 
+            let statusColor = "#f59e0b"; 
+
+            if(est.includes("cumplido") && !est.includes("incumplido")) {
+              claseEstadoCard = "card-cumplido";
+              statusIcon = "check_circle"; statusColor = "#10b981"; 
+            }
+            if(est.includes("incumplido")) {
+              claseEstadoCard = "card-incumplido";
+              statusIcon = "cancel"; statusColor = "#ef4444"; 
+            }
+
+            const optionsHTML = `
+              <li onclick="setCardStatus(${item.numFila}, 'Pendiente', 'schedule', '#f59e0b')">
+                <span class="material-symbols-outlined option-icon" style="color:#f59e0b">schedule</span> Pendiente
+              </li>
+              <li onclick="setCardStatus(${item.numFila}, 'Cumplido', 'check_circle', '#10b981')">
+                <span class="material-symbols-outlined option-icon" style="color:#10b981">check_circle</span> Cumplido
+              </li>
+              <li onclick="setCardStatus(${item.numFila}, 'Incumplido', 'cancel', '#ef4444')">
+                <span class="material-symbols-outlined option-icon" style="color:#ef4444">cancel</span> Incumplido
+              </li>
+            `;
+
+            let botonEvidenciaExistenteHTML = "";
+            if (item.evidenciaUrl) {
+              botonEvidenciaExistenteHTML = `
+                <a href="${item.evidenciaUrl}" target="_blank" class="btn-ver-anterior">
+                  <span class="material-symbols-outlined" style="font-size:16px;">image_search</span> 
+                  Ver captura guardada anterior
+                </a>
+              `;
+            }
+
+            tarjetasHTML += `
+              <div class="tienda-card ${claseEstadoCard}" id="card-${item.numFila}">
+                <div>
+                  <div class="card-header">
+                    <span class="tienda-name">${item.tienda}</span>
+                    <span class="hora-badge"><span class="material-symbols-outlined" style="font-size:14px;">schedule</span> ${item.horaProgramada}</span>
+                  </div>
+                  
+                  <div class="control-label">Resultado del Page</div>
+                  
+                  <div class="custom-select-wrapper">
+                    <div class="custom-select-trigger" id="customSelectTrigger-${item.numFila}" onclick="toggleCustomSelectDropdown(${item.numFila}, event)">
+                      <span class="material-symbols-outlined status-icon-selected" id="selectedIcon-${item.numFila}" style="color:${statusColor}">${statusIcon}</span>
+                      <span id="selectedText-${item.numFila}">${item.estado}</span>
+                      <span class="material-symbols-outlined arrow-icon">arrow_drop_down</span>
+                    </div>
+                    <ul class="custom-select-dropdown" id="customSelectDropdown-${item.numFila}">
+                      ${optionsHTML}
+                    </ul>
+                    <input type="hidden" id="status-${item.numFila}" value="${item.estado}">
+                  </div>
+
+                  <div class="control-label">Breves observaciones</div>
+                  <textarea id="obs-${item.numFila}" class="obs-input" placeholder="Escriba novedades o detalles de la llamada...">${item.observacion}</textarea>
+
+                  <div class="control-label">Imagen de la tienda completa</div>
+                  
+                  <div class="file-upload-wrapper-inline">
+                    <input type="file" id="fileInput-${item.numFila}" class="file-upload-input-inline" accept="image/*" onchange="processFileTarjeta(this, ${item.numFila})">
+                    <label for="fileInput-${item.numFila}" class="file-upload-label-inline" id="fileLabel-${item.numFila}">
+                      <span class="material-symbols-outlined upload-icon-inline">add_a_photo</span>
+                      <span id="labelText-${item.numFila}" style="font-size: 13px; color: #4b5563;"><b>Haz clic</b> para cargar captura</span>
+                      <span id="fileCounter-${item.numFila}" class="file-counter-inline">Ninguna captura seleccionada</span>
+                    </label>
+                  </div>
+                  
+                  ${botonEvidenciaExistenteHTML}
+                  
+                  <img id="thumbnail-${item.numFila}" class="thumbnail-preview-inline" onclick="openImagePreviewModal(${item.numFila})" title="Haz clic para previsualizar">
+                </div>
+
+                <button class="btn-save-card" onclick="guardarFilaUnicaReposicion(${item.numFila})">
+                  <span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar Gestión
+                </button>
+              </div>
+            `;
+          });
+          
+          grid.innerHTML = tarjetasHTML;
+          
+        }).getCalendarioReposicionHoy();
+    }
+
+    function processFileTarjeta(input, numFila) {
+      const fileLabel = document.getElementById(`fileLabel-${numFila}`);
+      const fileCounter = document.getElementById(`fileCounter-${numFila}`);
+      const labelText = document.getElementById(`labelText-${numFila}`);
+      const thumbnail = document.getElementById(`thumbnail-${numFila}`);
+
+      fileLabel.classList.remove("has-file");
+      fileLabel.style.borderColor = "#d1d5db";
+      fileLabel.style.background = "#111827";
+      labelText.innerHTML = `<b>Haz clic</b> para cargar captura`;
+      fileCounter.textContent = "Ninguna captura seleccionada";
+      thumbnail.style.display = "none";
+      thumbnail.src = "";
+      if(imagenesCargadasMemoria[numFila]) delete imagenesCargadasMemoria[numFila];
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        
+        fileLabel.style.borderColor = "#f59e0b";
+        fileLabel.style.background = "#374151";
+        labelText.innerHTML = `<b>Procesando captura...</b>`;
+        fileCounter.textContent = `Archivo: ${file.name} | Tamaño original: ${originalSizeMB} MB`;
+
+        comprimirImagen(file, compressedBase64 => {
+          labelText.innerHTML = `<b>Sincronizada</b> con base de datos.`;
+          fileCounter.textContent = `Captura: ${file.name}`;
+          imagenesCargadasMemoria[numFila] = { name: file.name, type: file.type, data: compressedBase64 };
+          
+          fileLabel.classList.add("has-file");
+          fileLabel.style.borderColor = "#3b82f6";
+          fileLabel.style.background = "#1f2937";
+          thumbnail.src = `data:${file.type};base64,${compressedBase64}`;
+          thumbnail.style.display = "block";
+        });
+        input.value = "";
+      }
+    }
+
+    function comprimirImagen(file, callback) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_WIDTH = 1920; 
+          const MAX_HEIGHT = 1080;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.75);
+          callback(compressedDataUrl.split(",")[1]);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function openImagePreviewModal(numFila) {
+      const imageData = imagenesCargadasMemoria[numFila];
+      if(!imageData || !imageData.data) {
+        Swal.fire('Error de previsualización', 'No hay ninguna captura procesada para esta tienda.', 'error');
+        return;
+      }
+      const modal = document.getElementById("modalPreview");
+      const modalImage = document.getElementById("modalPreviewImage");
+      modalImage.src = `data:${imageData.type};base64,${imageData.data}`;
+      modal.style.display = "flex";
+    }
+
+    function closeImagePreviewModal() {
+      document.getElementById("modalPreview").style.display = "none";
+    }
+
+    function handleOutsideModalPreviewClick(event) {
+      const modalPreviewContent = document.querySelector(".modal-content-preview");
+      if (!modalPreviewContent.contains(event.target)) {
+        closeImagePreviewModal();
+      }
+    }
+
+    function toggleCustomSelectDropdown(numFila, event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById(`customSelectDropdown-${numFila}`);
+      const dropdowns = document.querySelectorAll(".custom-select-dropdown");
+      dropdowns.forEach(d => { if (d.id !== dropdown.id) d.style.display = "none"; });
+      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    }
+
+    function setCardStatus(numFila, value, icon, color) {
+      document.getElementById(`selectedText-${numFila}`).innerText = value;
+      const iconSpan = document.getElementById(`selectedIcon-${numFila}`);
+      iconSpan.innerText = icon;
+      iconSpan.style.color = color;
+      
+      document.getElementById(`status-${numFila}`).value = value;
+      document.getElementById(`customSelectDropdown-${numFila}`).style.display = "none";
+
+      const card = document.getElementById(`card-${numFila}`);
+      card.className = "tienda-card";
+      const valLower = value.toLowerCase();
+      if (valLower.includes("pendiente")) card.classList.add("card-pendiente");
+      if (valLower.includes("cumplido")) card.classList.add("card-cumplido");
+      if (valLower.includes("incumplido")) card.classList.add("card-incumplido");
+    }
+
+    window.addEventListener("click", (event) => {
+      if (!event.target.closest('.custom-select-wrapper')) {
+        const dropdowns = document.querySelectorAll(".custom-select-dropdown");
+        dropdowns.forEach(d => { d.style.display = "none"; });
+      }
+    });
+
+    function guardarFilaUnicaReposicion(numFila) {
+      const estado = document.getElementById(`status-${numFila}`).value;
+      const observacion = document.getElementById(`obs-${numFila}`).value.trim();
+      const imagen = imagenesCargadasMemoria[numFila] || null;
+
+      if (estado === "Pendiente") {
+        Swal.fire('Gestión Vacía', 'El estado está en Pendiente. Debes marcar Cumplido o Incumplido para registrar cambios.', 'warning');
+        return;
+      }
+      
+      if (estado === "Incumplido" && !observacion) {
+        Swal.fire('Observación Requerida', 'Si la tienda incumplió con la llamada de reposición, debes detallar el motivo obligatoriamente.', 'warning');
+        return;
+      }
+
+      Swal.fire({ 
+        title: 'Guardando...', 
+        allowOutsideClick: false, 
+        didOpen: () => Swal.showLoading(),
+        customClass: { popup: 'swal-glass-popup', container: 'swal-glass-backdrop' },
+        buttonsStyling: false
+      });
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if(res.success) {
+            Swal.fire({
+              title: '¡Éxito!',
+              text: 'Datos sincronizados con éxito.',
+              icon: 'success',
+              customClass: {
+                container: 'swal-glass-backdrop',
+                popup: 'swal-glass-popup',
+                title: 'swal-glass-title',
+                htmlContainer: 'swal-glass-text',
+                confirmButton: 'swal-glass-confirm'
+              },
+              buttonsStyling: false
+            }).then(() => cargarAgendaHoy());
+          } else {
+            Swal.fire({
+              title: 'Error',
+              text: res.message,
+              icon: 'error',
+              customClass: { popup: 'swal-glass-popup', container: 'swal-glass-backdrop' },
+              buttonsStyling: false
+            });
+          }
+        })
+        .actualizarEstadoReposicionConEvidencia(numFila, estado, observacion, imagen);
+    }
+
+  </script>
+
+</body>
+
+</html>

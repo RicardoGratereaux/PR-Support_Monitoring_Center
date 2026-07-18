@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Centro de Monitoreo</title>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <?!= include('Global_CSS'); ?>
+<?!= include('Global_JS'); ?>
+
+  <style>
+    
+
+    /* AJUSTE DE CONTENIDO */
+    .container {
+      max-width: 1200px;
+      margin: 85px auto 40px;
+      padding: 0 20px;
+    }
+
+    /* -------- CONTENEDOR DE CONTENIDO -------- */
+    .content-container {
+      padding: 30px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h2.section-title {
+      color: #f3f4f6;
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 25px;
+      border-left: 3px solid #deff9a;
+      padding-left: 12px;
+    }
+
+    h3.subsection-title {
+      color: #f3f4f6;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    /* -------- NUEVAS KPI CARDS GRID -------- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f3f4f6;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 700;
+      color: #f3f4f6;
+      letter-spacing: -0.5px;
+    }
+
+    .card .material-symbols-outlined {
+      font-size: 22px;
+      padding: 8px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-total {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .icon-incidencias {
+      background: rgba(168, 85, 247, 0.1);
+      color: #a855f7;
+    }
+
+    .icon-hoy {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+    }
+
+    .icon-pendientes {
+      background: rgba(250, 204, 21, 0.1);
+      color: #facc15;
+    }
+
+    .icon-aprobados {
+      background: rgba(222, 255, 154, 0.1);
+      color: #deff9a;
+    }
+
+    .icon-rechazados {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+    }
+
+    /* Margen de seguridad para la vista de analíticas */
+    .dashboard-container {
+      margin-top: 95px !important;
+      padding: 0 24px;
+    }
+
+    
+
+    /* -------- BOTÓN EDITAR REPOSICIÓN -------- */
+    .btn-editar-repo {
+      background: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-editar-repo:hover {
+      opacity: 0.85;
+    }
+
+    .btn-editar-repo:active {
+      opacity: 0.6;
+      transform: scale(0.96);
+    }
+
+    /* -------- ESTILOS DE BOTONES SUPERIORES (Estilo Neón) -------- */
+    .btn-exportar,
+    .btn-actualizar {
+      background: rgba(222, 255, 154, 0.05);
+      color: #deff9a;
+      border: 1px solid rgba(222, 255, 154, 0.4);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-exportar:hover,
+    .btn-actualizar:hover {
+      background: #deff9a;
+      color: #050505;
+      box-shadow: 0 0 15px rgba(222, 255, 154, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-approve {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s ease, transform 0.1s ease, background 0.2s ease;
+    }
+
+    .btn-approve:hover {
+      background: #bbf7d0;
+      opacity: 0.85;
+    }
+
+    .btn-approve:active {
+      opacity: 0.6;
+      transform: scale(0.96);
+    }
+
+    .btn-reject {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s ease, transform 0.1s ease, background 0.2s ease;
+    }
+
+    .btn-reject:hover {
+      background: #fecaca;
+      opacity: 0.85;
+    }
+
+    .btn-reject:active {
+      opacity: 0.6;
+      transform: scale(0.96);
+    }
+
+    /* Botones de Acción Modal (Estilo Dark/Neon) */
+    .btn-neon-danger {
+      background: rgba(239, 68, 68, 0.1) !important;
+      /* Fondo rojizo transparente */
+      color: #ef4444 !important;
+      /* Texto rojo */
+      border: 1px solid rgba(239, 68, 68, 0.3) !important;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-neon-danger:hover {
+      background: rgba(239, 68, 68, 0.2) !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-neon-success {
+      background: rgba(16, 185, 129, 0.1) !important;
+      /* Fondo verde transparente */
+      color: #10b981 !important;
+      /* Texto verde */
+      border: 1px solid rgba(16, 185, 129, 0.3) !important;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-neon-success:hover {
+      background: rgba(16, 185, 129, 0.2) !important;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+
+    /* =========================================
+   TABLA DE REPORTES (LIMPIA Y OSCURA)
+   ========================================= */
+    .table-container {
+      background: #0a0a0a;
+      border-radius: 12px;
+      border: 1px solid #27272a;
+      margin-bottom: 20px;
+      max-height: 420px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #111111;
+      color: #deff9a;
+      padding: 16px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #27272a;
+    }
+
+    td {
+      border-bottom: 1px solid #18181b;
+      padding: 14px 16px;
+      font-size: 14px;
+      vertical-align: middle;
+      color: #e4e4e7;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(222, 255, 154, 0.05);
+    }
+
+    /* --- SCROLLBAR PERSONALIZADO OSCURO --- */
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #0a0a0a;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #deff9a;
+    }
+
+    
+
+    
+
+    /* =========================================
+       CHARTS GRID (DARK MINIMALIST)
+       ========================================= */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 20px;
+      margin-top: 25px;
+      margin-bottom: 40px;
+    }
+
+    .chart {
+      width: 100%;
+      height: 280px;
+      background: #0a0a0a;
+      /* Fondo oscuro igual al de las tablas */
+      border: 1px solid #27272a;
+      /* Borde oscuro sutil */
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      /* Sombra de profundidad */
+      box-sizing: border-box;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Ligero destello neón al pasar el mouse por encima de un gráfico */
+    .chart:hover {
+      border-color: rgba(222, 255, 154, 0.3);
+    }
+
+    @media(max-width: 500px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart {
+        height: 250px;
+      }
+
+      .review-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+
+    
+
+    
+
+    .visor-pdf-container {
+      margin-top: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <?!= include('Global_Navbar', 'dashboard'); ?>
+
+  <div class="dashboard-container">
+
+    <h2 class="section-title" style="display: flex; align-items: center; gap: 5px;">
+      Análisis y Auditoría de Reportes
+    </h2>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <h3>Total</h3><span class="material-symbols-outlined icon-total">folder_open</span>
+        </div>
+        <h2 id="total">0</h2>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Incidencias</h3><span class="material-symbols-outlined icon-incidencias">warning</span>
+        </div>
+        <h2 id="incidencias">0</h2>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Hoy</h3><span class="material-symbols-outlined icon-hoy">calendar_today</span>
+        </div>
+        <h2 id="hoy">0</h2>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Pendientes</h3><span class="material-symbols-outlined icon-pendientes">schedule</span>
+        </div>
+        <h2 id="pendientes">0</h2>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Aprobados</h3><span class="material-symbols-outlined icon-aprobados">check_circle</span>
+        </div>
+        <h2 id="aprobados">0</h2>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Rechazados</h3><span class="material-symbols-outlined icon-rechazados">cancel</span>
+        </div>
+        <h2 id="rechazados">0</h2>
+      </div>
+    </div>
+
+    <h3 class="subsection-title">
+      Control de Reportes
+    </h3>
+
+    <div class="toolbar-tabla">
+      <div class="filtros-grupo">
+        <div class="input-busqueda-wrapper">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" id="filtroTexto" class="input-filtro" placeholder="Buscar empleado, tienda o ID..." oninput="aplicarFiltros()">
+        </div>
+
+        <select id="filtroAno" class="select-filtro" onchange="aplicarFiltros()">
+        <option value="">Todos los Años</option>
+      </select>
+
+        <select id="filtroMes" class="select-filtro" onchange="aplicarFiltros()">
+        <option value="">Todos los Meses</option>
+      </select>
+        <select id="filtroOperacion" class="select-filtro" onchange="aplicarFiltros()">
+        <option value="">Todas las Operaciones</option>
+        <option value="farmacias">Farmacias</option>
+        <option value="chinatown">Chinatown</option>
+        <option value="exchange">Exchange</option>
+      </select>
+        <select id="filtroEstado" class="select-filtro" onchange="aplicarFiltros()">
+        <option value="">Todos los Estados</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="Rechazado">Rechazado</option>
+      </select>
+      </div>
+      <button class="btn-exportar" onclick="exportarExcel()">
+      <span class="material-symbols-outlined">download</span> Exportar Excel
+    </button>
+    </div>
+
+    <div class="table-container">
+      <table id="tablaReportes">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Operación</th>
+            <th>Tienda</th>
+            <th>Tipo Reporte</th>
+            <th>Empleado</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="charts-grid">
+      <div id="chart_tiendas" class="chart"></div>
+      <div id="chart_empleados" class="chart"></div>
+      <div id="chart_operaciones" class="chart"></div>
+      <div id="chart_tipos" class="chart"></div>
+    </div>
+
+    <h3 class="subsection-title" style="display: flex; align-items: center; gap: 10px;">
+      Auditoría de Reposición Diaria
+    </h3>
+
+    <div class="toolbar-tabla">
+      <div class="filtros-grupo">
+        <div class="input-busqueda-wrapper">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" id="buscarRepoRepo" class="input-filtro" placeholder="Filtrar por sucursal..." oninput="filtrarTablaRepo()">
+        </div>
+      </div>
+      <button class="btn-actualizar" onclick="cargarReposicionDashboard()">
+      <span class="material-symbols-outlined" style="font-size: 18px;">refresh</span> Actualizar Tabla
+    </button>
+    </div>
+
+    <div class="table-container">
+      <table id="tablaReposicionSupervisor">
+        <thead>
+          <tr>
+            <th>Sucursal</th>
+            <th style="text-align: center;">Horario</th>
+            <th style="text-align: center;">Estatus Actual</th>
+            <th>Observación del Monitor</th>
+            <th style="text-align: center;">Evidencia</th>
+            <th style="text-align: center;">Acción Supervisor</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoTablaReposicion">
+          <tr>
+            <td colspan="6" style="text-align: center; color: #6b7280; font-style: italic;">
+              Cargando agenda de protocolos de hoy...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <div id="modalRevision" class="modal-overlay">
+    <div class="modal-content">
+      <span class="material-symbols-outlined close-modal" onclick="cerrarModal()">close</span>
+
+      <div class="modal-header-info">
+        <div>
+          <h2 id="modalId" style="margin:0; color:#f3f4f6;">REP-0000</h2>
+          <p id="modalFecha" style="margin:5px 0 0; color:#6b7280; font-size:14px; font-weight: 500;"></p>
+        </div>
+        <div id="modalBadgeStatus"></div>
+      </div>
+
+      <div class="review-grid">
+        <div>
+          <div class="info-label">Operación y Tienda</div>
+          <div id="modalTienda" class="info-value">-</div>
+
+          <div class="info-label">Tipo de Reporte</div>
+          <div id="modalTipo" class="info-value">-</div>
+
+          <div class="info-label">Empleado / Monitor</div>
+          <div id="modalEmpleado" class="info-value">-</div>
+        </div>
+        <div>
+          <div class="info-label">Detalles y Observaciones del Monitor</div>
+          <div id="modalObsMonitor"
+            style="font-size:14px; line-height:1.6; background:#111111; padding:15px; border-radius:8px; border: 1px solid #27272a; color: #e4e4e7;">
+            -</div>
+        </div>
+      </div>
+
+      <div class="evidence-box" style="margin-top:25px;">
+        <div class="info-label">Evidencias Adjuntas</div>
+        <div id="listaEvidencias" style="display:flex; flex-direction: column; gap:10px; margin-top:10px;"></div>
+
+        <div id="visorPDF" class="visor-pdf-container"></div>
+      </div>
+
+      <div class="review-actions">
+        <div class="info-label">Resolución del Supervisor (Observaciones)</div>
+        <textarea id="obsSupervisor" class="obs-textarea" placeholder="Escribe tus comentarios aquí para que el monitor sepa el motivo de tu decisión..."></textarea>
+
+        <div class="button-group">
+          <button id="btnRechazar" class="btn-neon-danger" onclick="procesarRevision('rechazar')">
+    <span class="material-symbols-outlined">cancel</span> Rechazar
+  </button>
+          <button id="btnAprobar" class="btn-neon-success" onclick="procesarRevision('aprobar')">
+    <span class="material-symbols-outlined">check_circle</span> Aprobar Reporte
+  </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let reportesOriginales = [];
+    let idReporteSeleccionado = null;
+    window.datosFiltradosActuales = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ya no necesitamos cargar Google Charts, Chart.js arranca solo
+      recargarTodo();
+      cargarReposicionDashboard();
+    });
+
+    function recargarTodo() {
+      cargarReportes(); 
+    }
+
+    function cargarReportes() {
+      google.script.run.withSuccessHandler(res => {
+        try {
+          reportesOriginales = JSON.parse(res);
+          generarFiltrosFechaDinamicos(reportesOriginales);
+          aplicarFiltros(); 
+        } catch (e) {
+          console.error("Error al inicializar reportes:", e);
+          renderTabla([]);
+        }
+      }).getReportes();
+    }
+
+    function generarFiltrosFechaDinamicos(reportes) {
+      const selectAno = document.getElementById("filtroAno");
+      const selectMes = document.getElementById("filtroMes");
+      
+      let anosUnicos = new Set();
+      let mesesUnicos = new Set();
+      
+      reportes.forEach(r => {
+        if (r.fecha) {
+          const fechaObj = new Date(r.fecha);
+          if (!isNaN(fechaObj.getTime())) { 
+            anosUnicos.add(fechaObj.getFullYear());
+            mesesUnicos.add(fechaObj.getMonth() + 1); 
+          }
+        }
+      });
+      
+      const anosOrdenados = Array.from(anosUnicos).sort((a, b) => b - a);
+      anosOrdenados.forEach(ano => {
+        let opt = document.createElement("option");
+        opt.value = ano;
+        opt.textContent = ano;
+        selectAno.appendChild(opt);
+      });
+      
+      const nombresMeses = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio",
+        7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+      };
+      
+      const mesesOrdenados = Array.from(mesesUnicos).sort((a, b) => a - b);
+      mesesOrdenados.forEach(numMes => {
+        let opt = document.createElement("option");
+        opt.value = numMes;
+        opt.textContent = nombresMeses[numMes];
+        selectMes.appendChild(opt);
+      });
+    }
+
+    function aplicarFiltros() {
+      const texto = document.getElementById("filtroTexto").value.toLowerCase();
+      const operacion = document.getElementById("filtroOperacion").value.toLowerCase();
+      const estado = document.getElementById("filtroEstado").value.toLowerCase();
+      const anoSeleccionado = document.getElementById("filtroAno") ? document.getElementById("filtroAno").value : "";
+      const mesSeleccionado = document.getElementById("filtroMes") ? document.getElementById("filtroMes").value : "";
+
+      const reportesFiltrados = reportesOriginales.filter(r => {
+        const matchesTexto = 
+          r.id.toLowerCase().includes(texto) || 
+          (r.tienda && r.tienda.toLowerCase().includes(texto)) || 
+          (r.empleado && r.empleado.toLowerCase().includes(texto)) ||
+          (r.tipoReporte && r.tipoReporte.toLowerCase().includes(texto));
+
+        const matchesOperacion = operacion === "" || (r.empresa && r.empresa.toLowerCase() === operacion);
+        const matchesEstado = estado === "" || (r.estado && r.estado.toLowerCase() === estado);
+
+        let matchesAno = true;
+        let matchesMes = true;
+        if (r.fecha) {
+          const fechaObj = new Date(r.fecha);
+          if (anoSeleccionado !== "") { matchesAno = fechaObj.getFullYear().toString() === anoSeleccionado; }
+          if (mesSeleccionado !== "") { matchesMes = (fechaObj.getMonth() + 1).toString() === mesSeleccionado; }
+        } else if (anoSeleccionado !== "" || mesSeleccionado !== "") {
+          matchesAno = false; 
+        }
+
+        return matchesTexto && matchesOperacion && matchesEstado && matchesAno && matchesMes;
+      });
+
+      renderTabla(reportesFiltrados);
+      window.datosFiltradosActuales = reportesFiltrados; 
+      actualizarDashboardVisual(reportesFiltrados);
+    }
+
+    function actualizarDashboardVisual(datos) {
+      let tiendasCount = {};
+      let empleadosCount = {};
+      let operacionesCount = {};
+      let tiposCount = {};
+
+      let pendientes = 0, aprobados = 0, rechazados = 0, hoy = 0, incidencias = 0;
+      const fechaHoyStr = new Date().toLocaleDateString();
+
+      datos.forEach(r => {
+        const est = (r.estado || "Pendiente").toLowerCase();
+        if (est.includes("pendiente")) pendientes++;
+        if (est.includes("aprobado")) aprobados++;
+        if (est.includes("rechazado")) rechazados++;
+        
+        if (r.fecha && new Date(r.fecha).toLocaleDateString() === fechaHoyStr) hoy++;
+        
+        const tipo = (r.tipoReporte || "Otro");
+        if (tipo.toLowerCase().includes("robo") || tipo.toLowerCase().includes("incidencia") || tipo.toLowerCase().includes("emergencia")) incidencias++;
+
+        const tienda = r.tienda || "Sin Tienda";
+        const empleado = r.empleado || "Desconocido";
+        const operacion = r.empresa ? r.empresa.charAt(0).toUpperCase() + r.empresa.slice(1) : "General";
+
+        tiendasCount[tienda] = (tiendasCount[tienda] || 0) + 1;
+        empleadosCount[empleado] = (empleadosCount[empleado] || 0) + 1;
+        operacionesCount[operacion] = (operacionesCount[operacion] || 0) + 1;
+        tiposCount[tipo] = (tiposCount[tipo] || 0) + 1;
+      });
+
+      document.getElementById("total").innerText = datos.length;
+      document.getElementById("pendientes").innerText = pendientes;
+      document.getElementById("aprobados").innerText = aprobados;
+      document.getElementById("rechazados").innerText = rechazados;
+      document.getElementById("hoy").innerText = hoy;
+      document.getElementById("incidencias").innerText = incidencias;
+
+      drawChart(tiendasCount, "chart_tiendas", "Distribución por Tienda", 'BarChart');
+      drawChart(empleadosCount, "chart_empleados", "Reportes por Empleado", 'ColumnChart');
+      drawChart(operacionesCount, "chart_operaciones", "Distribución por Operación", 'PieChart');
+      drawChart(tiposCount, "chart_tipos", "Casos por Tipo de Reporte", 'ColumnChart');
+    }
+
+function drawChart(obj, elementId, title, type = 'PieChart') {
+  const labels = Object.keys(obj);
+  const dataValues = Object.values(obj);
+
+  let chartJsType = 'bar'; 
+  let extraOptions = {};
+
+  if (type === 'PieChart') {
+    chartJsType = 'doughnut';
+  } else if (type === 'BarChart') {
+    chartJsType = 'bar';
+    extraOptions = { indexAxis: 'y' }; // Barras horizontales
+  } else if (type === 'ColumnChart') {
+    chartJsType = 'bar'; // Barras verticales
+  }
+
+  const container = document.getElementById(elementId);
+  if (!container) return;
+
+  // 🛑 TRUCO SALVAVIDAS: Si tu HTML todavía tiene <div>, 
+  // le inyectamos el <canvas> dinámicamente para que Chart.js no falle.
+  let canvas = container.tagName.toLowerCase() === 'canvas' ? container : container.querySelector('canvas');
+  
+  if (!canvas) {
+    container.innerHTML = ''; // Borramos cualquier residuo de Google
+    canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+    container.style.position = 'relative'; // Vital para que no se desborde la gráfica
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  const config = {
+    type: chartJsType,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: title,
+        data: dataValues,
+        backgroundColor: chartJsType === 'doughnut' 
+          ? ['#deff9a', '#7c3aed', '#3b82f6', '#10b981', '#f43f5e', '#fbbf24', '#a855f7', '#ec4899'] 
+          : '#deff9a', 
+        borderColor: chartJsType === 'doughnut' ? '#0a0a0a' : 'transparent',
+        borderWidth: 2,
+        borderRadius: chartJsType !== 'doughnut' ? 6 : 0, 
+        
+        barPercentage: 0.5,        // Reduce el ancho de la barra para crear un "hueco" entre ellas
+        categoryPercentage: 0.8,   // Controla el margen del grupo de barras
+        maxBarThickness: 25        // Evita que sean barras gigantes si filtras y quedan solo 1 o 2 datos
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: chartJsType === 'doughnut', 
+          position: 'top',
+          labels: { color: '#e4e4e7', font: { size: 12, family: 'sans-serif' } }
+        },
+        tooltip: { 
+          backgroundColor: '#18181b',
+          titleColor: '#ffffff',
+          bodyColor: '#deff9a',
+          borderColor: '#27272a',
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 6
+        }
+      },
+      scales: chartJsType === 'doughnut' ? {} : {
+        x: {
+          grid: { display: false }, 
+          ticks: { color: '#9ca3af', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: '#18181b' }, 
+          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 1 }, 
+          border: { dash: [4, 4] } 
+        }
+      },
+      ...extraOptions
+    }
+  };
+  
+  // Destruimos el gráfico anterior si estás filtrando para que no se bugee
+  if (window['chart_' + elementId]) {
+    window['chart_' + elementId].destroy();
+  }
+  
+  window['chart_' + elementId] = new Chart(ctx, config);
+}
+
+    function renderTabla(datos) {
+      const tbody = document.querySelector("#tablaReportes tbody");
+      tbody.innerHTML = "";
+      
+      if(!datos || datos.length === 0){
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color: #6b7280;">No hay reportes que coincidan con los filtros</td></tr>`;
+        return;
+      }
+
+      datos.forEach(r => {
+        let estadoClass = "badge-default";
+        const estadoLower = (r.estado || "").toLowerCase();
+        if(estadoLower.includes("aprobado")) estadoClass = "badge-aprobado";
+        else if(estadoLower.includes("rechazado")) estadoClass = "badge-rechazado";
+        else if(estadoLower.includes("pendiente")) estadoClass = "badge-pendiente";
+
+        const empresaRaw = r.empresa || "General";
+        const operacion = empresaRaw.charAt(0).toUpperCase() + empresaRaw.slice(1);
+
+        const tr = document.createElement("tr");
+        tr.onclick = () => abrirModalRevision(r.id);
+        tr.innerHTML = `
+          <td><strong>${r.id}</strong></td>
+          <td>${r.fecha ? new Date(r.fecha).toLocaleDateString() : ""}</td>
+          <td><span style="font-weight: 600; color: #a6c369;">${operacion}</span></td>
+          <td>${r.tienda || ""}</td>
+          <td>${r.tipoReporte || ""}</td>
+          <td>${r.empleado || ""}</td>
+          <td><span class="badge ${estadoClass}">${r.estado || "Pendiente"}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalRevision(id) {
+      const r = reportesOriginales.find(item => item.id === id);
+      if(!r) return;
+
+      idReporteSeleccionado = id;
+      const empresaRaw = r.empresa || "General";
+      const operacion = empresaRaw.charAt(0).toUpperCase() + empresaRaw.slice(1);
+
+      document.getElementById("modalId").innerText = r.id;
+      document.getElementById("modalEmpleado").innerHTML = `<strong>${r.empleado}</strong><br><span style="font-size:12px; color:#6b7280;">${r.correoMonitor || "Sin correo"}</span>`;
+      document.getElementById("modalFecha").innerText = r.fecha ? new Date(r.fecha).toLocaleString() : "";
+      document.getElementById("modalTienda").innerHTML = `<strong>${operacion}</strong> - ${r.tienda} <br><span style="font-size:13px; color:#6b7280;">Posición: ${r.posicion}</span>`;
+      document.getElementById("modalTipo").innerHTML = `<strong>${r.tipoReporte}</strong>`;
+      
+      const obsLimpia = (r.observacionesMonitor || "Sin observaciones registradas.").replace(/\n/g, '<br>');
+      document.getElementById("modalObsMonitor").innerHTML = obsLimpia;
+      document.getElementById("obsSupervisor").value = r.observacionSupervisor || "";
+
+      let bClass = "badge-pendiente";
+      const estadoLower = (r.estado || "").toLowerCase();
+      if(estadoLower.includes("aprobado")) bClass = "badge-aprobado";
+      else if(estadoLower.includes("rechazado")) bClass = "badge-rechazado";
+      document.getElementById("modalBadgeStatus").innerHTML = `<span class="badge ${bClass}" style="font-size:14px; padding: 6px 12px;">${r.estado}</span>`;
+
+      const evCont = document.getElementById("listaEvidencias");
+      const visor = document.getElementById("visorPDF");
+      visor.style.display = "none"; 
+      visor.innerHTML = "";
+      
+      if (r.carpeta && r.carpeta !== "#") {
+        evCont.innerHTML = `<span style="color: #6b7280; font-size: 13px;">Buscando evidencias en Google Drive... <span class="material-symbols-outlined" style="font-size:14px; animation: spin 1s linear infinite;">sync</span></span>`;
+        
+        google.script.run
+          .withSuccessHandler(archivos => {
+            if(archivos.length === 0) {
+              evCont.innerHTML = `<a href="${r.carpeta}" target="_blank" style="text-decoration:none; color:#1d4ed8; font-weight:600; font-size:14px;"> Abrir Carpeta Vacía en Drive</a>`;
+              return;
+            }
+            
+            let htmlArchivos = "";
+              archivos.forEach(a => {
+              if (a.mimeType === 'application/pdf') {
+                htmlArchivos += `
+                  <div style="display:flex; align-items:center; gap:10px; background: #0a0a0a; padding: 8px 12px; border: 1px solid #27272a; border-radius: 8px;">
+                    <button onclick="verPreviewPDF('${a.id}')" class="btn-preview" title="Vista rápida">
+                      <span class="material-symbols-outlined" style="font-size:18px;">visibility</span> Ver PDF
+                    </button>
+                    <a href="${a.url}" target="_blank" style="color: #e4e4e7; text-decoration: none; font-weight: 500;">📄 ${a.name}</a>
+                  </div>`;
+              } else {
+                htmlArchivos += `
+                  <div style="display:flex; align-items:center; gap:10px; background: #0a0a0a; padding: 8px 12px; border: 1px solid #27272a; border-radius: 8px;">
+                    <a href="${a.url}" target="_blank" style="color: #e4e4e7; text-decoration: none; font-weight: 500;">📎 ${a.name}</a>
+                  </div>`;
+              }
+            });
+            
+            htmlArchivos += `<div style="margin-top: 8px;"><a href="${r.carpeta}" target="_blank" style="color: #3b82f6; font-size: 13px; font-weight: 600; text-decoration: none;">Abrir todos en Google Drive</a></div>`;
+            evCont.innerHTML = htmlArchivos;
+          })
+          .obtenerArchivosDrive(r.carpeta);
+      } else {
+        evCont.innerHTML = `<span style="color: #dc2626; font-size: 14px; font-weight:600;">Sin carpeta de evidencias.</span>`;
+      }
+
+      document.getElementById("modalRevision").style.display = "flex";
+    }
+
+    function verPreviewPDF(idArchivo) {
+      const visor = document.getElementById("visorPDF");
+      
+      if (visor.dataset.archivoActual === idArchivo && visor.style.display === "block") {
+        cerrarPreviewPDF();
+        return;
+      }
+
+      visor.dataset.archivoActual = idArchivo;
+      visor.style.display = "block";
+      
+      visor.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #1f2937; color: white; padding: 10px 15px;">
+          <span style="font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #93c5fd;">picture_as_pdf</span> 
+            Vista Previa del Documento
+          </span>
+          <button onclick="cerrarPreviewPDF()" style="background: #f9fafb; border: none; color: #4b5563; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; transition: 0.2s;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">close</span> Cerrar
+          </button>
+        </div>
+        <iframe src="https://drive.google.com/file/d/${idArchivo}/preview" width="100%" height="450px" style="border:none; display: block; background: #f3f4f6;"></iframe>
+      `;
+    }
+
+    function cerrarPreviewPDF() {
+      const visor = document.getElementById("visorPDF");
+      visor.style.display = "none";
+      visor.innerHTML = "";
+      visor.dataset.archivoActual = ""; 
+    }
+
+    function cerrarModal() {
+      document.getElementById("modalRevision").style.display = "none";
+    }
+
+    function procesarRevision(nuevoEstado) {
+      const obs = document.getElementById("obsSupervisor").value.trim();
+      
+      if(nuevoEstado === "Rechazado" && obs === "") {
+        Swal.fire("Revisión Incompleta", "Debes escribir el motivo del rechazo en la observación del supervisor para que el monitor sepa qué corregir.", "warning");
+        return;
+      }
+
+      Swal.fire({ title: 'Procesando decisión...', text: 'Registrando auditoría y enviando correo al monitor.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      google.script.run.withSuccessHandler(() => {
+        const funcionFinal = nuevoEstado === "Aprobado" ? "aprobarReporte" : "rechazarReporte";
+        
+        google.script.run
+          .withSuccessHandler(res => {
+            if(res.success) {
+              Swal.fire("¡Completado!", `El reporte ha sido <b>${nuevoEstado}</b> exitosamente.`, "success");
+              cerrarModal();
+              recargarTodo();
+            } else {
+              Swal.fire("Error del Servidor", res.message, "error");
+            }
+          })
+          .withFailureHandler(err => Swal.fire("Error de red", err.message, "error"))
+          [funcionFinal](idReporteSeleccionado);
+          
+      }).withFailureHandler(err => Swal.fire("Error", err.message, "error")).agregarObservacionSupervisor(idReporteSeleccionado, obs);
+    }
+
+    function exportarExcel() {
+      const datos = window.datosFiltradosActuales || reportesOriginales;
+      
+      if (datos.length === 0) {
+        Swal.fire('Sin datos', 'No hay registros para exportar con los filtros actuales.', 'info');
+        return;
+      }
+
+      const encabezados = ["ID", "Fecha", "Operación", "Tienda", "Posición", "Tipo", "Empleado", "Estado", "Obs Monitor", "Obs Supervisor"];
+      let csvContent = "\uFEFF"; 
+      csvContent += encabezados.join(",") + "\n";
+
+      datos.forEach(r => {
+        const fila = [
+          r.id,
+          new Date(r.fecha).toLocaleDateString(),
+          r.empresa,
+          r.tienda,
+          r.posicion,
+          r.tipoReporte,
+          r.empleado,
+          r.estado,
+          `"${(r.observacionesMonitor || "").replace(/"/g, '""')}"`,
+          `"${(r.observacionSupervisor || "").replace(/"/g, '""')}"`
+        ];
+        csvContent += fila.join(",") + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      
+      const fechaHoy = new Date().toLocaleDateString().replace(/\//g, "-");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Auditoria_Reportes_${fechaHoy}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function cargarReposicionDashboard() {
+      const cuerpo = document.getElementById("cuerpoTablaReposicion");
+      if(!cuerpo) return;
+      
+      google.script.run.withSuccessHandler(function(resultadoJson) {
+        const datos = JSON.parse(resultadoJson);
+        cuerpo.innerHTML = "";
+        
+        if (datos.length === 0) {
+          cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#6b7280; padding:20px;">No hay protocolos programados en la hoja externa para el día de hoy.</td></tr>`;
+          return;
+        }
+        
+        datos.forEach(function(item) {
+          let badgeClass = "badge-default";
+          if (item.estado === "Cumplido") badgeClass = "badge-aprobado";
+          if (item.estado === "Incumplido") badgeClass = "badge-rechazado";
+          if (item.estado === "Pendiente") badgeClass = "badge-pendiente";
+          
+          const linkEvidencia = item.evidenciaUrl ? `<a href="${item.evidenciaUrl}" target="_blank" style="color:#2563eb; display:inline-flex; align-items:center; gap:4px; font-weight:600; text-decoration:none;"><span class="material-symbols-outlined" style="font-size:18px;">image</span> Ver</a>` : `<span style="color:#9ca3af; font-size:13px;">Ninguna</span>`;
+          
+          cuerpo.innerHTML += `
+            <tr>
+              <td><strong>${item.tienda}</strong></td>
+              <td style="text-align: center; color: #a6c369;">${item.horaProgramada} hrs</td>
+              <td style="text-align: center;">
+                <span class="badge ${badgeClass}">${item.estado}</span>
+              </td>
+              <td style="color: #4b5563; max-width: 250px; white-space: normal; word-wrap: break-word; line-height: 1.4;">${item.observacion || '<span style="color:#9ca3af; font-style:italic;">Sin notas</span>'}</td>
+              <td style="text-align: center;">${linkEvidencia}</td>
+              <td style="text-align: center;">
+                <button onclick="forzarCambioEstatusRepo(${item.numFila}, '${item.tienda}')" class="btn-editar-repo">
+                  <span class="material-symbols-outlined" style="font-size:16px;">edit_square</span> Editar
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      }).getCalendarioReposicionHoy();
+    }
+
+    function forzarCambioEstatusRepo(numFila, nombreTienda) {
+      Swal.fire({
+        title: 'Corregir Reposición',
+        text: `Modificar estatus para la sucursal: ${nombreTienda}`,
+        icon: 'warning',
+        showCancelButton: true,
+        html: `
+          <div style="margin-top: 10px; text-align: left;">
+            <label style="font-weight: 600; font-size: 14px; color: #374151;">Nuevo Estatus:</label>
+            <select id="swal-select-status" class="swal2-input select-filtro" style="width: 80%; margin: 8px auto; display: block; font-size: 14px;">
+              <option value="Cumplido">Cumplido</option>
+              <option value="Incumplido">Incumplido</option>
+              <option value="Pendiente">Pendiente</option>
+            </select>
+            <label style="font-weight: 600; font-size: 14px; color: #374151; margin-top: 10px; display: block;">Observación de Auditoría:</label>
+            <textarea id="swal-text-obs" class="swal2-textarea obs-textarea" placeholder="Escribe la nota de corrección aquí..." style="width: 80%; margin: 8px auto; display: block; height: 80px; font-size: 14px;"></textarea>
+          </div>
+        `,
+        confirmButtonColor: '#1e3a8a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Guardar Corrección',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+          return {
+            status: document.getElementById('swal-select-status').value,
+            obs: document.getElementById('swal-text-obs').value
+          }
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+          
+          google.script.run.withSuccessHandler(function(res) {
+            if (res.success) {
+              Swal.fire('¡Corregido!', 'La bitácora externa fue actualizada con éxito.', 'success');
+              cargarReposicionDashboard(); 
+            } else {
+              Swal.fire('Error', res.message, 'error');
+            }
+          }).actualizarEstadoReposicionConEvidencia(numFila, result.value.status, "[Nota Supervisor]: " + result.value.obs, null);
+        }
+      });
+    }
+
+    function filtrarTablaRepo() {
+      const input = document.getElementById("buscarRepoRepo");
+      const filter = input.value.toLowerCase();
+      const table = document.getElementById("tablaReposicionSupervisor");
+      if(!table) return;
+      const tr = table.getElementsByTagName("tr");
+
+      for (let i = 1; i < tr.length; i++) {
+        const td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          const txtValue = td.textContent || td.innerText;
+          tr[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+        }       
+      }
+    }
+  </script>
+</body>
+
+</html>

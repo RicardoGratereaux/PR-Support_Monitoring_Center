@@ -1,0 +1,54 @@
+<div class="top-bar">
+  <div class="top-bar-brand">
+    <button class="burger-btn" onclick="openSidenav()">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <span>Centro de Monitoreo</span>
+  </div>
+</div>
+
+<div id="mySidenav" class="sidenav">
+  <div class="sidenav-header">
+    <span class="sidenav-title">Navegación</span>
+    <button class="close-sidenav-btn" onclick="closeSidenav()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="sidenav-links">
+
+    <span class="text-muted sidenav-links" > Espacio Monitores </span>
+    <a href="<?= baseUrl ?>?page=index" target="_top" class="nav-link <?= (paginaActiva === 'index') ? 'active' : '' ?>">
+      <span class="material-symbols-outlined">edit_document</span> Nuevo Reporte
+    </a>
+    <a href="<?= baseUrl ?>?page=misreportes" target="_top" class="nav-link <?= (paginaActiva === 'misreportes') ? 'active' : '' ?>">
+      <span class="material-symbols-outlined">folder_shared</span> Mis Reportes
+    </a>
+    <a href="<?= baseUrl ?>?page=reposicion" target="_top" class="nav-link <?= (paginaActiva === 'reposicion') ? 'active' : '' ?>">
+      <span class="material-symbols-outlined">phone_in_talk</span> Reposición Diaria
+    </a>
+
+      <span class="text-muted sidenav-links" > Espacio de supervisión </span>
+    <? if (usuarioEsSupervisor) { ?>
+      <a href="<?= baseUrl ?>?page=dashboard" target="_top" class="nav-link <?= (paginaActiva === 'dashboard') ? 'active' : '' ?>">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a href="<?= baseUrl ?>?page=horarios" target="_top" class="nav-link <?= (paginaActiva === 'horarios') ? 'active' : '' ?>">
+        <span class="material-symbols-outlined">edit_calendar</span>Horarios
+      </a>
+    <? } ?>
+  </div>
+</div>
+
+<div id="sidenavOverlay" class="sidenav-overlay" onclick="closeSidenav()"></div>
+
+<script>
+function openSidenav() {
+  document.getElementById("mySidenav").classList.add("open");
+  document.getElementById("sidenavOverlay").classList.add("show");
+}
+
+function closeSidenav() {
+  document.getElementById("mySidenav").classList.remove("open");
+  document.getElementById("sidenavOverlay").classList.remove("show");
+}
+</script>

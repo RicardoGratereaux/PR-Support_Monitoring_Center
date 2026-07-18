@@ -1,0 +1,649 @@
+<script>
+    // TODO: TODOS_LOS_EMPLEADOS should come from backend
+    const TODOS_LOS_EMPLEADOS = ["Angel", "Daniel", "Gary", "Jose Luis", "Britniel", "Maxwell", "Jelissa", "Omar", "Diego", "Katherine", "Oliver", "Ricardo"];
+
+    let portapapelesTurnos = null;
+
+    function escaparHTML(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(match) { const mapa = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }; return mapa[match]; });
+    }
+
+    function manejarErrorServidor(err) {
+      const msg = err && err.message ? err.message : "Ocurrió un error inesperado al contactar con el servidor.";
+      Swal.fire({ title: "Error del Servidor", text: msg, icon: "error", customClass: { popup: 'swal-dark-popup' }, background: 'transparent' });
+    }
+
+    function formatearFechaLocal(fechaActual) {
+      const yyyy = fechaActual.getFullYear(); const mm = String(fechaActual.getMonth() + 1).padStart(2, '0'); const dd = String(fechaActual.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function mostrarModalSincronizando(titulo = 'Sincronizando...') {
+      Swal.fire({
+        title: titulo,
+        html: `<div style="color: #a1a1aa; font-size: 13px; margin-top: 5px;">Guardando de forma segura en la base de datos...</div><div class="progress-container-swal"><div id="loading-bar" class="progress-bar-swal"></div></div>`,
+        background: 'transparent', customClass: { popup: 'swal-dark-popup' }, allowOutsideClick: false, allowEscapeKey: false, showConfirmButton: false,
+        didOpen: () => {
+          const bar = document.getElementById('loading-bar'); if (!bar) return;
+          let progreso = 0;
+          const intervalo = setInterval(() => {
+            if (progreso < 50) { progreso += 10; } else if (progreso < 85) { progreso += 3; } else if (progreso < 93) { progreso += 1; } else { clearInterval(intervalo); }
+            bar.style.width = progreso + '%';
+          }, 200);
+          bar.dataset.intervalId = intervalo;
+        }
+      });
+    }
+
+    function completarBarraYMostrarExito(tituloExito, textoExito) {
+      const bar = document.getElementById('loading-bar');
+      if (bar) {
+        if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId));
+        bar.style.width = '100%'; bar.style.background = '#6ee7b7'; bar.style.boxShadow = '0 0 15px #6ee7b7';
+      }
+      setTimeout(() => {
+        Swal.fire({ title: tituloExito, text: textoExito, icon: 'success', customClass: { popup: 'swal-dark-popup' }, background: 'transparent', confirmButtonColor: 'rgba(255,255,255,0.1)' });
+      }, 400);
+    }
+
+    const HORA_INICIO_GRID = 7; const TOTAL_HORAS_GRID = 13;
+    let turnosActuales = []; let filtroEstadoLiveActual = 'todos'; 
+    let memoriaContadores = { working: -1, break: -1, inactive: -1 };
+    let memoriaAvataresHTML = ""; 
+
+    const EXCEPCIONES = ["Licencia", "Vacaciones", "Libre Cumpleaños", "Clases", "Ausencia", "Feriado", "Dia Libre"];
+    const ICONOS_EXCEPCION = { "Licencia": "medical_services", "Vacaciones": "flight_takeoff", "Libre Cumpleaños": "cake", "Clases": "school", "Ausencia": "person_off", "Feriado": "celebration", "Dia Libre": "weekend" };
+
+    let modoSeleccion = false; let turnosSeleccionados = []; let modoOrden = false; let draggedRow = null;
+
+    function handleTrackHover(event, index) {
+      if (modoOrden || modoSeleccion) return; // No mostrar si estamos editando en lote
+      const item = turnosActuales[index];
+      if (!item) return;
+
+      const tooltip = document.getElementById('custom-tooltip');
+      if (!tooltip) return;
+
+      let html = `<div class="tooltip-header"><span class="material-symbols-outlined" style="font-size:16px;">person</span> ${escaparHTML(item.nombre)}</div><div class="tooltip-body">`;
+      
+      if (EXCEPCIONES.includes(item.entrada)) {
+        html += `<div class="tooltip-row"><strong style="color:#fca5a5;">Estado:</strong> ${item.entrada}</div>`;
+      } else {
+        html += `<div class="tooltip-row"><strong style="color:#deff9a;">Horario:</strong> ${item.entrada} a ${item.salida}</div>`;
+        if (item.breakIn && item.breakOut) {
+          html += `<div class="tooltip-row"><strong style="color:#fcd34d;">Break:</strong> ${item.breakIn} a ${item.breakOut}</div>`;
+        }
+      }
+
+      if (item.nota && item.nota.trim() !== "") {
+        html += `<div class="tooltip-nota"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle; margin-right:4px;">edit_note</span>${escaparHTML(item.nota)}</div>`;
+      }
+      html += `</div>`;
+
+      tooltip.innerHTML = html;
+      tooltip.classList.add('visible');
+
+      // Calcular posición para que siga al ratón sin salirse de la pantalla
+      let x = event.clientX + 15;
+      let y = event.clientY + 15;
+      if (x + 280 > window.innerWidth) x = window.innerWidth - 290;
+      if (y + 150 > window.innerHeight) y = event.clientY - tooltip.offsetHeight - 15;
+
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+    }
+
+    function ocultarTooltip() {
+      const tooltip = document.getElementById('custom-tooltip');
+      if (tooltip) tooltip.classList.remove('visible');
+    }
+
+    
+      }
+      setInterval(() => { actualizarDashboardVivo(); }, 1000);
+    });
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.timeline-row:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect(); const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset: offset, element: child }; else return closest;
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function cargarHorarios() {
+      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a');
+      const fechaInput = document.getElementById('fechaFiltro').value; const spanDia = document.getElementById('dia-semana-toolbar');
+      if (fechaInput && spanDia) { const partes = fechaInput.split('-'); const diaTexto = new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('es-ES', {weekday: 'long'}).toUpperCase(); spanDia.innerText = diaTexto; }
+      const contenedor = document.getElementById("contenedorRows");
+      if (contenedor) contenedor.innerHTML = `<div style="padding: 30px; color:#9ca3af; text-align:center; font-size:13px; width: 90%;">Buscando turnos en Google Sheets...</div>`;
+      google.script.run
+        .withSuccessHandler(function(datosDeLaHoja) { turnosActuales = Array.isArray(datosDeLaHoja) ? datosDeLaHoja : []; renderizarTimeline(turnosActuales); analizarCobertura(); })
+        .withFailureHandler(manejarErrorServidor)
+        .getHorariosPorFecha(fechaInput); 
+    }
+
+    function renderizarTimeline(lista) {
+      const contenedor = document.getElementById("contenedorRows"); if (!contenedor) return;
+      if (!Array.isArray(lista)) lista = []; contenedor.innerHTML = ""; filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a');
+      if (lista.length === 0) {
+        document.getElementById('liveDashboard').style.display = 'none';
+        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #71717a; font-size: 13px; background: rgba(255,255,255,0.01); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: #3f3f46; display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: #deff9a; font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
+        return;
+      }
+
+      let seleccionadosStr = turnosSeleccionados.map(String);
+      lista.forEach((item, index) => {
+        const row = document.createElement("div"); row.className = "timeline-row"; row.style.opacity = "0"; row.style.animation = `fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards`; row.style.animationDelay = `${index * 0.04}s`;
+        let barrasHTML = ""; let nombreEscapado = escaparHTML(item.nombre);
+        
+        // INDICADOR DE NOTA: Ahora está diseñado para ir al lado del nombre
+        let iconoNotaHtml = (item.nota && item.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:#fcd34d; cursor:help;" title="Tiene una nota en su turno">edit_note</span>` : '';
+
+        // BARRAS LIMPIAS: Ya no llevan el icono por dentro
+        if (EXCEPCIONES.includes(item.entrada)) {
+          let icono = ICONOS_EXCEPCION[item.entrada] || "event_busy";
+          barrasHTML = `<div class="block-excepcion"><span class="material-symbols-outlined" style="font-size: 15px; margin-right: 6px; margin-bottom: 2px;">${icono}</span>${item.entrada}</div>`;
+        } else if (item.breakIn && item.breakOut) {
+          const estiloTrabajo1 = calcularPosicion(item.entrada, item.breakIn); const estiloBreak = calcularPosicion(item.breakIn, item.breakOut); const estiloTrabajo2 = calcularPosicion(item.breakOut, item.salida);
+          barrasHTML = `<div class="block-laboral" style="${estiloTrabajo1}">${item.entrada} a ${item.breakIn}</div><div class="block-descanso" style="${estiloBreak}">BREAK</div><div class="block-laboral" style="${estiloTrabajo2}">${item.breakOut} a ${item.salida}</div>`;
+        } else {
+          const estiloCompleto = calcularPosicion(item.entrada, item.salida); 
+          barrasHTML = `<div class="block-laboral" style="${estiloCompleto}">${item.entrada} a ${item.salida}</div>`;
+        }
+        
+        let controlesExtras = "";
+        if (modoOrden) {
+          controlesExtras = `<div style="display:flex; align-items:center; margin-right:8px;"><span class="material-symbols-outlined drag-handle" style="font-size:20px;">drag_indicator</span></div>`;
+          row.draggable = true; row.setAttribute("data-id", item.id);
+          row.addEventListener("dragstart", function() { draggedRow = row; setTimeout(() => row.classList.add("dragging"), 0); }); row.addEventListener("dragend", function() { row.classList.remove("dragging"); draggedRow = null; sincronizarOrdenSilencioso(); });
+        } else if (modoSeleccion) {
+          const isChecked = seleccionadosStr.includes(String(item.id)) ? "checked" : "";
+          controlesExtras = `<div style="display:flex; align-items:center; margin-right:12px;"><input type="checkbox" class="checkbox-masivo" ${isChecked} onclick="event.stopPropagation(); toggleSeleccionTurno('${item.id}')"></div>`;
+        }
+        
+        let accionClick = (modoOrden || modoSeleccion) ? "" : `editarTurno(${index})`; 
+        let jsonNombre = JSON.stringify(item.nombre).replace(/"/g, '&quot;'); 
+        let clickPerfil = (modoOrden || modoSeleccion) ? "" : `verPerfilColaborador(${jsonNombre})`;
+        
+        // El icono de nota se inserta después del nombre del colaborador
+        row.innerHTML = `
+          <div class="colaborador-info" style="${modoOrden || modoSeleccion ? 'margin-left:-5px;' : 'cursor:pointer;'}" onclick="${clickPerfil}" title="Ver historial de ${nombreEscapado}">
+            ${controlesExtras}<img src="${item.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(item.nombre)+'&background=27272a&color=fff'}" alt="Foto"><span class="colaborador-name">${nombreEscapado}</span>${iconoNotaHtml}
+          </div>
+          <div class="shift-track" onclick="${accionClick}" onmousemove="handleTrackHover(event, ${index})" onmouseleave="ocultarTooltip()" style="${modoOrden || modoSeleccion ? 'cursor:default; opacity:0.5;' : ''}">
+            ${barrasHTML}
+          </div>`;
+        contenedor.appendChild(row);
+      });
+      actualizarDashboardVivo(); 
+    }
+
+    function animarContadorDash(id, nuevoValor, llave) {
+      if (memoriaContadores[llave] === nuevoValor) return; memoriaContadores[llave] = nuevoValor;
+      const el = document.getElementById(id); if (!el) return;
+      el.innerText = nuevoValor; el.style.transition = 'none'; el.style.transform = 'scale(1.5)'; el.style.color = '#ffffff';
+      setTimeout(() => { el.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; el.style.transform = 'scale(1)'; el.style.color = '#f4f4f5'; }, 50);
+    }
+
+    function actualizarDashboardVivo() {
+      const dbContainer = document.getElementById('liveDashboard');
+      if (!dbContainer || turnosActuales.length === 0) { if (dbContainer) dbContainer.style.display = 'none'; return; }
+      dbContainer.style.display = 'block'; const ahora = new Date();
+      
+      const clkH = document.getElementById('clk-h'); const clkM = document.getElementById('clk-m'); const clkS = document.getElementById('clk-s');
+      if (clkH && clkM && clkS) { clkH.innerText = String(ahora.getHours()).padStart(2, '0'); clkM.innerText = String(ahora.getMinutes()).padStart(2, '0'); clkS.innerText = String(ahora.getSeconds()).padStart(2, '0'); }
+
+      const horaActualMins = ahora.getHours() * 60 + ahora.getMinutes(); const fechaFiltro = document.getElementById('fechaFiltro').value; const hoyStr = formatearFechaLocal(new Date());
+      const isToday = (fechaFiltro === hoyStr); const dotLive = document.querySelector('.dot-live'); const textLive = document.getElementById('live-text');
+
+      if (dotLive && textLive) {
+        if (isToday) { dotLive.className = 'dot-live'; textLive.innerText = 'MONITOREO EN VIVO'; textLive.style.color = '#f4f4f5'; } 
+        else { dotLive.className = 'dot-live simulated'; textLive.innerText = 'VISTA SIMULADA (SEGÚN HORA ACTUAL)'; textLive.style.color = '#f59e0b'; }
+      }
+
+      let trabajando = 0, enBreak = 0, fuera = 0; let avatarsHTML = `<span style="margin-right:8px; font-weight:700; color:#52525b; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Monitoreando:</span>`;
+      const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
+
+      turnosActuales.forEach(t => {
+        let estado = 'fuera';
+        if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
+          let inM = aMinutos(t.entrada), outM = aMinutos(t.salida); let bIn = t.breakIn ? aMinutos(t.breakIn) : -1, bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
+          if (horaActualMins >= inM && horaActualMins < outM) { if (bIn !== -1 && horaActualMins >= bIn && horaActualMins < bOut) { estado = 'break'; enBreak++; } else { estado = 'trabajando'; trabajando++; } } else { fuera++; }
+        } else { fuera++; }
+        t._estadoLive = estado; 
+
+        if (estado === 'trabajando' || estado === 'break') {
+          let dotClass = estado === 'trabajando' ? 'breathe-green' : 'breathe-amber';
+          let fotoUrl = t.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(t.nombre)+'&background=27272a&color=fff';
+          avatarsHTML += `<div class="avatar-live-badge" title="${escaparHTML(t.nombre)} | ${estado==='trabajando'?'Operando':'En Break'}"><img src="${fotoUrl}"><span style="color:#e4e4e7; font-size:11px; font-weight:600;">${escaparHTML(t.nombre)}</span>
+          </div>`;
+        }
+      });
+
+      animarContadorDash('count-working', trabajando, 'working'); animarContadorDash('count-break', enBreak, 'break'); animarContadorDash('count-inactive', fuera, 'inactive');
+      
+      let nuevoHTMLAvatares = (trabajando + enBreak > 0) ? avatarsHTML : '<span style="color:#4b5563; font-style:italic;">Ningún colaborador operando activamente.</span>';
+      if (memoriaAvataresHTML !== nuevoHTMLAvatares) { document.getElementById('active-avatars').innerHTML = nuevoHTMLAvatares; memoriaAvataresHTML = nuevoHTMLAvatares; }
+    }
+
+    function filtrarPorEstadoLive(estado) {
+      if (modoOrden || modoSeleccion) return;
+      if (filtroEstadoLiveActual === estado) { filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a'); } 
+      else { filtroEstadoLiveActual = estado; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a'); let card = document.querySelector(`.card-${estado}`); if (card) card.style.borderColor = estado === 'trabajando' ? '#deff9a' : (estado === 'break' ? '#fcd34d' : '#71717a'); }
+      const filas = document.querySelectorAll(".timeline-row");
+      turnosActuales.forEach((t, idx) => {
+        if (!filas[idx]) return;
+        if (filtroEstadoLiveActual === 'todos') { filas[idx].style.display = "grid"; } else { filas[idx].style.display = (t._estadoLive === filtroEstadoLiveActual) ? "grid" : "none"; }
+      });
+      document.getElementById("buscarColaborador").value = "";
+    }
+
+    function calcularPosicion(hEntrada, hSalida) {
+      if (!hEntrada || !hSalida) return "display:none;";
+      const [entH, entM] = hEntrada.split(':').map(Number); const [salH, salM] = hSalida.split(':').map(Number);
+      const entradaDec = entH + (entM / 60); const salidaDec = salH + (salM / 60);
+      const left = ((entradaDec - HORA_INICIO_GRID) / TOTAL_HORAS_GRID) * 100; const width = ((salidaDec - entradaDec) / TOTAL_HORAS_GRID) * 100;
+      return `left: ${left}%; width: calc(${width}% - 2px);`;
+    }
+
+    function filtrarTimeline() {
+      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = '#27272a');
+      const buscar = document.getElementById("buscarColaborador").value.toLowerCase(); const filas = document.querySelectorAll(".timeline-row");
+      filas.forEach(fila => { const span = fila.querySelector(".colaborador-name"); if (!span) return; const nombre = span.innerText.toLowerCase(); fila.style.display = nombre.includes(buscar) ? "grid" : "none"; });
+    }
+
+    function cambiarDia(dias) {
+      const input = document.getElementById('fechaFiltro'); let fechaActual = new Date(input.value + 'T00:00:00'); fechaActual.setDate(fechaActual.getDate() + dias); input.value = formatearFechaLocal(fechaActual); cargarHorarios();
+    }
+
+    function analizarCobertura() {
+      if (!Array.isArray(turnosActuales)) return;
+      const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
+      const aHoraTexto = (mins) => { return `${Math.floor(mins / 60).toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`; };
+      const fechaSel = document.getElementById('fechaFiltro').value; const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const diaSemana = objetoFecha.getDay(); 
+      let fallos = [];
+
+      for(let m = 7.5 * 60; m < 19 * 60; m += 30) {
+        let activos = 0;
+        turnosActuales.forEach(t => {
+          if(!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) return;
+          let inM = aMinutos(t.entrada); let outM = aMinutos(t.salida); let bIn = t.breakIn ? aMinutos(t.breakIn) : -1; let bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
+          if ((m >= inM && m < outM) && !(bIn !== -1 && m >= bIn && m < bOut)) activos++;
+        });
+        let msg = ""; let tipo = ""; 
+        if (diaSemana === 0) { if (m >= 10 * 60 && m < 18 * 60) { if (m < 12 * 60 || m >= 16 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } } else { if (activos < 2) { msg = `Mínimo 2 en almuerzo (Hay ${activos})`; tipo = "danger"; } } } }
+        else if (diaSemana === 6) { if (m >= 8 * 60 && m < 18 * 60) { if (m === 8 * 60) { if (activos < 2) { msg = `Mínimo 2 (Hay ${activos})`; tipo = "danger"; } } else if (m >= 8.5 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60) { if (activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } } else if (m >= 17 * 60 && m < 18 * 60) { if (activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } } } }
+        else { if (m === 7.5 * 60 && activos === 0) { msg = `Faltan, req 1`; tipo = "danger"; } else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } else if (m >= 17 * 60 && m < 19 * 60 && activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } }
+        if(msg !== "") fallos.push({ inicio: m, fin: m + 30, mensaje: msg, tipo: tipo });
+      }
+
+      let fallosAgrupados = [];
+      if(fallos.length > 0) { let actual = fallos[0]; for(let i = 1; i < fallos.length; i++) { if(fallos[i].mensaje === actual.mensaje && fallos[i].inicio === actual.fin) actual.fin = fallos[i].fin; else { fallosAgrupados.push(actual); actual = fallos[i]; } } fallosAgrupados.push(actual); }
+
+      const container = document.getElementById("diagnosticoTrack"); if(!container) return; container.innerHTML = "";
+      if(fallosAgrupados.length === 0 && turnosActuales.length > 0) { container.innerHTML = `<div class="diagnostico-row" style="background: rgba(16, 185, 129, 0.05); border-color: #065f46; animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label" style="color: #6ee7b7;"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> COBERTURA OK</div><div class="diagnostico-track"><div class="alerta-block ok" style="left:0; width:100%;">Todo el personal necesario está cubierto para el turno de este día</div></div></div>`; } 
+      else if (fallosAgrupados.length > 0) {
+        let bloquesHTML = ""; fallosAgrupados.forEach(f => { let left = ((f.inicio / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100; let width = (((f.fin - f.inicio) / 60) / TOTAL_HORAS_GRID) * 100; bloquesHTML += `<div class="alerta-block ${f.tipo}" style="left: ${left}%; width: calc(${width}% - 6px); margin-left: 3px;" title="De ${aHoraTexto(f.inicio)} a ${aHoraTexto(f.fin)} | ${f.mensaje}">${f.mensaje}</div>`; });
+        container.innerHTML = `<div class="diagnostico-row" style="animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label"><span class="material-symbols-outlined" style="font-size:16px;">warning</span> ALERTAS</div><div class="diagnostico-track">${bloquesHTML}</div></div>`;
+      }
+    }
+
+    function sugerirBreak(entrada, salida, turnosExistentes, editIndex = -1) {
+      if (!entrada || !salida) return { breakIn: "", breakOut: "" }; let turnosAComparar = turnosExistentes.filter((_, i) => i !== editIndex);
+      const aMinutos = (hstr) => { if(!hstr) return 0; let [h, m] = hstr.split(':').map(Number); return (h * 60) + m; }; const aHoraTexto = (mins) => { return `${Math.floor(mins / 60).toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`; };
+      let minEntrada = aMinutos(entrada); let minSalida = aMinutos(salida); let duracionTurno = minSalida - minEntrada; let esTurnoTarde = (minEntrada >= 12 * 60); 
+
+      if (duracionTurno <= 180) return { breakIn: "", breakOut: "" }; if (!esTurnoTarde && duracionTurno <= 360) return { breakIn: "", breakOut: "" };
+      let slotsPermitidos = [];
+      if (esTurnoTarde) { let mitadJornada = minEntrada + (duracionTurno / 2); let centro = Math.floor(mitadJornada / 30) * 30; slotsPermitidos = [centro, centro - 30, centro + 30, centro - 60, centro + 60]; } 
+      else { slotsPermitidos = [12*60, 13*60, 14*60, 12.5*60, 13.5*60]; }
+
+      let candidatos = slotsPermitidos.filter(s => s >= (minEntrada + 60) && (s + 60) <= (minSalida - 60)).map(slot => { let overlaps = 0; turnosAComparar.forEach(turno => { if (turno.breakIn && slot < aMinutos(turno.breakOut) && (slot + 60) > aMinutos(turno.breakIn)) overlaps++; }); let ideal = minEntrada + (duracionTurno / 2); return { slot, overlaps, isPrimary: (slot % 60 === 0), distancia: Math.abs(slot - ideal) }; });
+      if (candidatos.length === 0) return { breakIn: "", breakOut: "" };
+      candidatos.sort((a, b) => { if (a.overlaps !== b.overlaps) return a.overlaps - b.overlaps; if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1; return a.distancia - b.distancia; });
+      return { breakIn: aHoraTexto(candidatos[0].slot), breakOut: aHoraTexto(candidatos[0].slot + 60) };
+    }
+
+    function triggerAutoSugerencia(prefix = 'swal', editIndex = -1) {
+      const ent = document.getElementById(`${prefix}-entrada`)?.value; const sal = document.getElementById(`${prefix}-salida`)?.value; if (!ent || !sal) return;
+      const aMinutos = (hstr) => { let [h, m] = hstr.split(':').map(Number); return (h * 60) + m; };
+      let minEntrada = aMinutos(ent); let duracionTurno = aMinutos(sal) - minEntrada; let esTurnoTarde = (minEntrada >= 12 * 60);
+      const checkbox = document.getElementById(`${prefix}-aplica-break`); const inputIn = document.getElementById(`${prefix}-break-in`); const inputOut = document.getElementById(`${prefix}-break-out`); const textoAuto = document.getElementById(`${prefix}-texto-auto`); 
+      if (textoAuto) textoAuto.style.display = "none";
+      if (!esTurnoTarde && duracionTurno <= 360) {
+        if (checkbox) checkbox.checked = false; if (inputIn) { inputIn.value = ""; inputIn.disabled = true; inputIn.style.opacity = "0.4"; } if (inputOut) { inputOut.value = ""; inputOut.disabled = true; inputOut.style.opacity = "0.4"; } return; 
+      } else {
+        if (checkbox && !checkbox.disabled && !checkbox.checked) { checkbox.checked = true; if (inputIn) { inputIn.disabled = false; inputIn.style.opacity = "1"; } if (inputOut) { inputOut.disabled = false; inputOut.style.opacity = "1"; } }
+      }
+      if (checkbox && !checkbox.checked) return;
+      const sugerencia = sugerirBreak(ent, sal, turnosActuales, editIndex);
+      if(sugerencia.breakIn && inputIn && inputOut) {
+        inputIn.value = sugerencia.breakIn; inputOut.value = sugerencia.breakOut; if(textoAuto) textoAuto.style.display = "inline";
+        inputIn.style.boxShadow = inputOut.style.boxShadow = "0 0 10px rgba(222, 255, 154, 0.4)"; inputIn.style.borderColor = inputOut.style.borderColor = "#deff9a"; setTimeout(() => { inputIn.style.boxShadow = inputOut.style.boxShadow = "none"; inputIn.style.borderColor = "rgba(255,255,255,0.1)"; }, 600);
+      }
+    }
+
+    function toggleBreakFields(prefix, index = -1) {
+      const chk = document.getElementById(`${prefix}-aplica-break`); const inField = document.getElementById(`${prefix}-break-in`); const outField = document.getElementById(`${prefix}-break-out`);
+      if (!chk || !inField || !outField) return; const aplica = chk.checked;
+      inField.disabled = !aplica; outField.disabled = !aplica; inField.style.opacity = aplica ? '1' : '0.4'; outField.style.opacity = aplica ? '1' : '0.4';
+      if (!aplica) { inField.value = ''; outField.value = ''; }
+    }
+
+    function autoCompletarAlmuerzo(prefix) {
+      const inField = document.getElementById(`${prefix}-break-in`); const outField = document.getElementById(`${prefix}-break-out`);
+      if (inField && outField && inField.value) { const [h, m] = inField.value.split(':'); let outH = String((parseInt(h) + 1) % 24).padStart(2, '0'); outField.value = `${outH}:${m}`; }
+    }
+
+    function editarTurno(index) {
+      const turno = turnosActuales[index]; if (!turno) return;
+      let tieneAlmuerzo = (turno.breakIn && turno.breakOut) ? 'checked' : ''; let opacidadInicial = tieneAlmuerzo ? '1' : '0.4'; let desactivadoInicial = tieneAlmuerzo ? '' : 'disabled';
+      let esExcepcion = EXCEPCIONES.includes(turno.entrada); let displayTiempos = esExcepcion ? 'none' : 'block'; let displayBotonIA = esExcepcion ? 'none' : 'flex'; 
+      let fechaEdicion = turno.fecha || document.getElementById('fechaFiltro').value; let partes = fechaEdicion.split('-'); let diaSemanaTexto = new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('es-ES', {weekday: 'long'}).toUpperCase(); let jsonNombre = JSON.stringify(turno.nombre).replace(/"/g,/*  */ '&quot;');
+
+      Swal.fire({
+        title: `Editar Turno: ${escaparHTML(turno.nombre)}`,
+        customClass: { popup: 'swal-dark-popup' },
+        background: 'transparent',
+        html: `<div style="text-align:left; color:#e4e4e7;"><div style="margin-bottom: 15px; font-size: 13px; color: #e4e4e7; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:#deff9a; margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:#fcd34d; font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:#a1a1aa; font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:12px; font-weight:700;">
+              ENTRADA
+            </label>
+
+            <input type="time" id="edit-main-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : '07:30'}">
+          </div>
+          
+          <div>
+            <label style="font-size:12px; font-weight:700;">
+                SALIDA
+            </label>
+            
+            <input type="time" id="edit-main-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : '19:00'}">
+            </div>
+        </div>
+
+            <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
+
+              <input type="checkbox" id="edit-main-aplica-break" style="accent-color:#deff9a; width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('edit-main', ${index})">
+                <label for="edit-main-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:#deff9a; user-select:none;">
+                  ¿APLICAR ALMUERZO?
+                </label>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+        
+              <input type="time" id="edit-main-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ''}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('edit-main')">
+              
+              <input type="time" id="edit-main-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ''}" ${desactivadoInicial}>
+            </div>
+            <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
+          </div>
+        </div>`,
+        showCancelButton: true, showDenyButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', denyButtonColor: 'rgba(239, 68, 68, 0.2)', confirmButtonText: '<span style="color:#deff9a; font-weight:bold;">Guardar</span>', cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>', denyButtonText: '<span style="color:#fca5a5; font-weight:bold;">Eliminar</span>',
+        preConfirm: () => {
+          const tipo = document.getElementById('edit-main-tipo').value;
+          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" }; const aplica = document.getElementById('edit-main-aplica-break').checked;
+          return { entrada: document.getElementById('edit-main-entrada').value, salida: document.getElementById('edit-main-salida').value, breakIn: aplica ? document.getElementById('edit-main-break-in').value : "", breakOut: aplica ? document.getElementById('edit-main-break-out').value : "",
+          nota: document.getElementById('edit-main-nota').value }
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const turnoAct = { id: turnosActuales[index].id, entrada: result.value.entrada, salida: result.value.salida, breakIn: result.value.breakIn, breakOut: result.value.breakOut, nota: result.value.nota };
+          mostrarModalSincronizando('Actualizando Turno...');
+          google.script.run
+            .withSuccessHandler(function() { turnosActuales[index].entrada = turnoAct.entrada; 
+            
+            turnosActuales[index].salida = turnoAct.salida;
+            turnosActuales[index].breakIn = turnoAct.breakIn;
+            turnosActuales[index].breakOut = turnoAct.breakOut;
+            turnosActuales[index].nota = turnoAct.nota;
+            renderizarTimeline(turnosActuales);
+            analizarCobertura();
+            completarBarraYMostrarExito('¡Actualizado!', 'Sincronizado en Google Sheets de forma correcta.'); })
+            .withFailureHandler(manejarErrorServidor)
+            .actualizarTurnoExistente(turnoAct);
+        } else if (result.isDenied) {
+          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, eliminar</span>' }).then((deleteResult) => {
+            if (deleteResult.isConfirmed) {
+              mostrarModalSincronizando('Eliminando...');
+              google.script.run.withSuccessHandler(function() { turnosActuales.splice(index, 1); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Eliminado!', 'El turno fue borrado correctamente.'); }).withFailureHandler(manejarErrorServidor).eliminarTurno(turno.id);
+            }
+          });
+        }
+      });
+    }
+
+    function abrirModalNuevoHorario() {
+      const asignadosHoy = turnosActuales.map(t => t.nombre); const empleadosDisponibles = TODOS_LOS_EMPLEADOS.filter(nombre => !asignadosHoy.includes(nombre));
+      let opcionesHTML = empleadosDisponibles.map(nombre => `<option value="${nombre}"></option>`).join(''); if (empleadosDisponibles.length === 0) opcionesHTML = `<option value="Todos los colaboradores ya fueron asignados"></option>`;
+
+      Swal.fire({
+        title: 'Asignar Nuevo Turno',
+        customClass: { popup: 'swal-dark-popup' },
+        background: 'transparent',
+        html: `<div style="text-align:left; color:#e4e4e7;">
+              <label style="font-size:12px; font-weight:700;">COLABORADOR</label><input type="text" id="swal-monitor" class="input-filtro" list="lista-empleados" style="width:100%; margin-bottom:5px; box-sizing:border-box;" placeholder="Escribe o selecciona un nombre..." oninput="ejecutarPrediccionIA(this.value, 'swal')"><datalist
+                id="lista-empleados">${opcionesHTML}</datalist>
+              <div id="swal-ia-status"
+                style="font-size:11px; color:#a1a1aa; font-style:italic; margin-bottom:15px; display:flex; align-items:center; gap:4px; min-height:16px;">
+                Selecciona un colaborador para predecir su horario...</div>
+              <label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><select id="swal-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('swal')"><option value="Normal" selected>Horario Laboral Regular</option><option value="Licencia">Licencia (L)</option><option value="Vacaciones">Vacaciones (V)</option><option value="Libre Cumpleaños">Libre Cumpleaños (LC)</option><option value="Clases">Clases (C)</option><option value="Ausencia">Ausencia (A)</option><option value="Feriado">Feriado (F)</option><option value="Dia Libre">Dia Libre (DL)</option></select>
+              <div id="swal-contenedor-tiempos">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div><label style="font-size:12px; font-weight:700;">ENTRADA</label><input type="time" id="swal-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="07:30" onchange="triggerAutoSugerencia('swal', -1)">
+                  </div>
+                  <div><label style="font-size:12px; font-weight:700;">SALIDA</label><input type="time" id="swal-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="19:00" onchange="triggerAutoSugerencia('swal', -1)">
+                  </div>
+                </div>
+                <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" id="swal-aplica-break" style="accent-color:#deff9a; width:16px; height:16px; cursor:pointer;" checked onchange="toggleBreakFields('swal', -1)"><label for="swal-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:#deff9a; user-select:none;">¿APLICAR ALMUERZO?</label><span id="swal-texto-auto" style="color:#71717a; font-size:11px; font-style:italic;">Sugerencia aplicada automáticamente...</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+                  <input type="time" id="swal-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s;" value="" onchange="autoCompletarAlmuerzo('swal')"><input type="time" id="swal-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s;" value="">
+                </div>
+                <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="swal-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Escribe alguna instrucción, tardanza o detalle..."></textarea></div>
+              </div>
+            </div>`,
+        showCancelButton: true, confirmButtonColor: 'rgba(222, 255, 154, 0.2)', cancelButtonColor: 'rgba(255,255,255,0.05)', confirmButtonText: '<span style="color:#deff9a; font-weight:bold;">Guardar Turno</span>', cancelButtonText: '<span style="color:#e4e4e7;">Cancelar</span>',
+        didOpen: () => { setTimeout(() => triggerAutoSugerencia('swal', -1), 50); },
+        preConfirm: () => {
+          const tipo = document.getElementById('swal-tipo').value;
+          if (tipo !== "Normal") 
+            return { 
+              id: Date.now(), nombre: document.getElementById('swal-monitor').value, entrada: tipo, salida: "", breakIn: "", breakOut: "" 
+            };
+          const aplica = document.getElementById('swal-aplica-break').checked;
+        
+          return {
+            id: Date.now(), nombre: document.getElementById('swal-monitor').value,
+            entrada: document.getElementById('swal-entrada').value,
+            salida: document.getElementById('swal-salida').value,
+            breakIn: aplica ? document.getElementById('swal-break-in').value : "",
+            breakOut: aplica ? document.getElementById('swal-break-out').value : "",
+            nota: document.getElementById('swal-nota').value
+          }
+        }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const fechaAct = document.getElementById('fechaFiltro').value; const nuevoT = result.value; nuevoT.fecha = fechaAct;
+              mostrarModalSincronizando('Asignando Turno...');
+              google.script.run.withSuccessHandler(function() { turnosActuales.push(nuevoT); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Éxito!', 'El nuevo turno ha sido registrado.'); }).withFailureHandler(manejarErrorServidor).guardarTurnoNuevo(nuevoT);
+            }
+          });
+    }
+
+    const debounceTimers = {}; const ultimasBusquedasIA = {};
+
+    function toggleTipoTurno(prefix) {
+      const tipo = document.getElementById(`${prefix}-tipo`).value; const contenedorTiempos = document.getElementById(`${prefix}-contenedor-tiempos`); const btnIA = document.getElementById(`btn-ia-${prefix}`);
+      if (EXCEPCIONES.includes(tipo)) { if (contenedorTiempos) contenedorTiempos.style.display = "none"; if (btnIA) btnIA.style.display = "none"; } 
+      else { if (contenedorTiempos) contenedorTiempos.style.display = "block"; if (btnIA) btnIA.style.display = "flex"; }
+    }
+
+    function toggleModoOrden() {
+      if (!Array.isArray(turnosActuales)) turnosActuales = []; modoOrden = !modoOrden; let targetBtn = document.getElementById("btn-modo-orden"); if (!targetBtn) return; 
+      if (modoOrden) { targetBtn.style.background = "rgba(245, 158, 11, 0.15)"; targetBtn.style.color = "#fcd34d"; targetBtn.style.borderColor = "#fcd34d"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>lock_open</span> Terminar de Ordenar"; } 
+      else { targetBtn.style.background = "transparent"; targetBtn.style.color = "#a1a1aa"; targetBtn.style.borderColor = "#27272a"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>swap_vert</span> Reordenar"; }
+      renderizarTimeline(turnosActuales);
+    }
+
+    function sincronizarOrdenSilencioso() {
+      const filasDOM = [...document.querySelectorAll('.timeline-row')]; const nuevosIds = filasDOM.map(row => String(row.getAttribute("data-id")));
+      turnosActuales.sort((a, b) => nuevosIds.indexOf(String(a.id)) - nuevosIds.indexOf(String(b.id))); google.script.run.withFailureHandler(manejarErrorServidor).actualizarOrdenTurnos(nuevosIds);
+    }
+    
+// 1. CONTROL DEL MODO SELECCIÓN
+    function toggleModoSeleccion() {
+      modoSeleccion = !modoSeleccion; 
+      turnosSeleccionados = []; 
+      
+      const btnSeleccion = document.getElementById("btn-modo-seleccion"), 
+            btnAsignar = document.getElementById("btn-asignar-turno"), 
+            btnEliminar = document.getElementById("btn-eliminar-masivo"), 
+            btnEditar = document.getElementById("btn-editar-masivo"), 
+            btnOrden = document.getElementById("btn-modo-orden");
+
+      if (modoSeleccion) {
+        if (modoOrden) toggleModoOrden(); 
+        
+        if (btnOrden) btnOrden.style.display = "none"; 
+        if (btnAsignar) btnAsignar.style.display = "none"; 
+        
+        if (btnSeleccion) {
+          btnSeleccion.style.color = "#a1a1aa"; 
+          btnSeleccion.style.borderColor = "#27272a"; 
+          btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">close</span> Cancelar`; 
+        }
+        
+        if (btnEliminar) btnEliminar.style.display = "flex"; 
+        if (btnEditar) btnEditar.style.display = "flex"; 
+        
+        actualizarBotonEliminar();
+      } else {
+        if (btnOrden) btnOrden.style.display = "flex"; 
+        
+        if (btnSeleccion) {
+          btnSeleccion.style.color = "#a1a1aa"; 
+          btnSeleccion.style.borderColor = "#27272a"; 
+          btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">checklist</span> Selección Múltiple`; 
+        }
+        
+        if (btnAsignar) btnAsignar.style.display = "flex"; 
+        if (btnEliminar) btnEliminar.style.display = "none";
+        if (btnEditar) btnEditar.style.display = "none"; 
+      }
+      
+      renderizarTimeline(turnosActuales);
+    }
+
+    // 2. ACTUALIZACIÓN DE LOS BOTONES
+    
+
+    // 3. MODAL DE ASIGNACIÓN MASIVA
+
+// 2. ACTUALIZACIÓN DE LOS BOTONES
+    function actualizarBotonEliminar() {
+      const btnEliminar = document.getElementById("btn-eliminar-masivo");
+      const btnEditar = document.getElementById("btn-editar-masivo"); 
+      
+      if (btnEliminar) { 
+        btnEliminar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar (${turnosSeleccionados.length})`;
+        if (turnosSeleccionados.length > 0) { 
+          btnEliminar.style.opacity = "1"; 
+          btnEliminar.style.pointerEvents = "auto"; 
+        } else { 
+          btnEliminar.style.opacity = "0.5"; 
+          btnEliminar.style.pointerEvents = "none"; 
+        }
+      }
+      
+      if (btnEditar) {
+        btnEditar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Asignar (${turnosSeleccionados.length})`;
+        if (turnosSeleccionados.length > 0) { 
+          btnEditar.style.display = "flex"; 
+          btnEditar.style.opacity = "1"; 
+          btnEditar.style.pointerEvents = "auto";
+        } else { 
+          btnEditar.style.display = "flex"; 
+          btnEditar.style.opacity = "0.5"; 
+          btnEditar.style.pointerEvents = "none";
+        }
+      }
+    }
+
+    // 3. MODAL DE ASIGNACIÓN MASIVA
+    function abrirModalEdicionMasiva() {
+      if (turnosSeleccionados.length === 0) return;
+      
+      Swal.fire({
+        title: `Asignación Masiva (${turnosSeleccionados.length} cols.)`,
+        customClass: { popup: 'swal-dark-popup' },
+        background: 'transparent',
+        html: `
+          <div style="text-align:left; color:#e4e4e7;">
+            <label style="font-size:12px; font-weight:700;">NUEVO ESTADO O TURNO</label>
+            <select id="masivo-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('masivo')">
+              <option value="Normal">Horario Laboral Regular</option>
+              <option value="Licencia">Licencia (L)</option>
+              <option value="Vacaciones">Vacaciones (V)</option>
+              <option value="Feriado">Feriado (F)</option>
+              <option value="Clases">Clases (C)</option>
+            </select>
+            
+            <div id="masivo-contenedor-tiempos">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div>
+                  <label style="font-size:12px; font-weight:700;">ENTRADA</label>
+                  <input type="time" id="masivo-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="08:00">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:700;">SALIDA</label>
+                  <input type="time" id="masivo-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="17:00">
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                <div>
+                  <label style="font-size:12px; font-weight:700;">BREAK IN</label>
+                  <input type="time" id="masivo-break-in" class="input-filtro" style="width:100%; box-sizing:border-box;">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:700;">BREAK OUT</label>
+                  <input type="time" id="masivo-break-out" class="input-filtro" style="width:100%; box-sizing:border-box;">
+                </div>
+              </div>
+            </div>
+          </div>`,
+        showCancelButton: true,
+        confirmButtonColor: 'rgba(245, 158, 11, 0.2)',
+        confirmButtonText: '<span style="color:#fcd34d; font-weight:bold;">Aplicar a Todos</span>',
+        preConfirm: () => {
+          const tipo = document.getElementById('masivo-tipo').value;
+          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
+          return { 
+            entrada: document.getElementById('masivo-entrada').value, 
+            salida: document.getElementById('masivo-salida').value, 
+            breakIn: document.getElementById('masivo-break-in').value, 
+            breakOut: document.getElementById('masivo-break-out').value 
+          };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          mostrarModalSincronizando('Actualizando Turnos...');
+          google.script.run
+            .withSuccessHandler(function() { 
+              toggleModoSeleccion(); 
+              cargarHorarios();      
+              completarBarraYMostrarExito('¡Actualizados!', 'Los turnos seleccionados fueron modificados.'); 
+            })
+            .withFailureHandler(manejarErrorServidor)
+            .actualizarTurnosMasivoBackend(turnosSeleccionados, result.value);
+        }
+      });
+    }
+
+    let historialActual = [];
