@@ -39,7 +39,7 @@
       margin-bottom: 25px;
       font-size: 20px;
       font-weight: 600;
-      border-left: 3px solid #deff9a;
+      border-left: 3px solid #3b82f6;
       /* Único toque verde en el título */
       padding-left: 12px;
     }
@@ -70,7 +70,7 @@
       top: 0;
       z-index: 10;
       background: #111111;
-      color: #deff9a;
+      color: #3b82f6;
       padding: 16px 16px;
       text-align: left;
       font-size: 11px;
@@ -124,10 +124,10 @@
     }
 
     .btn-editar:hover {
-      border-color: #deff9a;
-      color: #deff9a;
+      border-color: #3b82f6;
+      color: #3b82f6;
       /* Toque verde solo interactivo */
-      background: rgba(222, 255, 154, 0.05);
+      background: rgba(59, 130, 246, 0.05);
     }
 
     .btn-disabled {
@@ -165,7 +165,7 @@
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(222, 255, 154, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.1);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 
       /* Animación de entrada */
@@ -190,7 +190,7 @@
       font-size: 22px;
       font-weight: 700;
       margin-bottom: 25px;
-      border-left: 4px solid #deff9a;
+      border-left: 4px solid #3b82f6;
       padding-left: 12px;
     }
 
@@ -217,7 +217,7 @@
     }
 
     .btn-close-modal:hover {
-      color: #deff9a;
+      color: #3b82f6;
     }
 
     /* Motivo de rechazo adaptado al cristal */
@@ -270,8 +270,8 @@
     .modal-content select:focus,
     /* CAMBIO: Agregado para que el select también brille */
     .modal-content textarea:focus {
-      border-color: #deff9a !important;
-      box-shadow: 0 0 0 3px rgba(222, 255, 154, 0.1);
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
       background-color: rgba(0, 0, 0, 0.4) !important;
       /* CAMBIO: background-color en lugar de background */
     }
@@ -313,7 +313,7 @@
 
 
     .modal-content .grupo-inputs-unidos:hover {
-      background-color: rgba(222, 255, 154, 0.05) !important;
+      background-color: rgba(59, 130, 246, 0.05) !important;
     }
 
     .modal-content .grupo-inputs-unidos *:first-child {
@@ -324,7 +324,7 @@
       flex: none !important;
       width: 90px !important;
       background: rgba(255, 255, 255, 0.05) !important;
-      color: #deff9a !important;
+      color: #3b82f6 !important;
       font-weight: 700;
       text-align: center;
       cursor: not-allowed;
@@ -337,7 +337,7 @@
    ========================================= */
     .btn-guardar {
       margin-top: 25px;
-      background: #deff9a;
+      background: #3b82f6;
       color: #050505;
       font-weight: bold;
       border: none;
@@ -351,7 +351,7 @@
 
     .btn-guardar:hover {
       background: #c3e67b;
-      box-shadow: 0 0 15px rgba(222, 255, 154, 0.4);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
       transform: translateY(-2px);
     }
 
@@ -396,7 +396,7 @@
   <div id="modalEdicion" class="modal-overlay">
     <div class="modal-content">
       <button class="btn-close-modal" onclick="cerrarModal()"><span class="material-symbols-outlined">close</span></button>
-      <h2 style="margin-top: 0;">Corregir Reporte: <span id="idEdicionTexto" style="color: #deff9a;"></span></h2>
+      <h2 style="margin-top: 0;">Corregir Reporte: <span id="idEdicionTexto" style="color: #3b82f6;"></span></h2>
 
       <div id="cajaRechazo" class="motivo-rechazo"></div>
       <input type="hidden" id="idReporteOculto">
@@ -566,7 +566,7 @@ function renderizarListaArchivosNuevos() {
   lista.innerHTML = "";
   archivosNuevosSeleccionados.forEach((a, i) => {
     lista.innerHTML += `
-      <div class="archivo-item" style="border-color: rgba(222, 255, 154, 0.3);">
+      <div class="archivo-item" style="border-color: rgba(59, 130, 246, 0.3);">
         <span> ${a.name}</span>
         <button type="button" class="btn-eliminar-archivo" onclick="eliminarNuevo(${i})"><span class="material-symbols-outlined">close</span></button>
       </div>`;
