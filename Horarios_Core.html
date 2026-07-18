@@ -1164,72 +1164,78 @@ function pegarTurnosDia() {
     // =========================================================
     let assistiveDragged = false; // Bandera para bloquear el clic si hubo arrastre
 
-function toggleAssistiveMenu(e) {
+    function updateAssistivePosition() {
+      const container = document.getElementById("assistive-container");
+      const button = document.getElementById("assistive-button");
+      const panel = document.getElementById("panel-comando-flotante");
+      if (!container || !button) return;
+
+      const rect = container.getBoundingClientRect();
+      const centroPantallaX = window.innerWidth / 2;
+      const margenSeguro = 15;
+
+      // 1. Anclaje y Alineación Horizontal
+      if (rect.left + rect.width / 2 < centroPantallaX) {
+        container.style.alignItems = "flex-start";
+        container.style.right = "auto";
+        let leftVal = rect.left;
+        if (leftVal < margenSeguro) leftVal = margenSeguro;
+        container.style.left = leftVal + "px";
+      } else {
+        container.style.alignItems = "flex-end";
+        container.style.left = "auto";
+        let rightVal = window.innerWidth - rect.right;
+        if (rightVal < margenSeguro) rightVal = margenSeguro;
+        container.style.right = rightVal + "px";
+      }
+
+      // 2. Anclaje y Alineación Vertical
+      const panelAlto = (panel && panel.style.display !== "none") ? panel.offsetHeight : 300;
+      const handleRect = button.getBoundingClientRect();
+      let isReversed = false;
+      
+      if (handleRect.top + panelAlto + 60 > window.innerHeight) {
+        container.style.flexDirection = "column-reverse";
+        isReversed = true;
+      } else {
+        container.style.flexDirection = "column";
+      }
+
+      const finalRect = container.getBoundingClientRect();
+      if (isReversed) {
+        container.style.top = "auto";
+        let bottomVal = window.innerHeight - finalRect.bottom;
+        if (bottomVal < margenSeguro) bottomVal = margenSeguro;
+        container.style.bottom = bottomVal + "px";
+      } else {
+        container.style.bottom = "auto";
+        let topVal = finalRect.top;
+        if (topVal < margenSeguro) topVal = margenSeguro;
+        container.style.top = topVal + "px";
+      }
+    }
+
+    function toggleAssistiveMenu(e) {
       if (assistiveDragged) {
-        assistiveDragged = false; // Cancelar apertura si solo se estaba arrastrando
+        assistiveDragged = false;
         return;
       }
       
       const panel = document.getElementById("panel-comando-flotante");
       const container = document.getElementById("assistive-container");
-      const button = document.getElementById("assistive-button");
-      if (!panel || !container || !button) return;
+      if (!panel || !container) return;
 
       if (panel.style.display === "none") {
-        // 1. Mostrar temporalmente para poder medir sus dimensiones reales
         panel.style.display = "flex";
         container.classList.add("open");
-
-        const botonRect = button.getBoundingClientRect();
-        const centroPantallaX = window.innerWidth / 2;
-
-        // 2. CORRECCIÓN HORIZONTAL: Cambiar alineación según el lado de la pantalla
-        if (botonRect.left + botonRect.width / 2 < centroPantallaX) {
-          container.style.alignItems = "flex-start"; // Se despliega a la derecha del botón
-        } else {
-          container.style.alignItems = "flex-end";   // Se despliega a la izquierda del botón
-        }
-
-        // 3. CORRECCIÓN VERTICAL: Cambiar dirección si no cabe abajo
-        const panelAlto = panel.offsetHeight || 300;
-        if (botonRect.top + panelAlto + 60 > window.innerHeight) {
-          container.style.flexDirection = "column-reverse";
-        } else {
-          container.style.flexDirection = "column";
-        }
-
-        // 4. EMPUJE MAGNÉTICO: Reajustar posición si el contenedor completo se sale de la pantalla
-        const margenSeguro = 15;
-        const containerRect = container.getBoundingClientRect();
-        let nuevoTop = container.offsetTop;
-        let nuevoLeft = container.offsetLeft;
-
-        // Corregir desborde vertical
-        if (containerRect.top < margenSeguro) {
-          nuevoTop = margenSeguro;
-        } else if (containerRect.bottom > window.innerHeight - margenSeguro) {
-          nuevoTop = window.innerHeight - containerRect.height - margenSeguro;
-        }
-
-        // Corregir desborde horizontal
-        if (containerRect.left < margenSeguro) {
-          nuevoLeft = margenSeguro;
-        } else if (containerRect.right > window.innerWidth - margenSeguro) {
-          nuevoLeft = window.innerWidth - containerRect.width - margenSeguro;
-        }
-
-        // Aplicar los ajustes de posición corregidos
-        container.style.top = nuevoTop + "px";
-        container.style.left = nuevoLeft + "px";
-
       } else {
-        // Cerrar el panel
         panel.style.display = "none";
         container.classList.remove("open");
       }
-    } 
+      updateAssistivePosition();
+    }
 
-        function initPanelComandoArrastrable() {
+    function initPanelComandoArrastrable() {
       const container = document.getElementById("assistive-container");
       const handle = document.getElementById("assistive-button");
       if (!container || !handle) return;
@@ -1242,7 +1248,7 @@ function toggleAssistiveMenu(e) {
       handle.addEventListener('touchstart', dragStart, { passive: true });
 
       function dragStart(e) {
-        if (e.type === 'mousedown' && e.button !== 0) return; // Solo click izquierdo
+        if (e.type === 'mousedown' && e.button !== 0) return;
         
         isDragging = true;
         assistiveDragged = false;
@@ -1253,6 +1259,13 @@ function toggleAssistiveMenu(e) {
         const rect = container.getBoundingClientRect();
         startX = clientX;
         startY = clientY;
+        
+        // Cambiar temporalmente el anclaje a top/left absoluto para arrastre fluido
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+        container.style.left = rect.left + 'px';
+        container.style.top = rect.top + 'px';
+        
         initialLeft = rect.left;
         initialTop = rect.top;
         
@@ -1278,7 +1291,6 @@ function toggleAssistiveMenu(e) {
         let nuevoLeft = initialLeft + dx;
         let nuevoTop = initialTop + dy;
         
-        // Limitar con bordes reales
         const margen = 15;
         const wWidth = window.innerWidth;
         const wHeight = window.innerHeight;
@@ -1287,7 +1299,6 @@ function toggleAssistiveMenu(e) {
         
         if (nuevoLeft < margen) nuevoLeft = margen;
         if (nuevoLeft > wWidth - cWidth - margen) nuevoLeft = wWidth - cWidth - margen;
-        
         if (nuevoTop < margen) nuevoTop = margen;
         if (nuevoTop > wHeight - cHeight - margen) nuevoTop = wHeight - cHeight - margen;
         
@@ -1308,22 +1319,9 @@ function toggleAssistiveMenu(e) {
         document.removeEventListener('touchmove', dragMove);
         document.removeEventListener('touchend', dragEnd);
         
-        window.getSelection().removeAllRanges(); // Limpiar seleccion de texto
+        window.getSelection().removeAllRanges();
         
-        // Convertir a posicionamiento relativo al borde derecho para que sea responsivo al resize
-        const rect = container.getBoundingClientRect();
-        const rightVal = window.innerWidth - rect.right;
-        const margen = 15;
-        const cHeight = container.offsetHeight || 56;
-        
-        let topVal = rect.top;
-        if (topVal < margen) topVal = margen;
-        if (topVal > window.innerHeight - cHeight - margen) topVal = window.innerHeight - cHeight - margen;
-        
-        container.style.left = 'auto';
-        container.style.right = rightVal + 'px';
-        container.style.top = topVal + 'px';
-        container.style.bottom = 'auto';
+        updateAssistivePosition();
       }
       
       // Control de resize para no ocultar el boton

@@ -13,12 +13,13 @@
       }
     }
 
-    
-
+    @keyframes pulse {
+      0% {
+        box-shadow: none;
+      }
       50% {
         box-shadow: none;
       }
-
       100% {
         box-shadow: none;
       }
@@ -63,8 +64,12 @@
       animation: blinker 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
-    
-
+    @keyframes pulse-primary {
+      from {
+        box-shadow: none;
+        opacity: 0.8;
+        transform: scale(1);
+      }
       to {
         box-shadow: 0 0 10px var(--accent-primary), 0 0 15px var(--accent-glow);
         opacity: 1;
@@ -72,8 +77,12 @@
       }
     }
 
-    
-
+    @keyframes pulse-warning {
+      from {
+        box-shadow: none;
+        opacity: 0.8;
+        transform: scale(1);
+      }
       to {
         box-shadow: 0 0 10px var(--warning), 0 0 15px rgba(245, 158, 11, 0.6);
         opacity: 1;
