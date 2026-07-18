@@ -29,7 +29,7 @@
       <!-- El Panel de Comandos (Oculto por defecto) -->
       <div id="panel-comando-flotante" class="floating-panel" style="display: none;">
         
-        <div style="font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #71717a; text-align: center; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 2px;">
+        <div style="font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); text-align: center; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 2px;">
           Comandos
         </div>
         
@@ -41,28 +41,28 @@
         <div class="widget-divider"></div>
         
         <!-- Controles de Vista -->
-        <button id="btn-modo-orden" class="btn-neon widget-btn" style="background: transparent; color:#a1a1aa; border-color:var(--glass-border);" onclick="toggleModoOrden()">
+        <button id="btn-modo-orden" class="btn-neon widget-btn" style="background: transparent; color:var(--text-muted); border-color:var(--glass-border);" onclick="toggleModoOrden()">
           <span class="material-symbols-outlined" style="font-size:18px;">swap_vert</span> Reordenar Lista
         </button>
-        <button id="btn-modo-seleccion" class="btn-neon widget-btn" style="background: transparent; color:#a1a1aa; border-color:var(--glass-border);" onclick="toggleModoSeleccion()">
+        <button id="btn-modo-seleccion" class="btn-neon widget-btn" style="background: transparent; color:var(--text-muted); border-color:var(--glass-border);" onclick="toggleModoSeleccion()">
           <span class="material-symbols-outlined" style="font-size:18px;">checklist</span> Seleccionar Múltiple
         </button>
         
         <div class="widget-divider"></div>
         
         <!-- Portapapeles del Día -->
-        <button id="btn-copiar-dia" class="btn-neon widget-btn" style="background: transparent; color:#6ee7b7; border-color:#065f46;" onclick="copiarTurnosDia()">
+        <button id="btn-copiar-dia" class="btn-neon widget-btn" style="background: transparent; color:var(--success); border-color:var(--success);" onclick="copiarTurnosDia()">
           <span class="material-symbols-outlined" style="font-size:18px;">content_copy</span> Copiar Turnos
         </button>
-        <button id="btn-pegar-dia" class="btn-neon widget-btn" style="background: transparent; color:#fcd34d; border-color:#b45309; display:none;" onclick="pegarTurnosDia()">
+        <button id="btn-pegar-dia" class="btn-neon widget-btn" style="background: transparent; color:var(--warning); border-color:var(--warning); display:none;" onclick="pegarTurnosDia()">
           <span class="material-symbols-outlined" style="font-size:18px;">content_paste</span> Pegar Turnos
         </button>
         
         <!-- Acciones Contextuales -->
-        <button id="btn-editar-masivo" class="btn-neon widget-btn" style="background: rgba(245, 158, 11, 0.12); color: #fcd34d; border-color: #f59e0b; display:none;" onclick="abrirModalEdicionMasiva()">
+        <button id="btn-editar-masivo" class="btn-neon widget-btn" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); border-color: var(--warning); display:none;" onclick="abrirModalEdicionMasiva()">
           <span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Cambiar Grupo
         </button>
-        <button id="btn-eliminar-masivo" class="btn-neon widget-btn" style="background: rgba(239, 68, 68, 0.12); color: #fca5a5; border-color: #ef4444; display:none;" onclick="ejecutarEliminacionMasiva()">
+        <button id="btn-eliminar-masivo" class="btn-neon widget-btn" style="background: rgba(239, 68, 68, 0.12); color: var(--danger); border-color: var(--danger); display:none;" onclick="ejecutarEliminacionMasiva()">
           <span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar Grupo (0)
         </button>
 
@@ -122,10 +122,10 @@
         <!-- LADO IZQUIERDO: Viñetas de colores -->
         <div style="display: flex; gap: 20px; align-items: center;">
           <div class="legend-item">
-            <div class="dot" style="background:#deff9a;"></div> Horario Laboral
+            <div class="dot" style="background: var(--accent-primary);"></div> Horario Laboral
           </div>
           <div class="legend-item">
-            <div class="dot" style="border: 1px dashed #ef4444; background: rgba(239,68,68,0.1); "></div> Almuerzo
+            <div class="dot" style="border: 1px dashed var(--danger); background: rgba(239,68,68,0.1); "></div> Almuerzo
           </div>
         </div>
 
@@ -143,7 +143,7 @@
                 <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
               </button>
             </div>
-            <span id="dia-semana-toolbar" style="color: #deff9a; font-size: 13px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;"></span>
+            <span id="dia-semana-toolbar" style="color: var(--accent-primary); font-size: 13px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;"></span>
           </div>
 
           <!-- Divisor vertical sutil entre herramientas -->
@@ -154,7 +154,7 @@
         </div>
 
         <!-- LADO DERECHO: Texto de ayuda -->
-        <div class="legend-item" style="color:#9ca3af;">
+        <div class="legend-item" style="color:var(--text-muted);">
           <i>💡 Haz clic en cualquier barra para editar</i>
         </div>
 

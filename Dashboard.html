@@ -110,17 +110,17 @@
 
     .icon-incidencias {
       background: rgba(168, 85, 247, 0.1);
-      color: #a855f7;
+      color: var(--accent-primary);
     }
 
     .icon-hoy {
       background: rgba(16, 185, 129, 0.1);
-      color: #10b981;
+      color: var(--success);
     }
 
     .icon-pendientes {
       background: rgba(250, 204, 21, 0.1);
-      color: #facc15;
+      color: var(--warning);
     }
 
     .icon-aprobados {
@@ -130,7 +130,7 @@
 
     .icon-rechazados {
       background: rgba(239, 68, 68, 0.1);
-      color: #f87171;
+      color: var(--danger);
     }
 
     /* Margen de seguridad para la vista de analíticas */
@@ -193,9 +193,9 @@
     }
 
     .btn-approve {
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      background: var(--success);
+      color: var(--success);
+      border: 1px solid var(--success);
       padding: 12px 25px;
       border-radius: 10px;
       font-weight: 700;
@@ -207,7 +207,7 @@
     }
 
     .btn-approve:hover {
-      background: #bbf7d0;
+      background: var(--success);
       opacity: 0.85;
     }
 
@@ -217,9 +217,9 @@
     }
 
     .btn-reject {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
+      background: var(--danger);
+      color: var(--danger);
+      border: 1px solid var(--danger);
       padding: 12px 25px;
       border-radius: 10px;
       font-weight: 700;
@@ -231,7 +231,7 @@
     }
 
     .btn-reject:hover {
-      background: #fecaca;
+      background: var(--danger);
       opacity: 0.85;
     }
 
@@ -244,7 +244,7 @@
     .btn-neon-danger {
       background: rgba(239, 68, 68, 0.1) !important;
       /* Fondo rojizo transparente */
-      color: #ef4444 !important;
+      color: var(--danger) !important;
       /* Texto rojo */
       border: 1px solid rgba(239, 68, 68, 0.3) !important;
       padding: 10px 20px;
@@ -265,7 +265,7 @@
     .btn-neon-success {
       background: rgba(16, 185, 129, 0.1) !important;
       /* Fondo verde transparente */
-      color: #10b981 !important;
+      color: var(--success) !important;
       /* Texto verde */
       border: 1px solid rgba(16, 185, 129, 0.3) !important;
       padding: 10px 20px;
@@ -410,7 +410,7 @@
       margin-top: 15px;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--text-muted);
       display: none;
     }
   </style>
@@ -554,7 +554,7 @@
         </thead>
         <tbody id="cuerpoTablaReposicion">
           <tr>
-            <td colspan="6" style="text-align: center; color: #6b7280; font-style: italic;">
+            <td colspan="6" style="text-align: center; color: var(--text-muted); font-style: italic;">
               Cargando agenda de protocolos de hoy...
             </td>
           </tr>
@@ -570,7 +570,7 @@
       <div class="modal-header-info">
         <div>
           <h2 id="modalId" style="margin:0; color:var(--text-main);">REP-0000</h2>
-          <p id="modalFecha" style="margin:5px 0 0; color:#6b7280; font-size:14px; font-weight: 500;"></p>
+          <p id="modalFecha" style="margin:5px 0 0; color:var(--text-muted); font-size:14px; font-weight: 500;"></p>
         </div>
         <div id="modalBadgeStatus"></div>
       </div>
@@ -802,7 +802,7 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
         label: title,
         data: dataValues,
         backgroundColor: chartJsType === 'doughnut' 
-          ? ['var(--accent-primary)', '#7c3aed', 'var(--accent-primary)', '#10b981', '#f43f5e', '#fbbf24', '#a855f7', '#ec4899'] 
+          ? ['var(--accent-primary)', 'var(--accent-primary)', 'var(--accent-primary)', 'var(--success)', 'var(--danger)', 'var(--warning)', 'var(--accent-primary)', 'var(--danger)'] 
           : 'var(--accent-primary)', 
         borderColor: chartJsType === 'doughnut' ? 'var(--glass-bg)' : 'transparent',
         borderWidth: 2,
@@ -835,11 +835,11 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
       scales: chartJsType === 'doughnut' ? {} : {
         x: {
           grid: { display: false }, 
-          ticks: { color: '#9ca3af', font: { size: 11 } }
+          ticks: { color: 'var(--text-muted)', font: { size: 11 } }
         },
         y: {
           grid: { color: 'var(--glass-border)' }, 
-          ticks: { color: '#9ca3af', font: { size: 11 }, stepSize: 1 }, 
+          ticks: { color: 'var(--text-muted)', font: { size: 11 }, stepSize: 1 }, 
           border: { dash: [4, 4] } 
         }
       },
@@ -860,7 +860,7 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
       tbody.innerHTML = "";
       
       if(!datos || datos.length === 0){
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color: #6b7280;">No hay reportes que coincidan con los filtros</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--text-muted);">No hay reportes que coincidan con los filtros</td></tr>`;
         return;
       }
 
@@ -879,7 +879,7 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
         tr.innerHTML = `
           <td><strong>${r.id}</strong></td>
           <td>${r.fecha ? new Date(r.fecha).toLocaleDateString() : ""}</td>
-          <td><span style="font-weight: 600; color: #a6c369;">${operacion}</span></td>
+          <td><span style="font-weight: 600; color: var(--success);">${operacion}</span></td>
           <td>${r.tienda || ""}</td>
           <td>${r.tipoReporte || ""}</td>
           <td>${r.empleado || ""}</td>
@@ -898,9 +898,9 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
       const operacion = empresaRaw.charAt(0).toUpperCase() + empresaRaw.slice(1);
 
       document.getElementById("modalId").innerText = r.id;
-      document.getElementById("modalEmpleado").innerHTML = `<strong>${r.empleado}</strong><br><span style="font-size:12px; color:#6b7280;">${r.correoMonitor || "Sin correo"}</span>`;
+      document.getElementById("modalEmpleado").innerHTML = `<strong>${r.empleado}</strong><br><span style="font-size:12px; color:var(--text-muted);">${r.correoMonitor || "Sin correo"}</span>`;
       document.getElementById("modalFecha").innerText = r.fecha ? new Date(r.fecha).toLocaleString() : "";
-      document.getElementById("modalTienda").innerHTML = `<strong>${operacion}</strong> - ${r.tienda} <br><span style="font-size:13px; color:#6b7280;">Posición: ${r.posicion}</span>`;
+      document.getElementById("modalTienda").innerHTML = `<strong>${operacion}</strong> - ${r.tienda} <br><span style="font-size:13px; color:var(--text-muted);">Posición: ${r.posicion}</span>`;
       document.getElementById("modalTipo").innerHTML = `<strong>${r.tipoReporte}</strong>`;
       
       const obsLimpia = (r.observacionesMonitor || "Sin observaciones registradas.").replace(/\n/g, '<br>');
@@ -919,12 +919,12 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
       visor.innerHTML = "";
       
       if (r.carpeta && r.carpeta !== "#") {
-        evCont.innerHTML = `<span style="color: #6b7280; font-size: 13px;">Buscando evidencias en Google Drive... <span class="material-symbols-outlined" style="font-size:14px; animation: spin 1s linear infinite;">sync</span></span>`;
+        evCont.innerHTML = `<span style="color: var(--text-muted); font-size: 13px;">Buscando evidencias en Google Drive... <span class="material-symbols-outlined" style="font-size:14px; animation: spin 1s linear infinite;">sync</span></span>`;
         
         google.script.run
           .withSuccessHandler(archivos => {
             if(archivos.length === 0) {
-              evCont.innerHTML = `<a href="${r.carpeta}" target="_blank" style="text-decoration:none; color:#1d4ed8; font-weight:600; font-size:14px;"> Abrir Carpeta Vacía en Drive</a>`;
+              evCont.innerHTML = `<a href="${r.carpeta}" target="_blank" style="text-decoration:none; color:var(--accent-primary); font-weight:600; font-size:14px;"> Abrir Carpeta Vacía en Drive</a>`;
               return;
             }
             
@@ -951,7 +951,7 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
           })
           .obtenerArchivosDrive(r.carpeta);
       } else {
-        evCont.innerHTML = `<span style="color: #dc2626; font-size: 14px; font-weight:600;">Sin carpeta de evidencias.</span>`;
+        evCont.innerHTML = `<span style="color: var(--danger); font-size: 14px; font-weight:600;">Sin carpeta de evidencias.</span>`;
       }
 
       document.getElementById("modalRevision").style.display = "flex";
@@ -969,12 +969,12 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
       visor.style.display = "block";
       
       visor.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: #1f2937; color: var(--text-main); padding: 10px 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--header-bg); color: var(--text-main); padding: 10px 15px;">
           <span style="font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-            <span class="material-symbols-outlined" style="font-size: 18px; color: #93c5fd;">picture_as_pdf</span> 
+            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">picture_as_pdf</span> 
             Vista Previa del Documento
           </span>
-          <button onclick="cerrarPreviewPDF()" style="background: #f9fafb; border: none; color: #4b5563; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; transition: 0.2s;">
+          <button onclick="cerrarPreviewPDF()" style="background: var(--glass-bg-hover); border: none; color: var(--text-muted); padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; transition: 0.2s;">
             <span class="material-symbols-outlined" style="font-size: 16px;">close</span> Cerrar
           </button>
         </div>
@@ -1072,7 +1072,7 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
         cuerpo.innerHTML = "";
         
         if (datos.length === 0) {
-          cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#6b7280; padding:20px;">No hay protocolos programados en la hoja externa para el día de hoy.</td></tr>`;
+          cuerpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No hay protocolos programados en la hoja externa para el día de hoy.</td></tr>`;
           return;
         }
         
@@ -1082,16 +1082,16 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
           if (item.estado === "Incumplido") badgeClass = "badge-rechazado";
           if (item.estado === "Pendiente") badgeClass = "badge-pendiente";
           
-          const linkEvidencia = item.evidenciaUrl ? `<a href="${item.evidenciaUrl}" target="_blank" style="color:#2563eb; display:inline-flex; align-items:center; gap:4px; font-weight:600; text-decoration:none;"><span class="material-symbols-outlined" style="font-size:18px;">image</span> Ver</a>` : `<span style="color:#9ca3af; font-size:13px;">Ninguna</span>`;
+          const linkEvidencia = item.evidenciaUrl ? `<a href="${item.evidenciaUrl}" target="_blank" style="color:var(--accent-primary); display:inline-flex; align-items:center; gap:4px; font-weight:600; text-decoration:none;"><span class="material-symbols-outlined" style="font-size:18px;">image</span> Ver</a>` : `<span style="color:var(--text-muted); font-size:13px;">Ninguna</span>`;
           
           cuerpo.innerHTML += `
             <tr>
               <td><strong>${item.tienda}</strong></td>
-              <td style="text-align: center; color: #a6c369;">${item.horaProgramada} hrs</td>
+              <td style="text-align: center; color: var(--success);">${item.horaProgramada} hrs</td>
               <td style="text-align: center;">
                 <span class="badge ${badgeClass}">${item.estado}</span>
               </td>
-              <td style="color: #4b5563; max-width: 250px; white-space: normal; word-wrap: break-word; line-height: 1.4;">${item.observacion || '<span style="color:#9ca3af; font-style:italic;">Sin notas</span>'}</td>
+              <td style="color: var(--text-muted); max-width: 250px; white-space: normal; word-wrap: break-word; line-height: 1.4;">${item.observacion || '<span style="color:var(--text-muted); font-style:italic;">Sin notas</span>'}</td>
               <td style="text-align: center;">${linkEvidencia}</td>
               <td style="text-align: center;">
                 <button onclick="forzarCambioEstatusRepo(${item.numFila}, '${item.tienda}')" class="btn-editar-repo">
@@ -1112,18 +1112,18 @@ function drawChart(obj, elementId, title, type = 'PieChart') {
         showCancelButton: true,
         html: `
           <div style="margin-top: 10px; text-align: left;">
-            <label style="font-weight: 600; font-size: 14px; color: #374151;">Nuevo Estatus:</label>
+            <label style="font-weight: 600; font-size: 14px; color: var(--glass-bg);">Nuevo Estatus:</label>
             <select id="swal-select-status" class="swal2-input select-filtro" style="width: 80%; margin: 8px auto; display: block; font-size: 14px;">
               <option value="Cumplido">Cumplido</option>
               <option value="Incumplido">Incumplido</option>
               <option value="Pendiente">Pendiente</option>
             </select>
-            <label style="font-weight: 600; font-size: 14px; color: #374151; margin-top: 10px; display: block;">Observación de Auditoría:</label>
+            <label style="font-weight: 600; font-size: 14px; color: var(--glass-bg); margin-top: 10px; display: block;">Observación de Auditoría:</label>
             <textarea id="swal-text-obs" class="swal2-textarea obs-textarea" placeholder="Escribe la nota de corrección aquí..." style="width: 80%; margin: 8px auto; display: block; height: 80px; font-size: 14px;"></textarea>
           </div>
         `,
-        confirmButtonColor: '#1e3a8a',
-        cancelButtonColor: '#6b7280',
+        confirmButtonColor: 'var(--accent-primary)',
+        cancelButtonColor: 'var(--text-muted)',
         confirmButtonText: 'Guardar Corrección',
         cancelButtonText: 'Cancelar',
         preConfirm: () => {

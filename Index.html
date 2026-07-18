@@ -58,7 +58,7 @@ label {
   display: block;
   margin-top: 18px;
   font-weight: 600;
-  color: #daffde;
+  color: var(--accent-primary);
   font-size: 14px;
 }
 
@@ -127,7 +127,7 @@ textarea {
 .input-iniciales {
   flex: none !important;
   width: 90px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: var(--glass-bg) !important;
   color: var(--accent-primary) !important; 
   font-weight: 700;
   text-align: center;
@@ -152,7 +152,7 @@ textarea {
 }
 
 .btn-enviar:hover {
-  background: #c3e67b;
+  background: var(--accent-primary);
   box-shadow: 0 0 15px var(--accent-glow);
   transform: translateY(-2px);
 }
@@ -200,7 +200,7 @@ textarea {
     <input type="file" id="files" multiple onchange="manejarSeleccionArchivos()">
     <label for="files" class="file-upload-label">
       <span class="material-symbols-outlined upload-icon">cloud_upload</span>
-      <span style="font-size: 14px; color: #daffde;"><strong>Haz clic para cargar</strong> o arrastra los archivos aquí</span>
+      <span style="font-size: 14px; color: var(--accent-primary);"><strong>Haz clic para cargar</strong> o arrastra los archivos aquí</span>
       <span id="file-counter" class="file-counter">Ningún archivo seleccionado</span>
     </label>
   </div>

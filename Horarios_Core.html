@@ -39,7 +39,7 @@
       const bar = document.getElementById('loading-bar');
       if (bar) {
         if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId));
-        bar.style.width = '100%'; bar.style.background = '#6ee7b7'; bar.style.boxShadow = '0 0 15px #6ee7b7';
+        bar.style.width = '100%'; bar.style.background = 'var(--success)'; bar.style.boxShadow = '0 0 15px var(--success)';
       }
       setTimeout(() => {
         Swal.fire({ title: tituloExito, text: textoExito, icon: 'success', customClass: { popup: 'swal-dark-popup' }, background: 'transparent', confirmButtonColor: 'var(--glass-border)' });
@@ -67,7 +67,7 @@
       let html = `<div class="tooltip-header"><span class="material-symbols-outlined" style="font-size:16px;">person</span> ${escaparHTML(item.nombre)}</div><div class="tooltip-body">`;
       
       if (EXCEPCIONES.includes(item.entrada)) {
-        html += `<div class="tooltip-row"><strong style="color:#fca5a5;">Estado:</strong> ${item.entrada}</div>`;
+        html += `<div class="tooltip-row"><strong style="color:var(--danger);">Estado:</strong> ${item.entrada}</div>`;
       } else {
         html += `<div class="tooltip-row"><strong style="color:var(--accent-primary);">Horario:</strong> ${item.entrada} a ${item.salida}</div>`;
         if (item.breakIn && item.breakOut) {
@@ -179,7 +179,7 @@ function pegarTurnosDia() {
       if (!Array.isArray(lista)) lista = []; contenedor.innerHTML = ""; filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
       if (lista.length === 0) {
         document.getElementById('liveDashboard').style.display = 'none';
-        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: #3f3f46; display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--accent-primary); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
+        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: var(--glass-border); display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--accent-primary); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
         return;
       }
 
@@ -253,7 +253,7 @@ function pegarTurnosDia() {
         else { dotLive.className = 'dot-live simulated'; textLive.innerText = 'VISTA SIMULADA (SEGÚN HORA ACTUAL)'; textLive.style.color = 'var(--warning)'; }
       }
 
-      let trabajando = 0, enBreak = 0, fuera = 0; let avatarsHTML = `<span style="margin-right:8px; font-weight:700; color:#52525b; text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Monitoreando:</span>`;
+      let trabajando = 0, enBreak = 0, fuera = 0; let avatarsHTML = `<span style="margin-right:8px; font-weight:700; color:var(--text-muted); text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Monitoreando:</span>`;
       const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
 
       turnosActuales.forEach(t => {
@@ -274,7 +274,7 @@ function pegarTurnosDia() {
 
       animarContadorDash('count-working', trabajando, 'working'); animarContadorDash('count-break', enBreak, 'break'); animarContadorDash('count-inactive', fuera, 'inactive');
       
-      let nuevoHTMLAvatares = (trabajando + enBreak > 0) ? avatarsHTML : '<span style="color:#4b5563; font-style:italic;">Ningún colaborador operando activamente.</span>';
+      let nuevoHTMLAvatares = (trabajando + enBreak > 0) ? avatarsHTML : '<span style="color:var(--text-muted); font-style:italic;">Ningún colaborador operando activamente.</span>';
       if (memoriaAvataresHTML !== nuevoHTMLAvatares) { document.getElementById('active-avatars').innerHTML = nuevoHTMLAvatares; memoriaAvataresHTML = nuevoHTMLAvatares; }
     }
 
@@ -333,7 +333,7 @@ function pegarTurnosDia() {
       if(fallos.length > 0) { let actual = fallos[0]; for(let i = 1; i < fallos.length; i++) { if(fallos[i].mensaje === actual.mensaje && fallos[i].inicio === actual.fin) actual.fin = fallos[i].fin; else { fallosAgrupados.push(actual); actual = fallos[i]; } } fallosAgrupados.push(actual); }
 
       const container = document.getElementById("diagnosticoTrack"); if(!container) return; container.innerHTML = "";
-      if(fallosAgrupados.length === 0 && turnosActuales.length > 0) { container.innerHTML = `<div class="diagnostico-row" style="background: rgba(16, 185, 129, 0.05); border-color: #065f46; animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label" style="color: #6ee7b7;"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> COBERTURA OK</div><div class="diagnostico-track"><div class="alerta-block ok" style="left:0; width:100%;">Todo el personal necesario está cubierto para el turno de este día</div></div></div>`; } 
+      if(fallosAgrupados.length === 0 && turnosActuales.length > 0) { container.innerHTML = `<div class="diagnostico-row" style="background: rgba(16, 185, 129, 0.05); border-color: var(--success); animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label" style="color: var(--success);"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> COBERTURA OK</div><div class="diagnostico-track"><div class="alerta-block ok" style="left:0; width:100%;">Todo el personal necesario está cubierto para el turno de este día</div></div></div>`; } 
       else if (fallosAgrupados.length > 0) {
         let bloquesHTML = ""; fallosAgrupados.forEach(f => { let left = ((f.inicio / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100; let width = (((f.fin - f.inicio) / 60) / TOTAL_HORAS_GRID) * 100; bloquesHTML += `<div class="alerta-block ${f.tipo}" style="left: ${left}%; width: calc(${width}% - 6px); margin-left: 3px;" title="De ${aHoraTexto(f.inicio)} a ${aHoraTexto(f.fin)} | ${f.mensaje}">${f.mensaje}</div>`; });
         container.innerHTML = `<div class="diagnostico-row" style="animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label"><span class="material-symbols-outlined" style="font-size:16px;">warning</span> ALERTAS</div><div class="diagnostico-track">${bloquesHTML}</div></div>`;
@@ -397,7 +397,7 @@ function pegarTurnosDia() {
         title: `Editar Turno: ${escaparHTML(turno.nombre)}`,
         customClass: { popup: 'swal-dark-popup' },
         background: 'transparent',
-        html: `<div style="text-align:left; color:var(--text-main);"><div style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: rgba(255, 255, 255, 0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:var(--warning); font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
+        html: `<div style="text-align:left; color:var(--text-main);"><div style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: var(--glass-bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:var(--warning); font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div>
@@ -434,7 +434,7 @@ function pegarTurnosDia() {
             <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
           </div>
         </div>`,
-        showCancelButton: true, showDenyButton: true, confirmButtonColor: 'var(--accent-glow)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', denyButtonColor: 'rgba(239, 68, 68, 0.2)', confirmButtonText: '<span style="color:var(--accent-primary); font-weight:bold;">Guardar</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>', denyButtonText: '<span style="color:#fca5a5; font-weight:bold;">Eliminar</span>',
+        showCancelButton: true, showDenyButton: true, confirmButtonColor: 'var(--accent-glow)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', denyButtonColor: 'rgba(239, 68, 68, 0.2)', confirmButtonText: '<span style="color:var(--accent-primary); font-weight:bold;">Guardar</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>', denyButtonText: '<span style="color:var(--danger); font-weight:bold;">Eliminar</span>',
         preConfirm: () => {
           const tipo = document.getElementById('edit-main-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" }; const aplica = document.getElementById('edit-main-aplica-break').checked;
@@ -458,7 +458,7 @@ function pegarTurnosDia() {
             .withFailureHandler(manejarErrorServidor)
             .actualizarTurnoExistente(turnoAct);
         } else if (result.isDenied) {
-          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, eliminar</span>' }).then((deleteResult) => {
+          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--danger); font-weight:bold;">Sí, eliminar</span>' }).then((deleteResult) => {
             if (deleteResult.isConfirmed) {
               mostrarModalSincronizando('Eliminando...');
               google.script.run.withSuccessHandler(function() { turnosActuales.splice(index, 1); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Eliminado!', 'El turno fue borrado correctamente.'); }).withFailureHandler(manejarErrorServidor).eliminarTurno(turno.id);
@@ -857,7 +857,7 @@ function pegarTurnosDia() {
 
     function ejecutarEliminacionMasiva() {
       if (turnosSeleccionados.length === 0) return;
-      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:#fca5a5; font-weight:bold;">Sí, borrar todo</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>' }).then((result) => {
+      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--danger); font-weight:bold;">Sí, borrar todo</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>' }).then((result) => {
         if (result.isConfirmed) {
           mostrarModalSincronizando('Eliminando...');
           google.script.run.withSuccessHandler(function() { turnosActuales = turnosActuales.filter(t => !turnosSeleccionados.includes(String(t.id))); toggleModoSeleccion(); analizarCobertura(); completarBarraYMostrarExito('¡Eliminados!', 'Se ha limpiado la base de datos.'); }).withFailureHandler(manejarErrorServidor).eliminarTurnosMasivo(turnosSeleccionados); 
@@ -1060,7 +1060,7 @@ function pegarTurnosDia() {
         background: 'transparent',
         html: `<div style="text-align:left; color:var(--text-main);">
               <div
-                style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: rgba(255, 255, 255, 0.05); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);">
+                style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: var(--glass-bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);">
                 <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span>
                 Editando: <b>${turno.fecha}</b>
               </div>
@@ -1143,7 +1143,7 @@ function pegarTurnosDia() {
             historialActual[index].nota = turnoAct.nota; // <--- Actualizamos la nota localmente
 
             if (turno.fecha === document.getElementById('fechaFiltro').value) cargarHorarios();
-            const bar = document.getElementById('loading-bar'); if (bar) { if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId)); bar.style.width = '100%'; bar.style.background = '#6ee7b7'; }
+            const bar = document.getElementById('loading-bar'); if (bar) { if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId)); bar.style.width = '100%'; bar.style.background = 'var(--success)'; }
             setTimeout(() => { dibujarModalPerfil(turno.nombre); }, 350);
           }).withFailureHandler(manejarErrorServidor).actualizarTurnoExistente(turnoAct);
         } else { 

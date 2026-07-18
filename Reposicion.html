@@ -39,7 +39,7 @@
 
     .fecha-badge {
       background: var(--glass-bg);
-      color: #a1a1aa;
+      color: var(--text-muted);
       padding: 6px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -74,7 +74,7 @@
        ========================================= */
     .card-pendiente {
       border: 1px solid rgba(250, 204, 21, 0.4) !important;
-      border-left: 4px solid #facc15 !important;
+      border-left: 4px solid var(--warning) !important;
       background: rgba(250, 204, 21, 0.03);
       box-shadow: 0 0 15px rgba(250, 204, 21, 0.15), inset 0 0 20px rgba(250, 204, 21, 0.02) !important;
     }
@@ -88,7 +88,7 @@
 
     .card-incumplido {
       border: 1px solid rgba(248, 113, 113, 0.4) !important;
-      border-left: 4px solid #f87171 !important;
+      border-left: 4px solid var(--danger) !important;
       background: rgba(248, 113, 113, 0.03);
       box-shadow: 0 0 15px rgba(248, 113, 113, 0.15), inset 0 0 20px rgba(248, 113, 113, 0.02) !important;
     }
@@ -103,10 +103,10 @@
     .hora-badge {
       font-size: 12px;
       font-weight: 700;
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--glass-bg);
       padding: 4px 8px;
       border-radius: 6px;
-      color: #9ca3af;
+      color: var(--text-muted);
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -115,7 +115,7 @@
     .control-label {
       font-size: 10px;
       font-weight: 700;
-      color: #52525b;
+      color: var(--text-muted);
       text-transform: uppercase;
       margin-top: 15px;
       margin-bottom: 6px;
@@ -128,7 +128,7 @@
       border-radius: 8px;
       border: 1px solid var(--glass-border);
       background: rgba(0, 0, 0, 0.2);
-      color: #111827;
+      color: var(--bg-main);
       font-size: 13px;
       box-sizing: border-box;
       resize: none;
@@ -138,7 +138,7 @@
     
     .obs-input:focus {
       outline: none;
-      border-color: #9ca3af;
+      border-color: var(--text-muted);
       background: rgba(0, 0, 0, 0.4);
     }
 
@@ -168,7 +168,7 @@
     }
 
     .arrow-icon {
-      color: #9ca3af;
+      color: var(--text-muted);
       font-size: 18px;
     }
 
@@ -251,7 +251,7 @@
       display: block;
       font-size: 11px;
       font-weight: 600;
-      color: #9ca3af;
+      color: var(--text-muted);
       background: rgba(0, 0, 0, 0.3);
       padding: 4px 10px;
       border-radius: 20px;
@@ -293,7 +293,7 @@
     }
 
     .btn-save-card:hover {
-      background: #c3e67b;
+      background: var(--accent-primary);
       box-shadow: 0 0 10px var(--accent-glow);
     }
 
@@ -304,7 +304,7 @@
       justify-content: center;
       gap: 8px;
       font-size: 11px;
-      color: #9ca3af;
+      color: var(--text-muted);
       text-decoration: none;
       background: rgba(255, 255, 255, 0.03);
       padding: 8px 12px;
@@ -366,7 +366,7 @@
       width: 30px;
       height: 30px;
       cursor: pointer;
-      color: #f87171;
+      color: var(--danger);
     }
 
     .modal-body-preview {
@@ -399,7 +399,7 @@
     </div>
 
     <div id="gridTiendas" class="tiendas-grid">
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280; font-weight: 500;">
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-weight: 500;">
         Buscando la agenda de protocolos para el día de hoy...
       </div>
     </div>
@@ -433,7 +433,7 @@
           const grid = document.getElementById("gridTiendas");
           
           if(agenda.length === 0) {
-            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #6b7280; font-weight: 500;">No hay alertas de reposición registradas para la fecha de hoy o ya concluyó el turno.</div>`;
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-weight: 500;">No hay alertas de reposición registradas para la fecha de hoy o ya concluyó el turno.</div>`;
             return;
           }
 
@@ -445,26 +445,26 @@
             const est = item.estado.toLowerCase();
             let claseEstadoCard = "card-pendiente";
             let statusIcon = "schedule"; 
-            let statusColor = "#f59e0b"; 
+            let statusColor = "var(--warning)"; 
 
             if(est.includes("cumplido") && !est.includes("incumplido")) {
               claseEstadoCard = "card-cumplido";
-              statusIcon = "check_circle"; statusColor = "#10b981"; 
+              statusIcon = "check_circle"; statusColor = "var(--success)"; 
             }
             if(est.includes("incumplido")) {
               claseEstadoCard = "card-incumplido";
-              statusIcon = "cancel"; statusColor = "#ef4444"; 
+              statusIcon = "cancel"; statusColor = "var(--danger)"; 
             }
 
             const optionsHTML = `
-              <li onclick="setCardStatus(${item.numFila}, 'Pendiente', 'schedule', '#f59e0b')">
-                <span class="material-symbols-outlined option-icon" style="color:#f59e0b">schedule</span> Pendiente
+              <li onclick="setCardStatus(${item.numFila}, 'Pendiente', 'schedule', 'var(--warning)')">
+                <span class="material-symbols-outlined option-icon" style="color:var(--warning)">schedule</span> Pendiente
               </li>
-              <li onclick="setCardStatus(${item.numFila}, 'Cumplido', 'check_circle', '#10b981')">
-                <span class="material-symbols-outlined option-icon" style="color:#10b981">check_circle</span> Cumplido
+              <li onclick="setCardStatus(${item.numFila}, 'Cumplido', 'check_circle', 'var(--success)')">
+                <span class="material-symbols-outlined option-icon" style="color:var(--success)">check_circle</span> Cumplido
               </li>
-              <li onclick="setCardStatus(${item.numFila}, 'Incumplido', 'cancel', '#ef4444')">
-                <span class="material-symbols-outlined option-icon" style="color:#ef4444">cancel</span> Incumplido
+              <li onclick="setCardStatus(${item.numFila}, 'Incumplido', 'cancel', 'var(--danger)')">
+                <span class="material-symbols-outlined option-icon" style="color:var(--danger)">cancel</span> Incumplido
               </li>
             `;
 
@@ -509,7 +509,7 @@
                     <input type="file" id="fileInput-${item.numFila}" class="file-upload-input-inline" accept="image/*" onchange="processFileTarjeta(this, ${item.numFila})">
                     <label for="fileInput-${item.numFila}" class="file-upload-label-inline" id="fileLabel-${item.numFila}">
                       <span class="material-symbols-outlined upload-icon-inline">add_a_photo</span>
-                      <span id="labelText-${item.numFila}" style="font-size: 13px; color: #4b5563;"><b>Haz clic</b> para cargar captura</span>
+                      <span id="labelText-${item.numFila}" style="font-size: 13px; color: var(--text-muted);"><b>Haz clic</b> para cargar captura</span>
                       <span id="fileCounter-${item.numFila}" class="file-counter-inline">Ninguna captura seleccionada</span>
                     </label>
                   </div>
@@ -538,8 +538,8 @@
       const thumbnail = document.getElementById(`thumbnail-${numFila}`);
 
       fileLabel.classList.remove("has-file");
-      fileLabel.style.borderColor = "#d1d5db";
-      fileLabel.style.background = "#111827";
+      fileLabel.style.borderColor = "var(--text-muted)";
+      fileLabel.style.background = "var(--bg-main)";
       labelText.innerHTML = `<b>Haz clic</b> para cargar captura`;
       fileCounter.textContent = "Ninguna captura seleccionada";
       thumbnail.style.display = "none";
@@ -550,8 +550,8 @@
         const file = input.files[0];
         const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
         
-        fileLabel.style.borderColor = "#f59e0b";
-        fileLabel.style.background = "#374151";
+        fileLabel.style.borderColor = "var(--warning)";
+        fileLabel.style.background = "var(--glass-bg)";
         labelText.innerHTML = `<b>Procesando captura...</b>`;
         fileCounter.textContent = `Archivo: ${file.name} | Tamaño original: ${originalSizeMB} MB`;
 
@@ -562,7 +562,7 @@
           
           fileLabel.classList.add("has-file");
           fileLabel.style.borderColor = "var(--accent-primary)";
-          fileLabel.style.background = "#1f2937";
+          fileLabel.style.background = "var(--glass-bg)";
           thumbnail.src = `data:${file.type};base64,${compressedBase64}`;
           thumbnail.style.display = "block";
         });
