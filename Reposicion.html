@@ -33,7 +33,7 @@
       margin: 0;
       font-size: 20px;
       font-weight: 600;
-      border-left: 3px solid #3b82f6;
+      border-left: 3px solid var(--accent-primary);
       padding-left: 12px;
     }
 
@@ -80,10 +80,10 @@
     }
 
     .card-cumplido {
-      border: 1px solid rgba(59, 130, 246, 0.4) !important;
-      border-left: 4px solid #3b82f6 !important;
-      background: rgba(59, 130, 246, 0.03);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.15), inset 0 0 20px rgba(59, 130, 246, 0.02) !important;
+      border: 1px solid var(--accent-glow) !important;
+      border-left: 4px solid var(--accent-primary) !important;
+      background: var(--accent-glow);
+      box-shadow: 0 0 15px var(--accent-glow), inset 0 0 20px var(--accent-glow) !important;
     }
 
     .card-incumplido {
@@ -199,7 +199,7 @@
     }
 
     .custom-select-dropdown li:hover {
-      background: rgba(59, 130, 246, 0.05);
+      background: var(--accent-glow);
     }
 
     /* ZONA DE CARGA DE ARCHIVOS - CORREGIDA */
@@ -237,13 +237,13 @@
 
     /* Estado cuando tiene archivo */
     .file-upload-label-inline.has-file {
-      background: rgba(59, 130, 246, 0.05) !important;
-      border: 2px solid #3b82f6 !important;
+      background: var(--accent-glow) !important;
+      border: 2px solid var(--accent-primary) !important;
     }
 
     .upload-icon-inline {
       font-size: 32px;
-      color: #3b82f6;
+      color: var(--accent-primary);
       margin-bottom: 5px;
     }
 
@@ -259,8 +259,8 @@
     }
 
     .file-counter-inline.has-file {
-      background: rgba(59, 130, 246, 0.15);
-      color: #3b82f6;
+      background: var(--accent-glow);
+      color: var(--accent-primary);
     }
 
     /* CORRECCIÓN DE IMAGEN: Se limita al ancho de la tarjeta */
@@ -277,7 +277,7 @@
 
     .btn-save-card {
       margin-top: 15px;
-      background: #3b82f6;
+      background: var(--accent-primary);
       color: #050505;
       border: none;
       padding: 12px;
@@ -294,7 +294,7 @@
 
     .btn-save-card:hover {
       background: #c3e67b;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     /* BOTÓN: Ver captura anterior (Minimalista) */
@@ -317,9 +317,9 @@
     }
 
     .btn-ver-anterior:hover {
-      border-color: #3b82f6;
-      color: #3b82f6;
-      background: rgba(59, 130, 246, 0.05);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      background: var(--accent-glow);
     }
 
     /* MODAL DE IMAGEN */
@@ -561,7 +561,7 @@
           imagenesCargadasMemoria[numFila] = { name: file.name, type: file.type, data: compressedBase64 };
           
           fileLabel.classList.add("has-file");
-          fileLabel.style.borderColor = "#3b82f6";
+          fileLabel.style.borderColor = "var(--accent-primary)";
           fileLabel.style.background = "#1f2937";
           thumbnail.src = `data:${file.type};base64,${compressedBase64}`;
           thumbnail.style.display = "block";

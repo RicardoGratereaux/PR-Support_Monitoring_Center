@@ -39,7 +39,7 @@
       margin-bottom: 25px;
       font-size: 20px;
       font-weight: 600;
-      border-left: 3px solid #3b82f6;
+      border-left: 3px solid var(--accent-primary);
       /* Único toque verde en el título */
       padding-left: 12px;
     }
@@ -70,7 +70,7 @@
       top: 0;
       z-index: 10;
       background: #111111;
-      color: #3b82f6;
+      color: var(--accent-primary);
       padding: 16px 16px;
       text-align: left;
       font-size: 11px;
@@ -124,10 +124,10 @@
     }
 
     .btn-editar:hover {
-      border-color: #3b82f6;
-      color: #3b82f6;
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
       /* Toque verde solo interactivo */
-      background: rgba(59, 130, 246, 0.05);
+      background: var(--accent-glow);
     }
 
     .btn-disabled {
@@ -165,7 +165,7 @@
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(59, 130, 246, 0.1);
+      border: 1px solid var(--accent-glow);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 
       /* Animación de entrada */
@@ -190,7 +190,7 @@
       font-size: 22px;
       font-weight: 700;
       margin-bottom: 25px;
-      border-left: 4px solid #3b82f6;
+      border-left: 4px solid var(--accent-primary);
       padding-left: 12px;
     }
 
@@ -217,7 +217,7 @@
     }
 
     .btn-close-modal:hover {
-      color: #3b82f6;
+      color: var(--accent-primary);
     }
 
     /* Motivo de rechazo adaptado al cristal */
@@ -254,7 +254,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       background-color: rgba(0, 0, 0, 0.2) !important;
       /* CAMBIO: background-color en lugar de background para no borrar el chevron del global css */
-      color: #ffffff;
+      color: var(--text-main);
       font-size: 14px;
       box-sizing: border-box;
       outline: none;
@@ -270,8 +270,8 @@
     .modal-content select:focus,
     /* CAMBIO: Agregado para que el select también brille */
     .modal-content textarea:focus {
-      border-color: #3b82f6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--accent-primary) !important;
+      box-shadow: 0 0 0 3px var(--accent-glow);
       background-color: rgba(0, 0, 0, 0.4) !important;
       /* CAMBIO: background-color en lugar de background */
     }
@@ -300,7 +300,7 @@
       border-radius: 0 !important;
       margin-top: 0 !important;
       background: transparent;
-      color: #ffffff;
+      color: var(--text-main);
     }
 
     .modal-content .grupo-inputs-unidos select {
@@ -313,7 +313,7 @@
 
 
     .modal-content .grupo-inputs-unidos:hover {
-      background-color: rgba(59, 130, 246, 0.05) !important;
+      background-color: var(--accent-glow) !important;
     }
 
     .modal-content .grupo-inputs-unidos *:first-child {
@@ -324,7 +324,7 @@
       flex: none !important;
       width: 90px !important;
       background: rgba(255, 255, 255, 0.05) !important;
-      color: #3b82f6 !important;
+      color: var(--accent-primary) !important;
       font-weight: 700;
       text-align: center;
       cursor: not-allowed;
@@ -337,7 +337,7 @@
    ========================================= */
     .btn-guardar {
       margin-top: 25px;
-      background: #3b82f6;
+      background: var(--accent-primary);
       color: #050505;
       font-weight: bold;
       border: none;
@@ -351,7 +351,7 @@
 
     .btn-guardar:hover {
       background: #c3e67b;
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 15px var(--accent-glow);
       transform: translateY(-2px);
     }
 
@@ -396,7 +396,7 @@
   <div id="modalEdicion" class="modal-overlay">
     <div class="modal-content">
       <button class="btn-close-modal" onclick="cerrarModal()"><span class="material-symbols-outlined">close</span></button>
-      <h2 style="margin-top: 0;">Corregir Reporte: <span id="idEdicionTexto" style="color: #3b82f6;"></span></h2>
+      <h2 style="margin-top: 0;">Corregir Reporte: <span id="idEdicionTexto" style="color: var(--accent-primary);"></span></h2>
 
       <div id="cajaRechazo" class="motivo-rechazo"></div>
       <input type="hidden" id="idReporteOculto">
@@ -566,7 +566,7 @@ function renderizarListaArchivosNuevos() {
   lista.innerHTML = "";
   archivosNuevosSeleccionados.forEach((a, i) => {
     lista.innerHTML += `
-      <div class="archivo-item" style="border-color: rgba(59, 130, 246, 0.3);">
+      <div class="archivo-item" style="border-color: var(--accent-glow);">
         <span> ${a.name}</span>
         <button type="button" class="btn-eliminar-archivo" onclick="eliminarNuevo(${i})"><span class="material-symbols-outlined">close</span></button>
       </div>`;
