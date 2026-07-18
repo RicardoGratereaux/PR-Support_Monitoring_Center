@@ -1170,28 +1170,27 @@ function pegarTurnosDia() {
       const panel = document.getElementById("panel-comando-flotante");
       if (!container || !button) return;
 
-      const rect = container.getBoundingClientRect();
+      const handleRect = button.getBoundingClientRect();
       const centroPantallaX = window.innerWidth / 2;
       const margenSeguro = 15;
 
-      // 1. Anclaje y Alineación Horizontal
-      if (rect.left + rect.width / 2 < centroPantallaX) {
+      // 1. Anclaje y Alineación Horizontal usando el BOTÓN como referencia
+      if (handleRect.left + handleRect.width / 2 < centroPantallaX) {
         container.style.alignItems = "flex-start";
         container.style.right = "auto";
-        let leftVal = rect.left;
+        let leftVal = handleRect.left;
         if (leftVal < margenSeguro) leftVal = margenSeguro;
         container.style.left = leftVal + "px";
       } else {
         container.style.alignItems = "flex-end";
         container.style.left = "auto";
-        let rightVal = window.innerWidth - rect.right;
+        let rightVal = window.innerWidth - handleRect.right;
         if (rightVal < margenSeguro) rightVal = margenSeguro;
         container.style.right = rightVal + "px";
       }
 
-      // 2. Anclaje y Alineación Vertical
+      // 2. Anclaje y Alineación Vertical usando el BOTÓN como referencia
       const panelAlto = (panel && panel.style.display !== "none") ? panel.offsetHeight : 300;
-      const handleRect = button.getBoundingClientRect();
       let isReversed = false;
       
       if (handleRect.top + panelAlto + 60 > window.innerHeight) {
@@ -1201,15 +1200,14 @@ function pegarTurnosDia() {
         container.style.flexDirection = "column";
       }
 
-      const finalRect = container.getBoundingClientRect();
       if (isReversed) {
         container.style.top = "auto";
-        let bottomVal = window.innerHeight - finalRect.bottom;
+        let bottomVal = window.innerHeight - handleRect.bottom;
         if (bottomVal < margenSeguro) bottomVal = margenSeguro;
         container.style.bottom = bottomVal + "px";
       } else {
         container.style.bottom = "auto";
-        let topVal = finalRect.top;
+        let topVal = handleRect.top;
         if (topVal < margenSeguro) topVal = margenSeguro;
         container.style.top = topVal + "px";
       }
