@@ -15,9 +15,9 @@
    GLOBAL & LAYOUT (DARK MINIMALIST)
    ========================================= */
     body {
-      background-color: #050505;
-      color: #e4e4e7;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: inherit;
     }
 
     .container {
@@ -34,7 +34,7 @@
 
     /* Títulos estilo formulario (Barra lateral de acento) */
     h2.section-title {
-      color: #f3f4f6;
+      color: var(--text-main);
       margin-top: 0;
       margin-bottom: 25px;
       font-size: 20px;
@@ -53,9 +53,9 @@
    TABLA DE REPORTES (LIMPIA Y OSCURA)
    ========================================= */
     .table-container {
-      background: #0a0a0a;
+      background: var(--glass-bg);
       border-radius: 12px;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       margin-bottom: 20px;
       overflow-x: auto;
     }
@@ -69,7 +69,7 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background: #111111;
+      background: var(--glass-bg);
       color: var(--accent-primary);
       padding: 16px 16px;
       text-align: left;
@@ -77,15 +77,15 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border-bottom: 2px solid #27272a;
+      border-bottom: 2px solid var(--glass-border);
     }
 
     td {
-      border-bottom: 1px solid #18181b;
+      border-bottom: 1px solid var(--glass-border);
       padding: 14px 16px;
       font-size: 14px;
       vertical-align: middle;
-      color: #e4e4e7;
+      color: var(--text-main);
     }
 
     tbody tr {
@@ -93,7 +93,7 @@
     }
 
     tbody tr:hover {
-      background: #111111;
+      background: var(--glass-bg);
     }
 
     
@@ -118,9 +118,9 @@
 
     /* Botón Corregir (Discreto, brilla un poco al hover) */
     .btn-editar {
-      border-color: #27272a;
+      border-color: var(--glass-border);
       color: #a1a1aa;
-      background: #111111;
+      background: var(--glass-bg);
     }
 
     .btn-editar:hover {
@@ -186,7 +186,7 @@
 
     .modal-content h2 {
       margin-top: 0;
-      color: #f3f4f6;
+      color: var(--text-main);
       font-size: 22px;
       font-weight: 700;
       margin-bottom: 25px;
@@ -338,7 +338,7 @@
     .btn-guardar {
       margin-top: 25px;
       background: var(--accent-primary);
-      color: #050505;
+      color: var(--bg-main);
       font-weight: bold;
       border: none;
       border-radius: 10px;

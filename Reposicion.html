@@ -29,7 +29,7 @@
     }
 
     h2.section-title {
-      color: #f3f4f6;
+      color: var(--text-main);
       margin: 0;
       font-size: 20px;
       font-weight: 600;
@@ -38,13 +38,13 @@
     }
 
     .fecha-badge {
-      background: #111111;
+      background: var(--glass-bg);
       color: #a1a1aa;
       padding: 6px 14px;
       border-radius: 8px;
       font-size: 13px;
       font-weight: 600;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       display: flex;
       align-items: center;
       gap: 6px;
@@ -59,7 +59,7 @@
 
     .tienda-card {
       background: rgba(255, 255, 255, 0.03);
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 20px;
       display: flex;
@@ -97,7 +97,7 @@
     .card-header .tienda-name {
       font-size: 15px;
       font-weight: 700;
-      color: #e4e4e7;
+      color: var(--text-main);
     }
 
     .hora-badge {
@@ -126,7 +126,7 @@
       width: 100%;
       padding: 12px;
       border-radius: 8px;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       background: rgba(0, 0, 0, 0.2);
       color: #111827;
       font-size: 13px;
@@ -146,7 +146,7 @@
     .custom-select-wrapper {
       position: relative;
       width: 100%;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       border-radius: 8px;
       background: rgba(0, 0, 0, 0.2);
       cursor: pointer;
@@ -156,7 +156,7 @@
       padding: 12px;
       font-size: 14px;
       font-weight: 600;
-      color: #e4e4e7;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -177,8 +177,8 @@
       top: 100%;
       left: 0;
       width: 100%;
-      background: #111111;
-      border: 1px solid #27272a;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       display: none;
@@ -191,11 +191,11 @@
     .custom-select-dropdown li {
       padding: 12px 15px;
       font-size: 14px;
-      color: #e4e4e7;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
-      border-bottom: 1px solid #27272a;
+      border-bottom: 1px solid var(--glass-border);
     }
 
     .custom-select-dropdown li:hover {
@@ -228,7 +228,7 @@
       justify-content: center;
       padding: 20px;
       background: rgba(0, 0, 0, 0.2);
-      border: 2px dashed #27272a;
+      border: 2px dashed var(--glass-border);
       border-radius: 12px;
       text-align: center;
       transition: all 0.3s ease;
@@ -269,7 +269,7 @@
       height: 120px;
       object-fit: cover;
       border-radius: 8px;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       cursor: pointer;
       margin-top: 10px;
       display: none;
@@ -278,7 +278,7 @@
     .btn-save-card {
       margin-top: 15px;
       background: var(--accent-primary);
-      color: #050505;
+      color: var(--bg-main);
       border: none;
       padding: 12px;
       border-radius: 8px;
@@ -309,7 +309,7 @@
       background: rgba(255, 255, 255, 0.03);
       padding: 8px 12px;
       border-radius: 6px;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
       width: 100%;
       box-sizing: border-box;
       transition: all 0.2s ease;
@@ -338,8 +338,8 @@
     }
 
     .modal-content-preview {
-      background: #111111;
-      border: 1px solid #27272a;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
       width: 90%;
       max-width: 800px;
@@ -352,9 +352,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #050505;
-      border-bottom: 1px solid #27272a;
-      color: white;
+      background: var(--bg-main);
+      border-bottom: 1px solid var(--glass-border);
+      color: var(--text-main);
       padding: 12px 18px;
       border-radius: 12px 12px 0 0;
     }
@@ -371,14 +371,14 @@
 
     .modal-body-preview {
       padding: 20px;
-      background: #050505;
+      background: var(--bg-main);
     }
 
     .full-image-preview {
       max-width: 100%;
       max-height: 70vh;
       border-radius: 8px;
-      border: 1px solid #27272a;
+      border: 1px solid var(--glass-border);
     }
 
     
