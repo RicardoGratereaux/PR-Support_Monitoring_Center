@@ -1248,11 +1248,10 @@ function toggleAssistiveMenu(e) {
         document.onmousemove = elementDrag;
       }
 
-      function elementDrag(e) {
+            function elementDrag(e) {
         e = e || window.event;
         e.preventDefault();
         
-        // Tolerancia: Si se mueve más de 4px, la computadora sabe que es un arrastre libre
         if (Math.abs(pos3 - e.clientX) > 4 || Math.abs(pos4 - e.clientY) > 4) {
           assistiveDragged = true;
         }
@@ -1265,15 +1264,18 @@ function toggleAssistiveMenu(e) {
         let nuevoTop = container.offsetTop - pos2;
         let nuevoLeft = container.offsetLeft - pos1;
 
-        // Límites de colisión con los bordes de la ventana del navegador
+        // Limites de colision estrictos
         const margenSeguro = 10;
+        const panelWidth = container.offsetWidth || 56;
+        const panelHeight = container.offsetHeight || 56;
+        
         if (nuevoTop < margenSeguro) nuevoTop = margenSeguro;
-        if (nuevoTop > window.innerHeight - container.offsetHeight - margenSeguro) {
-          nuevoTop = window.innerHeight - container.offsetHeight - margenSeguro;
+        if (nuevoTop > window.innerHeight - panelHeight - margenSeguro) {
+          nuevoTop = window.innerHeight - panelHeight - margenSeguro;
         }
         if (nuevoLeft < margenSeguro) nuevoLeft = margenSeguro;
-        if (nuevoLeft > window.innerWidth - container.offsetWidth - margenSeguro) {
-          nuevoLeft = window.innerWidth - container.offsetWidth - margenSeguro;
+        if (nuevoLeft > window.innerWidth - panelWidth - margenSeguro) {
+          nuevoLeft = window.innerWidth - panelWidth - margenSeguro;
         }
 
         container.style.top = nuevoTop + "px";
@@ -1285,6 +1287,48 @@ function toggleAssistiveMenu(e) {
       function closeDragElement() {
         document.onmouseup = null;
         document.onmousemove = null;
+        window.getSelection().removeAllRanges(); // Deseleccionar textos accidentales
+        
+        // Convertir a posicionamiento relativo al borde derecho/inferior para hacerlo responsivo al redimensionar
+        const margenSeguro = 10;
+        const rect = container.getBoundingClientRect();
+        
+        let rightValue = window.innerWidth - rect.right;
+        let bottomValue = window.innerHeight - rect.bottom;
+        
+        // Limitar valores relativos
+        if (rightValue < margenSeguro) rightValue = margenSeguro;
+        if (bottomValue < margenSeguro) bottomValue = margenSeguro;
+        
+        container.style.left = "auto";
+        container.style.right = rightValue + "px";
+        container.style.bottom = "auto"; // Mantener top absoluto
       }
-    }
+      
+      // Evento de resize para reubicar dinamicamente dentro de los limites de pantalla
+      window.addEventListener('resize', function() {
+        const margenSeguro = 10;
+        const panelWidth = container.offsetWidth || 56;
+        const panelHeight = container.offsetHeight || 56;
+        
+        let currentTop = container.offsetTop;
+        let currentLeft = container.offsetLeft;
+        
+        let maxTop = window.innerHeight - panelHeight - margenSeguro;
+        let maxLeft = window.innerWidth - panelWidth - margenSeguro;
+        
+        if (currentTop < margenSeguro) currentTop = margenSeguro;
+        if (currentTop > maxTop) currentTop = Math.max(margenSeguro, maxTop);
+        
+        // Si tiene right auto (esta usando left)
+        if (container.style.left !== "auto" && container.style.left !== "") {
+          if (currentLeft < margenSeguro) currentLeft = margenSeguro;
+          if (currentLeft > maxLeft) currentLeft = Math.max(margenSeguro, maxLeft);
+          container.style.left = currentLeft + "px";
+        } else {
+          // Si esta usando right, se mantiene pegado al borde derecho automaticamente por CSS
+          // Solo limitamos verticalmente
+        }
+        container.style.top = currentTop + "px";
+      });
   </script>

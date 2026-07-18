@@ -233,11 +233,14 @@
     }
 
     .timeline-container {
-      background: transparent;
-      border: none;
-      box-shadow: none;
+      background: #12121a; /* Rich very dark flat background */
+      border: 1px solid #232330; /* Clean dark border */
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
       width: 100%;
       overflow-x: auto;
+      box-sizing: border-box;
     }
 
     .timeline-header-grid {
@@ -330,6 +333,7 @@
       position: relative;
       width: 100%;
       height: 28px;
+      overflow: hidden; /* Prevent child overflow scrollbars */
       background-color: rgba(255, 255, 255, 0.015); /* Softest flat indicator */
       border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.03); /* Thin minimalist border */
@@ -434,6 +438,7 @@
       position: relative;
       width: 100%;
       height: 28px;
+      overflow: hidden; /* Prevent child overflow scrollbars */
       background-color: transparent;
       background-size: calc(100% / 13) 100%;
     }
@@ -575,6 +580,10 @@
       z-index: 5;
       box-sizing: border-box;
       transition: all 0.2s ease;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 8px;
     }
 
     .timeline-row.dragging {
@@ -707,11 +716,11 @@
     }
 
     .dashboard-container {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #12121a; /* Matching rich dark card background */
+      border: 1px solid #232330;
       border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 20px;
+      padding: 20px;
+      margin-bottom: 25px;
       box-sizing: border-box;
       animation: dashboardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       transform-origin: top center;
@@ -1037,8 +1046,15 @@
       .timeline-row,
       .diagnostico-row,
       .dashboard-container {
-        min-width: 800px;
-      }
+      background: #12121a; /* Matching rich dark card background */
+      border: 1px solid #232330;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-sizing: border-box;
+      animation: dashboardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      transform-origin: top center;
+    }
 
       .legend {
         flex-wrap: wrap;
