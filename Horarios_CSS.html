@@ -348,58 +348,65 @@
 
     .block-laboral {
       position: absolute;
-      height: 20px;
-      top: 3px;
-      background: #232433; /* Surface0-ish, flat and dark */
-      border: 1px solid #3f4258; /* Surface2-ish, subtle border */
+      height: 22px; /* Slightly taller for better readability */
+      top: 2px;
+      background: #313244; /* Surface 0 - solid dark background */
+      border: 1px solid #45475a; /* Surface 1 - subtle border */
+      border-left: 4px solid #b4befe; /* Lavender indicator strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #cdd6f4; /* Flat clean text */
+      color: #cdd6f4; /* Clean white-gray text */
       font-size: 10px;
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       transition: all 0.2s ease;
+      box-sizing: border-box;
     }
 
     .block-descanso {
       position: absolute;
-      height: 20px;
-      top: 3px;
-      background: #2a1e28; /* Soft red-dark flat background */
-      border: 1px dashed #5e353f; /* Soft red border */
+      height: 22px;
+      top: 2px;
+      background: #313244; /* Surface 0 */
+      border: 1px dashed #45475a;
+      border-left: 4px solid #f38ba8; /* Red indicator strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #f38ba8; /* Soft red text */
+      color: #f38ba8; /* Red text */
       font-size: 8px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.5px;
+      box-sizing: border-box;
       transition: all 0.2s ease;
     }
 
     .block-laboral:hover,
     .block-descanso:hover,
     .block-excepcion:hover {
+      transform: translateY(-1px);
       z-index: 10 !important;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
     }
     
     .block-laboral:hover {
-      background: #313244;
-      border-color: #cba6f7;
+      background: #45475a; /* Surface 1 */
+      border-left-width: 6px;
     }
     
     .block-descanso:hover {
-      background: #453040;
-      border-color: #f38ba8;
+      background: #45475a; /* Surface 1 */
+      border-left-width: 6px;
     }
     
     .block-excepcion:hover {
-      background: #453b36;
-      border-color: #f9e2af;
+      background: #45475a; /* Surface 1 */
+      border-left-width: 6px;
     }
 
     .diagnostico-row {
@@ -552,23 +559,26 @@
 
     .block-excepcion {
       position: absolute;
-      height: 20px;
-      top: 3px;
+      height: 22px;
+      top: 2px;
       left: 3px;
       right: 3px;
-      transition: all 0.2s ease;
-      background: #2e2926; /* Soft yellow-dark flat background */
-      border: 1px solid #614d3f; /* Soft yellow border */
+      background: #313244; /* Surface 0 */
+      border: 1px solid #45475a;
+      border-left: 4px solid #f9e2af; /* Yellow indicator strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #f9e2af; /* Soft yellow text */
+      color: #f9e2af; /* Yellow text */
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 1px;
       text-transform: uppercase;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       z-index: 5;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
     }
 
     .timeline-row.dragging {
