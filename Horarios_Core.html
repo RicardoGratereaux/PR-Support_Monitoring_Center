@@ -1229,5 +1229,127 @@ function toggleAssistiveMenu(e) {
       }
     } 
 
-    function initPanelComandoArrastrable() { /* Removido para usar toolbar estático */ }
+        function initPanelComandoArrastrable() {
+      const container = document.getElementById("assistive-container");
+      const handle = document.getElementById("assistive-button");
+      if (!container || !handle) return;
+
+      let isDragging = false;
+      let startX, startY;
+      let initialLeft, initialTop;
+
+      handle.addEventListener('mousedown', dragStart);
+      handle.addEventListener('touchstart', dragStart, { passive: true });
+
+      function dragStart(e) {
+        if (e.type === 'mousedown' && e.button !== 0) return; // Solo click izquierdo
+        
+        isDragging = true;
+        assistiveDragged = false;
+        
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        
+        const rect = container.getBoundingClientRect();
+        startX = clientX;
+        startY = clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchmove', dragMove, { passive: false });
+        document.addEventListener('touchend', dragEnd);
+      }
+
+      function dragMove(e) {
+        if (!isDragging) return;
+        
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        
+        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+          assistiveDragged = true;
+        }
+        
+        let nuevoLeft = initialLeft + dx;
+        let nuevoTop = initialTop + dy;
+        
+        // Limitar con bordes reales
+        const margen = 15;
+        const wWidth = window.innerWidth;
+        const wHeight = window.innerHeight;
+        const cWidth = container.offsetWidth || 56;
+        const cHeight = container.offsetHeight || 56;
+        
+        if (nuevoLeft < margen) nuevoLeft = margen;
+        if (nuevoLeft > wWidth - cWidth - margen) nuevoLeft = wWidth - cWidth - margen;
+        
+        if (nuevoTop < margen) nuevoTop = margen;
+        if (nuevoTop > wHeight - cHeight - margen) nuevoTop = wHeight - cHeight - margen;
+        
+        container.style.left = nuevoLeft + 'px';
+        container.style.top = nuevoTop + 'px';
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+        
+        if (e.cancelable) e.preventDefault();
+      }
+
+      function dragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        document.removeEventListener('mousemove', dragMove);
+        document.removeEventListener('mouseup', dragEnd);
+        document.removeEventListener('touchmove', dragMove);
+        document.removeEventListener('touchend', dragEnd);
+        
+        window.getSelection().removeAllRanges(); // Limpiar seleccion de texto
+        
+        // Convertir a posicionamiento relativo al borde derecho para que sea responsivo al resize
+        const rect = container.getBoundingClientRect();
+        const rightVal = window.innerWidth - rect.right;
+        const margen = 15;
+        const cHeight = container.offsetHeight || 56;
+        
+        let topVal = rect.top;
+        if (topVal < margen) topVal = margen;
+        if (topVal > window.innerHeight - cHeight - margen) topVal = window.innerHeight - cHeight - margen;
+        
+        container.style.left = 'auto';
+        container.style.right = rightVal + 'px';
+        container.style.top = topVal + 'px';
+        container.style.bottom = 'auto';
+      }
+      
+      // Control de resize para no ocultar el boton
+      window.addEventListener('resize', function() {
+        if (container.style.top === "" && container.style.right === "" && container.style.left === "") {
+          return; // Deja que actue el CSS nativo
+        }
+        
+        const rect = container.getBoundingClientRect();
+        const margen = 15;
+        const cWidth = container.offsetWidth || 56;
+        const cHeight = container.offsetHeight || 56;
+        
+        let topVal = rect.top;
+        if (topVal < margen) topVal = margen;
+        if (topVal > window.innerHeight - cHeight - margen) topVal = window.innerHeight - cHeight - margen;
+        container.style.top = topVal + 'px';
+        
+        // Si por algun motivo esta usando left y la pantalla se achica, empujarlo adentro
+        if (container.style.left !== "auto" && container.style.left !== "") {
+          let leftVal = container.offsetLeft;
+          let maxLeft = window.innerWidth - cWidth - margen;
+          if (leftVal < margen) leftVal = margen;
+          if (leftVal > maxLeft) leftVal = Math.max(margen, maxLeft);
+          container.style.left = leftVal + 'px';
+        }
+      });
+    }
   </script>
