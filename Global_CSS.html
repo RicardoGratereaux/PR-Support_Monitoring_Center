@@ -1,4 +1,17 @@
 <head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#cbd5e1'
+          }
+        }
+      }
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,33 +48,33 @@
     --overlay-bg: rgba(0, 0, 0, 0.6);
   }
 
-  body.light-mode {
+    body.light-mode {
     --accent-primary: #334155; 
     --accent-glow: rgba(51, 65, 85, 0.15);
     
     --bg-main: #f8fafc;
-    --bg-gradient-1: rgba(51, 65, 85, 0.04);
-    --bg-gradient-2: rgba(51, 65, 85, 0.02);
+    --bg-gradient-1: rgba(226, 232, 240, 0.5);
+    --bg-gradient-2: rgba(241, 245, 249, 0.5);
     
-    --glass-bg: rgba(255, 255, 255, 0.6);
-    --glass-bg-hover: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(0, 0, 0, 0.1);
-    --glass-border-focus: rgba(0, 0, 0, 0.4);
+    --glass-bg: #ffffff;
+    --glass-bg-hover: #f1f5f9;
+    --glass-border: #e2e8f0;
+    --glass-border-focus: #94a3b8;
     
     --text-main: #0f172a;
-    --text-muted: #64748b;
+    --text-muted: #475569;
     
     --danger: #ef4444;
     --danger-glow: rgba(239, 68, 68, 0.15);
     --warning: #f59e0b;
     --success: #10b981;
     
-    --header-bg: rgba(255, 255, 255, 0.7);
-    --sidebar-bg: rgba(255, 255, 255, 0.8);
-    --input-bg: rgba(255, 255, 255, 0.5);
-    --modal-bg: rgba(255, 255, 255, 0.9);
-    --table-header-bg: rgba(241, 245, 249, 0.95);
-    --overlay-bg: rgba(255, 255, 255, 0.3);
+    --header-bg: rgba(255, 255, 255, 0.85);
+    --sidebar-bg: rgba(255, 255, 255, 0.95);
+    --input-bg: #ffffff;
+    --modal-bg: #ffffff;
+    --table-header-bg: #f8fafc;
+    --overlay-bg: rgba(255, 255, 255, 0.5);
   }
 
   html { scroll-behavior: smooth; }
