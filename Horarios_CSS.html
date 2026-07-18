@@ -1,10 +1,5 @@
   <style>
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-    }
+    
 
     @keyframes fadeUp {
       from {
@@ -125,6 +120,12 @@
     }
 
     .btn-primary-neon {
+      background: var(--neon-green) !important;
+      color: var(--bg-dark) !important;
+      border-color: var(--neon-green) !important;
+      box-shadow: 0 0 15px var(--neon-green-glow) !important;
+      font-weight: 600;
+
       background: #deff9a !important;
       color: #000 !important;
       border-color: #deff9a !important;
@@ -216,8 +217,8 @@
     }
 
     .btn-date-nav {
-      background: #111111;
-      color: #9ca3af;
+      background: var(--glass-bg);
+      color: var(--text-muted);
       border: none;
       padding: 0 14px;
       cursor: pointer;
@@ -235,8 +236,8 @@
     .input-date-seamless {
       background: transparent;
       border: none;
-      border-left: 1px solid #27272a;
-      border-right: 1px solid #27272a;
+      border-left: 1px solid var(--glass-border);
+      border-right: 1px solid var(--glass-border);
       color: var(--text-main);
       padding: 10px 14px;
       font-size: 13px;
@@ -313,7 +314,7 @@
       width: 26px;
       height: 26px;
       border-radius: 50%;
-      background: #27272a;
+      background: var(--glass-border);
       object-fit: cover;
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
       cursor: pointer;
@@ -799,6 +800,12 @@
     }
 
     .btn-primary-neon {
+      background: var(--neon-green) !important;
+      color: var(--bg-dark) !important;
+      border-color: var(--neon-green) !important;
+      box-shadow: 0 0 15px var(--neon-green-glow) !important;
+      font-weight: 600;
+
       background: #deff9a !important;
       color: #000 !important;
       border-color: #deff9a !important;
