@@ -233,10 +233,10 @@
     }
 
     .timeline-container {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      padding: 20px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      width: 100%;
       overflow-x: auto;
     }
 
@@ -277,9 +277,9 @@
       grid-template-columns: 180px 1fr;
       gap: 15px;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--glass-border);
-      transition: background 0.3s ease;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03); /* Thin clean separator */
+      transition: background-color 0.2s ease;
     }
 
     .timeline-row:hover {
@@ -330,16 +330,14 @@
       position: relative;
       width: 100%;
       height: 28px;
-      background-color: var(--bg-main);
+      background-color: rgba(255, 255, 255, 0.015); /* Softest flat indicator */
       border-radius: 6px;
-      border-top: 1px solid var(--glass-border);
-      border-bottom: 1px solid var(--glass-border);
-      border-left: none;
-      border-right: none;
-      background-image: linear-gradient(to right, transparent calc(100% - 1px), var(--glass-border) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.03); /* Thin minimalist border */
+      background-image: linear-gradient(to right, transparent calc(100% - 1px), rgba(255, 255, 255, 0.03) 100%);
       background-size: calc(100% / 13) 100%;
       cursor: pointer;
       transition: transform 0.1s ease, background-color 0.2s ease;
+      box-sizing: border-box;
     }
 
     .shift-track:active {
@@ -348,21 +346,20 @@
 
     .block-laboral {
       position: absolute;
-      height: 22px; /* Slightly taller for better readability */
+      height: 22px;
       top: 2px;
-      background: #313244; /* Surface 0 - solid dark background */
-      border: 1px solid #45475a; /* Surface 1 - subtle border */
-      border-left: 4px solid #b4befe; /* Lavender indicator strip */
+      background: #313244; /* Surface 0 - solid slate background */
+      border: 1px solid #45475a; /* Surface 1 - clean flat border */
+      border-left: 4px solid #b4befe; /* Solid Lavender left strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #cdd6f4; /* Clean white-gray text */
+      color: #cdd6f4; /* Clean text */
       font-size: 10px;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       transition: all 0.2s ease;
       box-sizing: border-box;
     }
@@ -373,7 +370,7 @@
       top: 2px;
       background: #313244; /* Surface 0 */
       border: 1px dashed #45475a;
-      border-left: 4px solid #f38ba8; /* Red indicator strip */
+      border-left: 4px solid #f38ba8; /* Solid Red left strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
@@ -565,7 +562,7 @@
       right: 3px;
       background: #313244; /* Surface 0 */
       border: 1px solid #45475a;
-      border-left: 4px solid #f9e2af; /* Yellow indicator strip */
+      border-left: 4px solid #f9e2af; /* Solid Yellow left strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
@@ -575,7 +572,6 @@
       font-weight: 800;
       letter-spacing: 1px;
       text-transform: uppercase;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       z-index: 5;
       box-sizing: border-box;
       transition: all 0.2s ease;
