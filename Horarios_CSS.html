@@ -237,8 +237,8 @@
     }
 
     .timeline-container {
-      background: #12121a; /* Rich very dark flat background */
-      border: 1px solid #232330; /* Clean dark border */
+      background: var(--bg-main); /* Rich very dark flat background */
+      border: 1px solid var(--surface-0); /* Clean dark border */
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 25px;
@@ -356,14 +356,14 @@
       position: absolute;
       height: 22px;
       top: 2px;
-      background: #313244; /* Surface 0 - solid slate background */
-      border: 1px solid #585b70; /* Surface 2 - slightly more visible border */
-      border-left: 4px solid #b4befe; /* Solid Lavender left strip */
+      background: var(--surface-0); /* Surface 0 - solid slate background */
+      border: 1px solid var(--surface-2); /* Surface 2 - slightly more visible border */
+      border-left: 4px solid var(--lavender); /* Solid Lavender left strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #cdd6f4; /* Clean text */
+      color: var(--text-main); /* Clean text */
       font-size: 10px;
       font-weight: 600;
       white-space: nowrap;
@@ -376,14 +376,14 @@
       position: absolute;
       height: 22px;
       top: 2px;
-      background: #313244; /* Surface 0 */
-      border: 1px dashed #585b70;
-      border-left: 4px solid #f38ba8; /* Solid Red left strip */
+      background: var(--surface-0); /* Surface 0 */
+      border: 1px dashed var(--surface-2);
+      border-left: 4px solid var(--danger); /* Solid Red left strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #f38ba8; /* Red text */
+      color: var(--danger); /* Red text */
       font-size: 8px;
       font-weight: 800;
       letter-spacing: 0.5px;
@@ -400,17 +400,17 @@
     }
     
     .block-laboral:hover {
-      background: #45475a; /* Surface 1 */
+      background: var(--surface-1); /* Surface 1 */
       border-left-width: 6px;
     }
     
     .block-descanso:hover {
-      background: #45475a; /* Surface 1 */
+      background: var(--surface-1); /* Surface 1 */
       border-left-width: 6px;
     }
     
     .block-excepcion:hover {
-      background: #45475a; /* Surface 1 */
+      background: var(--surface-1); /* Surface 1 */
       border-left-width: 6px;
     }
 
@@ -473,21 +473,21 @@
     }
 
     .alerta-block.danger {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.5);
+      background: rgba(243, 139, 168, 0.15); /* Catppuccin Red */
+      border: 1px solid rgba(243, 139, 168, 0.5);
       color: var(--danger);
     }
 
     .alerta-block.warning {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.5);
-      color: var(--warning);
+      background: rgba(250, 179, 135, 0.15); /* Catppuccin Peach */
+      border: 1px solid rgba(250, 179, 135, 0.5);
+      color: var(--peach);
     }
 
     .alerta-block.ok {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: var(--success);
+      background: rgba(148, 226, 213, 0.1); /* Catppuccin Teal */
+      border: 1px solid rgba(148, 226, 213, 0.4);
+      color: var(--teal);
     }
 
     .legend {
@@ -515,8 +515,8 @@
     }
 
     .swal-dark-popup {
-      background: #181825 !important; /* Mantle */
-      border: 1px solid #313244 !important; /* Surface 0 */
+      background: var(--mantle) !important; /* Mantle */
+      border: 1px solid var(--surface-0) !important; /* Surface 0 */
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       color: var(--text-main) !important;
       border-radius: 16px !important;
@@ -610,14 +610,14 @@
       top: 2px;
       left: 3px;
       right: 3px;
-      background: #313244; /* Surface 0 */
-      border: 1px solid #585b70;
-      border-left: 4px solid #f9e2af; /* Solid Yellow left strip */
+      background: var(--surface-0); /* Surface 0 */
+      border: 1px solid var(--surface-2);
+      border-left: 4px solid var(--warning); /* Solid Yellow left strip */
       border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #f9e2af; /* Yellow text */
+      color: var(--warning); /* Yellow text */
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 1px;
@@ -761,8 +761,8 @@
     }
 
     .dashboard-container {
-      background: #12121a; /* Matching rich dark card background */
-      border: 1px solid #232330;
+      background: var(--bg-main); /* Matching rich dark card background */
+      border: 1px solid var(--surface-0);
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 25px;
@@ -1184,8 +1184,8 @@
       flex-wrap: wrap;
       margin-bottom: 20px;
       padding: 12px 16px;
-      background: #12121a;
-      border: 1px solid #232330;
+      background: var(--bg-main);
+      border: 1px solid var(--surface-0);
       border-radius: 12px;
     }
     
@@ -1198,15 +1198,15 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      background: #1e1e2e; /* Base */
-      border: 1px solid #313244; /* Surface 0 */
+      background: var(--glass-bg); /* Base */
+      border: 1px solid var(--surface-0); /* Surface 0 */
       color: var(--text-main);
       transition: all 0.2s ease;
     }
     
     .toolbar-btn:hover {
-      background: #313244; /* Surface 0 */
-      border-color: #45475a; /* Surface 1 */
+      background: var(--surface-0); /* Surface 0 */
+      border-color: var(--surface-1); /* Surface 1 */
     }
     
     .toolbar-btn-primary {
@@ -1216,8 +1216,8 @@
     }
     
     .toolbar-btn-primary:hover {
-      background: #b4befe !important; /* Lavender */
-      border-color: #b4befe !important;
+      background: var(--lavender) !important; /* Lavender */
+      border-color: var(--lavender) !important;
     }
 
     /* Tooltip CSS */
