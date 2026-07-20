@@ -15,12 +15,12 @@
       max-width: 750px;
       margin: 100px auto 60px auto;
       padding: 40px;
-      background: rgba(30, 30, 46, 0.6);
+      background: var(--glass-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
       border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 40px var(--shadow-color);
       animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     
@@ -30,14 +30,14 @@
       gap: 15px;
       margin-bottom: 40px;
       padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid var(--glass-border);
     }
     
     .settings-header .icon-container {
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: rgba(203, 166, 247, 0.1);
+      background: var(--accent-glow);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -79,18 +79,18 @@
       justify-content: space-between;
       align-items: center;
       padding: 16px 20px;
-      background: rgba(24, 24, 37, 0.5);
-      border: 1px solid rgba(255,255,255,0.03);
+      background: var(--mantle);
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
       margin-bottom: 12px;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .hotkey-row:hover {
-      background: rgba(24, 24, 37, 0.9);
-      border-color: rgba(255,255,255,0.08);
+      background: var(--glass-bg-hover);
+      border-color: var(--accent-primary);
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px var(--shadow-color);
     }
     
     .hotkey-label {
@@ -119,8 +119,8 @@
     }
     
     .hotkey-input {
-      background: rgba(17, 17, 27, 0.8);
-      border: 1px solid rgba(203, 166, 247, 0.2);
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
       color: var(--accent-primary);
       padding: 6px 14px;
       border-radius: 6px;
@@ -136,29 +136,29 @@
     }
     
     .hotkey-input:hover {
-      background: rgba(17, 17, 27, 1);
+      background: var(--input-bg);
       border-color: var(--accent-primary);
     }
     
     .hotkey-input:focus {
       border-color: var(--accent-primary);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(203, 166, 247, 0.2);
+      box-shadow: 0 0 0 3px var(--accent-glow);
       color: var(--text-main);
     }
     
     .hotkey-input.recording {
       background: var(--accent-primary);
-      color: #11111b;
+      color: var(--btn-text-on-accent);
       font-weight: 700;
       border-color: var(--accent-primary);
       animation: pulseRecord 1.5s infinite;
     }
     
     @keyframes pulseRecord {
-      0% { box-shadow: 0 0 0 0 rgba(203, 166, 247, 0.6); }
-      70% { box-shadow: 0 0 0 8px rgba(203, 166, 247, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(203, 166, 247, 0); }
+      0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+      70% { box-shadow: 0 0 0 8px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
     }
     
     .reset-btn {
@@ -230,7 +230,7 @@
       gap: 15px;
       margin-top: 40px;
       padding-top: 25px;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 1px solid var(--glass-border);
     }
     
     .toast {
@@ -271,6 +271,23 @@
     </div>
     
     <div class="settings-group">
+      <h3><span class="material-symbols-outlined" style="font-size:16px;">palette</span> Apariencia</h3>
+      <div class="hotkey-row">
+        <div class="hotkey-label">
+          <span class="material-symbols-outlined">dark_mode</span>
+          <div>
+            <div>Tema de la Aplicación</div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:400; margin-top:2px;">Alterna entre Catppuccin Mocha (oscuro) y Latte (claro)</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="theme-label" style="font-size:12px; font-weight:600; color:var(--text-muted);">Oscuro</span>
+          <div id="theme-toggle" class="theme-toggle-track" onclick="toggleAppTheme()"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
       <h3><span class="material-symbols-outlined" style="font-size:16px;">edit_calendar</span> Horarios y Planificación</h3>
       <div id="hotkeys-container">
         <!-- Hotkeys rendered here -->
@@ -278,10 +295,10 @@
     </div>
     
     <div class="save-bar">
-      <button class="btn-neon" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 10px 20px;" onclick="resetAllDefaults()">
+      <button class="btn-neon" style="background: var(--glass-bg-hover); border: 1px solid var(--glass-border); color: var(--text-main); padding: 10px 20px;" onclick="resetAllDefaults()">
         <span class="material-symbols-outlined" style="font-size:18px; margin-right:6px; vertical-align:middle;">restart_alt</span> Restaurar Valores
       </button>
-      <button class="btn-neon btn-primary-neon" style="padding: 10px 24px; font-weight: 700; box-shadow: 0 4px 15px rgba(203,166,247,0.3);" onclick="saveHotkeys()">
+      <button class="btn-neon btn-primary-neon" style="padding: 10px 24px; font-weight: 700;" onclick="saveHotkeys()">
         <span class="material-symbols-outlined" style="font-size:18px; margin-right:6px; vertical-align:middle;">save</span> Guardar Cambios
       </button>
     </div>
@@ -416,7 +433,34 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
     
-    document.addEventListener('DOMContentLoaded', initSettings);
+    // ===== THEME TOGGLE =====
+    function toggleAppTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('appTheme', next);
+      updateThemeUI(next);
+    }
+
+    function updateThemeUI(theme) {
+      const toggle = document.getElementById('theme-toggle');
+      const label = document.getElementById('theme-label');
+      if (toggle && label) {
+        if (theme === 'light') {
+          toggle.classList.add('active');
+          label.textContent = 'Claro';
+        } else {
+          toggle.classList.remove('active');
+          label.textContent = 'Oscuro';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initSettings();
+      const currentTheme = localStorage.getItem('appTheme') || 'dark';
+      updateThemeUI(currentTheme);
+    });
   </script>
 </body>
 </html>
