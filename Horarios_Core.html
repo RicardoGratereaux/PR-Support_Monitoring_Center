@@ -1157,6 +1157,19 @@ function pegarTurnosDia() {
     // =========================================================
     document.addEventListener("DOMContentLoaded", () => {
       initPanelComandoArrastrable();
+
+      // Cerrar panel al hacer clic fuera
+      document.addEventListener("click", (e) => {
+        const container = document.getElementById("assistive-container");
+        const panel = document.getElementById("panel-comando-flotante");
+        if (container && panel && panel.style.display !== "none") {
+          if (!container.contains(e.target)) {
+            panel.style.display = "none";
+            container.classList.remove("open");
+            updateAssistivePosition();
+          }
+        }
+      });
     });
 
   // =========================================================
@@ -1178,15 +1191,11 @@ function pegarTurnosDia() {
       if (handleRect.left + handleRect.width / 2 < centroPantallaX) {
         container.style.alignItems = "flex-start";
         container.style.right = "auto";
-        let leftVal = handleRect.left;
-        if (leftVal < margenSeguro) leftVal = margenSeguro;
-        container.style.left = leftVal + "px";
+        container.style.left = margenSeguro + "px";
       } else {
         container.style.alignItems = "flex-end";
         container.style.left = "auto";
-        let rightVal = window.innerWidth - handleRect.right;
-        if (rightVal < margenSeguro) rightVal = margenSeguro;
-        container.style.right = rightVal + "px";
+        container.style.right = margenSeguro + "px";
       }
 
       // 2. Anclaje y Alineación Vertical usando el BOTÓN como referencia
@@ -1240,7 +1249,9 @@ function pegarTurnosDia() {
 
       let isDragging = false;
       let startX, startY;
-      let initialLeft, initialTop;
+      let offsetX, offsetY;
+      let deltaX, deltaY;
+      let buttonW, buttonH;
 
       handle.addEventListener('mousedown', dragStart);
       handle.addEventListener('touchstart', dragStart, { passive: true });
@@ -1254,11 +1265,22 @@ function pegarTurnosDia() {
         const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
         const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
         
-        const rect = container.getBoundingClientRect();
         startX = clientX;
         startY = clientY;
-        initialLeft = rect.left;
-        initialTop = rect.top;
+        
+        const handleRect = handle.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        // Offset entre el mouse y la esquina superior izquierda del botón
+        offsetX = clientX - handleRect.left;
+        offsetY = clientY - handleRect.top;
+        
+        // Offset entre el contenedor y el botón (necesario si el panel está abierto)
+        deltaX = containerRect.left - handleRect.left;
+        deltaY = containerRect.top - handleRect.top;
+        
+        buttonW = handleRect.width;
+        buttonH = handleRect.height;
         
         document.addEventListener('mousemove', dragMove);
         document.addEventListener('mouseup', dragEnd);
@@ -1277,28 +1299,34 @@ function pegarTurnosDia() {
         
         if (!assistiveDragged && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
           assistiveDragged = true;
-          // Cambiar temporalmente el anclaje a top/left absoluto solo cuando arrastre real inicia
+          // Desactivar animaciones durante el arrastre y establecer la posición absoluta inicial
+          container.style.transition = 'none';
+          
+          const containerRect = container.getBoundingClientRect();
           container.style.right = 'auto';
           container.style.bottom = 'auto';
+          container.style.left = containerRect.left + 'px';
+          container.style.top = containerRect.top + 'px';
         }
         
         if (assistiveDragged) {
-          let nuevoLeft = initialLeft + dx;
-          let nuevoTop = initialTop + dy;
+          // Calcular la nueva posición deseada del BOTÓN
+          let btnLeft = clientX - offsetX;
+          let btnTop = clientY - offsetY;
           
           const margen = 15;
           const wWidth = window.innerWidth;
           const wHeight = window.innerHeight;
-          const cWidth = container.offsetWidth || 56;
-          const cHeight = container.offsetHeight || 56;
           
-          if (nuevoLeft < margen) nuevoLeft = margen;
-          if (nuevoLeft > wWidth - cWidth - margen) nuevoLeft = wWidth - cWidth - margen;
-          if (nuevoTop < margen) nuevoTop = margen;
-          if (nuevoTop > wHeight - cHeight - margen) nuevoTop = wHeight - cHeight - margen;
+          // Mantener el BOTÓN dentro de la pantalla
+          if (btnLeft < margen) btnLeft = margen;
+          if (btnLeft > wWidth - buttonW - margen) btnLeft = wWidth - buttonW - margen;
+          if (btnTop < margen) btnTop = margen;
+          if (btnTop > wHeight - buttonH - margen) btnTop = wHeight - buttonH - margen;
           
-          container.style.left = nuevoLeft + 'px';
-          container.style.top = nuevoTop + 'px';
+          // Posicionar el contenedor basado en la posición deseada del botón
+          container.style.left = (btnLeft + deltaX) + 'px';
+          container.style.top = (btnTop + deltaY) + 'px';
           
           if (e.cancelable) e.preventDefault();
         }
@@ -1316,6 +1344,9 @@ function pegarTurnosDia() {
         window.getSelection().removeAllRanges();
         
         if (assistiveDragged) {
+          // Reactivar transiciones para el snap animado
+          container.style.transition = '';
+          // Actualizar posición (snap a los bordes y alineación)
           updateAssistivePosition();
         }
       }
@@ -1325,25 +1356,7 @@ function pegarTurnosDia() {
         if (container.style.top === "" && container.style.right === "" && container.style.left === "") {
           return; // Deja que actue el CSS nativo
         }
-        
-        const rect = container.getBoundingClientRect();
-        const margen = 15;
-        const cWidth = container.offsetWidth || 56;
-        const cHeight = container.offsetHeight || 56;
-        
-        let topVal = rect.top;
-        if (topVal < margen) topVal = margen;
-        if (topVal > window.innerHeight - cHeight - margen) topVal = window.innerHeight - cHeight - margen;
-        container.style.top = topVal + 'px';
-        
-        // Si por algun motivo esta usando left y la pantalla se achica, empujarlo adentro
-        if (container.style.left !== "auto" && container.style.left !== "") {
-          let leftVal = container.offsetLeft;
-          let maxLeft = window.innerWidth - cWidth - margen;
-          if (leftVal < margen) leftVal = margen;
-          if (leftVal > maxLeft) leftVal = Math.max(margen, maxLeft);
-          container.style.left = leftVal + 'px';
-        }
+        updateAssistivePosition();
       });
     }
   </script>

@@ -14,15 +14,15 @@
     }
 
     @keyframes pulse {
-      0% {
-        box-shadow: none;
-      }
-      50% {
-        box-shadow: none;
-      }
-      100% {
-        box-shadow: none;
-      }
+      0% { box-shadow: 0 0 0 0 rgba(203, 166, 247, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(203, 166, 247, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(203, 166, 247, 0); }
+    }
+
+    @keyframes pulse-warning-ring {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
     }
 
     @keyframes slideDownAlert {
@@ -92,12 +92,12 @@
 
     .breathe-green {
       background-color: var(--accent-primary);
-      
+      animation: pulse 2s ease-in-out infinite;
     }
 
     .breathe-amber {
       background-color: var(--warning);
-      
+      animation: pulse-warning-ring 2s ease-in-out infinite;
     }
 
     .content-container {
@@ -121,11 +121,6 @@
       border-color: var(--accent-primary) !important;
       box-shadow: none !important;
       font-weight: 600;
-
-      background: var(--accent-primary) !important;
-      color: var(--bg-main) !important;
-      border-color: var(--accent-primary) !important;
-      box-shadow: none !important;
     }
 
     .btn-primary-neon:hover {
@@ -772,6 +767,7 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 12px;
+      transition: left 0.3s ease, right 0.3s ease;
     }
 
     .assistive-button {
@@ -1069,17 +1065,19 @@
 
       .timeline-header-grid,
       .timeline-row,
-      .diagnostico-row,
+      .diagnostico-row {
+        grid-template-columns: 120px 1fr;
+        gap: 10px;
+      }
+
+      .timeline-header-grid {
+        padding-bottom: 6px;
+      }
+
       .dashboard-container {
-      background: #12121a; /* Matching rich dark card background */
-      border: 1px solid #232330;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 25px;
-      box-sizing: border-box;
-      animation: dashboardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      transform-origin: top center;
-    }
+        padding: 15px;
+        margin-bottom: 15px;
+      }
 
       .legend {
         flex-wrap: wrap;

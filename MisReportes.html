@@ -523,13 +523,32 @@ function abrirModalEdicion(id) {
   document.getElementById("tipoReporte").value = r.tipoReporte;
   document.getElementById("empleado").value = r.empleado;
   document.getElementById("iniciales").value = r.iniciales;
-  document.getElementById("observaciones").value = r.observaciones;
+  document.getElementById("observaciones").value = r.observacionesMonitor;
 
   archivosAEliminarDrive = []; archivosNuevosSeleccionados = [];
-  listaArchivosViejosHTML = r.archivos || [];
+  listaArchivosViejosHTML = [];
   
-  renderizarArchivosViejos(); renderizarListaArchivosNuevos();
+  // Show loading state for old files
+  const contViejos = document.getElementById("lista-archivos-viejos");
+  contViejos.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:6px 0;">Cargando archivos desde Drive...</div>';
+  renderizarListaArchivosNuevos();
   document.getElementById("modalEdicion").style.display = "flex";
+
+  // Fetch files from Drive
+  if (r.carpeta && r.carpeta !== '#') {
+    google.script.run
+      .withSuccessHandler(archivos => {
+        listaArchivosViejosHTML = archivos || [];
+        renderizarArchivosViejos();
+      })
+      .withFailureHandler(() => {
+        listaArchivosViejosHTML = [];
+        renderizarArchivosViejos();
+      })
+      .obtenerArchivosDrive(r.carpeta);
+  } else {
+    renderizarArchivosViejos();
+  }
 }
 
 function cerrarModal() { document.getElementById("modalEdicion").style.display = "none"; }
