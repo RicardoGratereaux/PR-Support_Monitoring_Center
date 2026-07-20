@@ -1265,4 +1265,123 @@ function pegarTurnosDia() {
 
     document.addEventListener('DOMContentLoaded', initHotkeys);
 
+    function evaluarBeneficiosVisual() {
+      const fechaSel = document.getElementById('fechaFiltro').value;
+      if (!fechaSel) return;
+      
+      mostrarModalSincronizando('Evaluando historial de beneficios y cobertura...');
+      
+      google.script.run
+        .withSuccessHandler(function(empleadosBeneficios) {
+          Swal.close();
+          let encontrados = 0;
+          
+          const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
+          const aHoraTexto = (mins) => { return `${Math.floor(mins / 60).toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`; };
+          
+          // Función simuladora de cobertura
+          const simularCobertura = (skipIndex, recortarInicioMins, recortarFinMins) => {
+            const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const diaSemana = objetoFecha.getDay(); 
+            for(let m = 7.5 * 60; m < 19 * 60; m += 30) {
+              let activos = 0;
+              for(let i=0; i<turnosActuales.length; i++) {
+                let t = turnosActuales[i];
+                if(!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) continue;
+                let inM = aMinutos(t.entrada); let outM = aMinutos(t.salida);
+                
+                // Si es el turno recortado, aplicar el recorte
+                if(i === skipIndex) {
+                  if(recortarInicioMins !== null && m >= inM && m < recortarInicioMins) continue;
+                  if(recortarFinMins !== null && m >= recortarFinMins && m < outM) continue;
+                }
+                
+                let bIn = t.breakIn ? aMinutos(t.breakIn) : -1; let bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
+                if ((m >= inM && m < outM) && !(bIn !== -1 && m >= bIn && m < bOut)) activos++;
+              }
+              
+              // Reglas de cobertura (copiadas de analizarCobertura)
+              if (diaSemana === 0) { if (m >= 10 * 60 && m < 18 * 60) { if (m < 12 * 60 || m >= 16 * 60) { if (activos < 3) return false; } else { if (activos < 2) return false; } } }
+              else if (diaSemana === 6) { if (m >= 8 * 60 && m < 18 * 60) { if (m === 8 * 60) { if (activos < 2) return false; } else if (m >= 8.5 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60) { if (activos < 6) return false; } else if (m >= 17 * 60 && m < 18 * 60) { if (activos < 4) return false; } } }
+              else { if (m === 7.5 * 60 && activos === 0) return false; else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) return false; else if (m >= 17 * 60 && m < 19 * 60 && activos < 4) return false; }
+            }
+            return true; // Pasa todas las pruebas de cobertura
+          };
+
+          // Limpiar overlays anteriores
+          document.querySelectorAll('.benefit-overlay').forEach(e => e.remove());
+
+          const tracks = document.querySelectorAll('.shift-track');
+          
+          turnosActuales.forEach((t, index) => {
+            if(!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) return;
+            let emp = empleadosBeneficios[t.nombre];
+            if(emp && emp.elegible) {
+              encontrados++;
+              let inM = aMinutos(t.entrada); let outM = aMinutos(t.salida);
+              let possibleLateIn = inM + 60; // 1 hora tarde
+              let possibleEarlyOut = outM - 60; // 1 hora temprano
+              
+              let trackDiv = tracks[index];
+              if(!trackDiv) return;
+              trackDiv.style.position = 'relative';
+
+              // Simular entrada tarde (Recortamos desde inM hasta possibleLateIn)
+              if(simularCobertura(index, possibleLateIn, null)) {
+                let left = ((inM / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100;
+                let width = (1 / TOTAL_HORAS_GRID) * 100;
+                trackDiv.innerHTML += `<div class="benefit-overlay benefit-in" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed #10b981; background:rgba(16, 185, 129, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Llegar tarde (Hasta ${aHoraTexto(possibleLateIn)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Llegar ${aHoraTexto(possibleLateIn)}', '${aHoraTexto(possibleLateIn)}', null)">
+                  <span class="material-symbols-outlined" style="font-size:14px; color:#10b981;">schedule</span>
+                </div>`;
+              }
+              
+              // Simular salida temprano (Recortamos desde possibleEarlyOut hasta outM)
+              if(simularCobertura(index, null, possibleEarlyOut)) {
+                let left = ((possibleEarlyOut / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100;
+                let width = (1 / TOTAL_HORAS_GRID) * 100;
+                trackDiv.innerHTML += `<div class="benefit-overlay benefit-out" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed #10b981; background:rgba(16, 185, 129, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Salir temprano (Desde ${aHoraTexto(possibleEarlyOut)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Salir ${aHoraTexto(possibleEarlyOut)}', null, '${aHoraTexto(possibleEarlyOut)}')">
+                  <span class="material-symbols-outlined" style="font-size:14px; color:#10b981;">directions_run</span>
+                </div>`;
+              }
+            }
+          });
+          
+          if(encontrados === 0) {
+            Swal.fire({title:'Sin Beneficios', text:'Ningún colaborador en este día cumple las reglas de la quincena (Sábado completo y puntualidad).', icon:'info', background:'transparent', customClass:{popup:'swal-dark-popup'}});
+          } else {
+             completarBarraYMostrarExito('Análisis Terminado', 'Se han marcado en verde los horarios donde la operación permite flexibilidad.');
+          }
+        })
+        .withFailureHandler(manejarErrorServidor)
+        .obtenerEstadoBeneficios(fechaSel);
+    }
+    
+    function aplicarBeneficio(index, descripcion, nuevaEntrada, nuevaSalida) {
+      let t = turnosActuales[index];
+      Swal.fire({
+        title: 'Aplicar Beneficio',
+        text: `¿Estás seguro de que deseas permitir a ${t.nombre} ${descripcion}?`,
+        icon: 'question',
+        background: 'transparent',
+        customClass: { popup: 'swal-dark-popup' },
+        showCancelButton: true,
+        confirmButtonText: 'Sí, aplicar',
+        cancelButtonText: 'Cancelar'
+      }).then((r) => {
+        if(r.isConfirmed) {
+          if(nuevaEntrada) t.entrada = nuevaEntrada;
+          if(nuevaSalida) t.salida = nuevaSalida;
+          t.nota = (t.nota ? t.nota + " | " : "") + "Beneficio de flexibilidad aplicado.";
+          
+          mostrarModalSincronizando('Actualizando...');
+          google.script.run
+            .withSuccessHandler(function() {
+              renderizarTimeline(turnosActuales);
+              analizarCobertura();
+              completarBarraYMostrarExito('¡Beneficio Aplicado!', 'El horario fue actualizado correctamente.');
+            })
+            .withFailureHandler(manejarErrorServidor)
+            .actualizarTurnoExistente(t);
+        }
+      });
+    }
   </script>
