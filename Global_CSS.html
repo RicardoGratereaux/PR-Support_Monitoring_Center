@@ -106,6 +106,7 @@
     transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8);
     padding-top: 25px; box-sizing: border-box;
+    display: flex; flex-direction: column;
   }
   .sidenav.open { left: 0; }
 
@@ -123,7 +124,7 @@
   }
   .close-sidenav-btn:hover { background: var(--danger-glow); color: var(--danger); transform: rotate(90deg); }
 
-  .sidenav-links { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; }
+  .sidenav-links { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; flex-grow: 1; overflow-y: auto; padding-bottom: 20px; }
   
   .nav-link {
     color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 15px;
