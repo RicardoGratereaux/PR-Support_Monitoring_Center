@@ -937,7 +937,7 @@ function pegarTurnosDia() {
 
           <div style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
             <table class="table-perfil">
-              <thead><tr><th style="text-align:left; padding-bottom:12px; line-height:1.4;">Fecha / Día</th><th style="text-align:center; padding-bottom:12px; line-height:1.4;">Asignación</th><th style="text-align:center; padding-bottom:12px; line-height:1.4;">Break</th><th style="text-align:right; padding-bottom:12px; line-height:1.4;">Editar</th></tr></thead>
+              <thead><tr><th style="text-align:left; padding-bottom:12px; line-height:1.4; width:28%;">Fecha / Día</th><th style="text-align:left; padding-bottom:12px; line-height:1.4; width:36%;">Asignación</th><th style="text-align:left; padding-bottom:12px; line-height:1.4; width:30%;">Break</th><th style="text-align:right; padding-bottom:12px; line-height:1.4; width:6%;">Editar</th></tr></thead>
               <tbody id="tbody-perfil"></tbody>
             </table>
           </div>`,
@@ -1058,7 +1058,7 @@ function pegarTurnosDia() {
           }
         }
 
-        trs += `<tr><td style="white-space: nowrap; color: var(--text-muted); text-align:left;">${t.fecha} <span style="color:var(--accent-primary); font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td style="text-align:center;">${turnoLabel}</td><td style="text-align:center;">${descAlmuerzo}</td><td style="width:40px; text-align:right;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
+        trs += `<tr><td style="white-space: nowrap; color: var(--text-muted); text-align:left;">${t.fecha} <span style="color:var(--accent-primary); font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td style="text-align:left;">${turnoLabel}</td><td style="text-align:left;">${descAlmuerzo}</td><td style="width:40px; text-align:right;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
       });
       
       if (trs === "") {
