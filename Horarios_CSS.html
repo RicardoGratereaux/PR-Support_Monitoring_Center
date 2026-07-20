@@ -430,10 +430,10 @@
       align-items: center;
       padding: 12px 15px;
       margin: 15px 0 25px 0;
-      background: rgba(20, 20, 22, 0.6);
+      background: var(--mantle);
       border: 1px solid var(--glass-border);
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 10px var(--shadow-color);
     }
 
     .diagnostico-label {
@@ -594,7 +594,8 @@
     }
 
     input[type="time"],
-    input[type="date"] {
+    input[type="date"],
+    select {
       color-scheme: var(--color-scheme, dark);
     }
 
