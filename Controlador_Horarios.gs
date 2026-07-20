@@ -195,7 +195,8 @@ function getHorariosPorColaborador(nombre) {
         salida: extraerHora(data[i][4]),
         breakIn: extraerHora(data[i][5]),
         breakOut: extraerHora(data[i][6]),
-        nota: data[i][9] || "" // <--- NUEVO: Lee la Columna J para el Historial
+        nota: data[i][9] || "", // <--- NUEVO: Lee la Columna J para el Historial
+        llegadaReal: extraerHora(data[i][10]) || "" // Columna K
       });
     }
   }

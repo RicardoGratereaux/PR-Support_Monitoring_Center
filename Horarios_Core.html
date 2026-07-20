@@ -1114,10 +1114,12 @@ function pegarTurnosDia() {
                 style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;">
               </div>
               <div id="${prefix}-contenedor-tiempos" style="display: ${displayTiempos};">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
                   <div><label style="font-size:12px; font-weight:700;">ENTRADA</label><input type="time" id="${prefix}-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : '07:30'}">
                   </div>
                   <div><label style="font-size:12px; font-weight:700;">SALIDA</label><input type="time" id="${prefix}-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : '19:00'}">
+                  </div>
+                  <div><label style="font-size:12px; font-weight:700; color:var(--warning);" title="Hora real en la que el colaborador marcó su llegada">LLEGADA REAL</label><input type="time" id="${prefix}-llegada-real" class="input-filtro" style="width:100%; box-sizing:border-box; border-color:var(--warning);" value="${turno.llegadaReal || ''}">
                   </div>
                 </div>
                 <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
@@ -1150,7 +1152,8 @@ function pegarTurnosDia() {
                 salida: "",
                 breakIn: "",
                 breakOut: "",
-                nota: notaValue
+                nota: notaValue,
+                llegadaReal: ""
               };
             }
             
@@ -1161,7 +1164,8 @@ function pegarTurnosDia() {
               salida: document.getElementById(`${prefix}-salida`).value,
               breakIn: aplica ? document.getElementById(`${prefix}-break-in`).value : "",
               breakOut: aplica ? document.getElementById(`${prefix}-break-out`).value : "",
-              nota: notaValue
+              nota: notaValue,
+              llegadaReal: document.getElementById(`${prefix}-llegada-real`).value
             };
         }
       }).then((result) => {
@@ -1172,7 +1176,8 @@ function pegarTurnosDia() {
             salida: result.value.salida, 
             breakIn: result.value.breakIn, 
             breakOut: result.value.breakOut,
-            nota: result.value.nota
+            nota: result.value.nota,
+            llegadaReal: result.value.llegadaReal
           };
           mostrarModalSincronizando('Guardando en Historial...');
           google.script.run.withSuccessHandler(function() {
@@ -1182,6 +1187,7 @@ function pegarTurnosDia() {
             historialActual[index].breakIn = turnoAct.breakIn; 
             historialActual[index].breakOut = turnoAct.breakOut;
             historialActual[index].nota = turnoAct.nota; // <--- Actualizamos la nota localmente
+            historialActual[index].llegadaReal = turnoAct.llegadaReal;
 
             if (turno.fecha === document.getElementById('fechaFiltro').value) cargarHorarios();
             const bar = document.getElementById('loading-bar'); if (bar) { if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId)); bar.style.width = '100%'; bar.style.background = 'var(--success)'; }
