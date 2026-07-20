@@ -941,7 +941,7 @@ function pegarTurnosDia() {
               <tbody id="tbody-perfil"></tbody>
             </table>
           </div>`,
-        showConfirmButton: true, confirmButtonText: 'Cerrar Panel', width: '650px',
+        showConfirmButton: true, confirmButtonText: 'Cerrar Panel', width: '750px',
         didOpen: () => { renderizarFilasPerfil(mesActual); }
       });
     }
@@ -1019,7 +1019,21 @@ function pegarTurnosDia() {
         let diaDelMes = parseInt(partes[2], 10);
         
         let descAlmuerzo = (t.breakIn && t.breakOut) ? `${t.breakIn} - ${t.breakOut}` : '<span style="color:var(--text-muted); font-style:italic;">Sin almuerzo</span>';
-        let turnoLabel = EXCEPCIONES.includes(t.entrada) ? `<span style="color:var(--warning); font-weight:bold;">${t.entrada}</span>` : `${t.entrada} a ${t.salida}`;
+        
+        let iconoNotaHtml = (t.nota && t.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help; vertical-align:middle;" title="Nota: ${t.nota}">edit_note</span>` : '';
+        let iconoTardeHtml = "";
+        if (t.llegadaReal && t.llegadaReal.trim() !== "" && t.entrada && t.entrada.includes(':') && t.llegadaReal.includes(':')) {
+            let [hE, mE] = t.entrada.split(':').map(Number);
+            let [hR, mR] = t.llegadaReal.split(':').map(Number);
+            let diff = (hR * 60 + mR) - (hE * 60 + mE);
+            if (diff > 7) {
+                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--danger); cursor:help; vertical-align:middle;" title="Llegada tardía: ${t.llegadaReal}">history_toggle_off</span>`;
+            } else if (diff > 0) {
+                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help; vertical-align:middle;" title="Llegada en gracia: ${t.llegadaReal}">history_toggle_off</span>`;
+            }
+        }
+        let turnoLabel = EXCEPCIONES.includes(t.entrada) ? `<span style="color:var(--warning); font-weight:bold; vertical-align:middle;">${t.entrada}</span>` : `<span style="vertical-align:middle;">${t.entrada} a ${t.salida}</span>`;
+        turnoLabel += iconoNotaHtml + iconoTardeHtml;
         
         if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
           let minEntrada = aMinutos(t.entrada);
