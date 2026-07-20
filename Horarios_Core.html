@@ -191,16 +191,31 @@ function pegarTurnosDia() {
         // INDICADOR DE NOTA: Ahora está diseñado para ir al lado del nombre
         let iconoNotaHtml = (item.nota && item.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Tiene una nota en su turno">edit_note</span>` : '';
 
+        // INDICADOR DE LLEGADA REAL
+        let llegadaBadge = "";
+        if (item.llegadaReal && item.llegadaReal.trim() !== "") {
+          let colorBadge = "var(--text-main)";
+          if(item.entrada && item.entrada.includes(':') && item.llegadaReal.includes(':')) {
+            let [hE, mE] = item.entrada.split(':').map(Number);
+            let [hR, mR] = item.llegadaReal.split(':').map(Number);
+            let diff = (hR * 60 + mR) - (hE * 60 + mE);
+            if (diff > 7) colorBadge = "var(--danger)";
+            else if (diff > 0) colorBadge = "var(--warning)";
+            else colorBadge = "var(--success)";
+          }
+          llegadaBadge = `<span style="background:rgba(0,0,0,0.6); padding:2px 5px; border-radius:4px; font-size:10px; font-weight:bold; color:${colorBadge}; margin-right:6px; border: 1px solid ${colorBadge};" title="Llegada Real">R: ${item.llegadaReal}</span>`;
+        }
+
         // BARRAS LIMPIAS: Ya no llevan el icono por dentro
         if (EXCEPCIONES.includes(item.entrada)) {
           let icono = ICONOS_EXCEPCION[item.entrada] || "event_busy";
           barrasHTML = `<div class="block-excepcion"><span class="material-symbols-outlined" style="font-size: 15px; margin-right: 6px; margin-bottom: 2px;">${icono}</span>${item.entrada}</div>`;
         } else if (item.breakIn && item.breakOut) {
           const estiloTrabajo1 = calcularPosicion(item.entrada, item.breakIn); const estiloBreak = calcularPosicion(item.breakIn, item.breakOut); const estiloTrabajo2 = calcularPosicion(item.breakOut, item.salida);
-          barrasHTML = `<div class="block-laboral" style="${estiloTrabajo1}">${item.entrada} a ${item.breakIn}</div><div class="block-descanso" style="${estiloBreak}">BREAK</div><div class="block-laboral" style="${estiloTrabajo2}">${item.breakOut} a ${item.salida}</div>`;
+          barrasHTML = `<div class="block-laboral" style="${estiloTrabajo1}">${llegadaBadge}${item.entrada} a ${item.breakIn}</div><div class="block-descanso" style="${estiloBreak}">BREAK</div><div class="block-laboral" style="${estiloTrabajo2}">${item.breakOut} a ${item.salida}</div>`;
         } else {
           const estiloCompleto = calcularPosicion(item.entrada, item.salida); 
-          barrasHTML = `<div class="block-laboral" style="${estiloCompleto}">${item.entrada} a ${item.salida}</div>`;
+          barrasHTML = `<div class="block-laboral" style="${estiloCompleto}">${llegadaBadge}${item.entrada} a ${item.salida}</div>`;
         }
         
         let controlesExtras = "";
