@@ -773,9 +773,12 @@
     }
 
     .dashboard-container {
-      background: var(--bg-main); /* Matching rich dark card background */
-      border: 1px solid var(--surface-0);
-      border-radius: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px var(--shadow-color);
       padding: 20px;
       margin-bottom: 25px;
       box-sizing: border-box;
@@ -938,21 +941,22 @@
     }
 
     .db-card {
-      background: rgba(255, 255, 255, 0.01);
+      background: var(--mantle);
       border: 1px solid var(--glass-border);
-      border-radius: 8px;
-      padding: 10px 14px;
+      border-radius: 12px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       gap: 12px;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
     }
 
     .db-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--shadow-color);
+      background: var(--glass-bg-hover);
     }
 
     .card-trabajando:hover {
