@@ -438,7 +438,9 @@ function pegarTurnosDia() {
         customClass: { popup: 'swal-dark-popup', denyButton: 'swal-deny-right' },
         preConfirm: () => {
           const tipo = document.getElementById('edit-main-tipo').value;
-          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" }; const aplica = document.getElementById('edit-main-aplica-break').checked;
+          const notaText = document.getElementById('edit-main-nota').value;
+          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "", nota: notaText }; 
+          const aplica = document.getElementById('edit-main-aplica-break').checked;
           return { entrada: document.getElementById('edit-main-entrada').value, salida: document.getElementById('edit-main-salida').value, breakIn: aplica ? document.getElementById('edit-main-break-in').value : "", breakOut: aplica ? document.getElementById('edit-main-break-out').value : "",
           nota: document.getElementById('edit-main-nota').value }
         }
@@ -504,9 +506,10 @@ function pegarTurnosDia() {
         didOpen: () => { setTimeout(() => triggerAutoSugerencia('swal', -1), 50); },
         preConfirm: () => {
           const tipo = document.getElementById('swal-tipo').value;
+          const notaText = document.getElementById('swal-nota').value;
           if (tipo !== "Normal") 
             return { 
-              id: Date.now(), nombre: document.getElementById('swal-monitor').value, entrada: tipo, salida: "", breakIn: "", breakOut: "" 
+              id: Date.now(), nombre: document.getElementById('swal-monitor').value, entrada: tipo, salida: "", breakIn: "", breakOut: "", nota: notaText 
             };
           const aplica = document.getElementById('swal-aplica-break').checked;
         
