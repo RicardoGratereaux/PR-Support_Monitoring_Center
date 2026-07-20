@@ -434,7 +434,8 @@ function pegarTurnosDia() {
             <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
           </div>
         </div>`,
-        showCancelButton: true, showDenyButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', denyButtonText: 'Eliminar',
+        showCancelButton: true, showDenyButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', denyButtonText: '<span class="material-symbols-outlined" style="font-size:20px; line-height:1;">delete</span>',
+        customClass: { popup: 'swal-dark-popup', denyButton: 'swal-deny-right' },
         preConfirm: () => {
           const tipo = document.getElementById('edit-main-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" }; const aplica = document.getElementById('edit-main-aplica-break').checked;
