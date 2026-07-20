@@ -1211,6 +1211,8 @@ function pegarTurnosDia() {
         iaSugerencia: 'Ctrl+I',
         reordenar: 'Alt+R',
         seleccion: 'Ctrl+M',
+        diaAnterior: 'Ctrl+ArrowLeft',
+        diaSiguiente: 'Ctrl+ArrowRight',
         copiar: 'Ctrl+C',
         pegar: 'Ctrl+V',
         limpiar: 'Ctrl+Backspace',
@@ -1243,6 +1245,8 @@ function pegarTurnosDia() {
           case configured.iaSugerencia: e.preventDefault(); typeof triggerSugerenciaMasiva === 'function' && triggerSugerenciaMasiva(); break;
           case configured.reordenar: e.preventDefault(); toggleModoOrden(); break;
           case configured.seleccion: e.preventDefault(); toggleModoSeleccion(); break;
+          case configured.diaAnterior: e.preventDefault(); cambiarDia(-1); break;
+          case configured.diaSiguiente: e.preventDefault(); cambiarDia(1); break;
           case configured.copiar: e.preventDefault(); copiarTurnosDia(); break;
           case configured.pegar: e.preventDefault(); pegarTurnosDia(); break;
           case configured.limpiar: e.preventDefault(); typeof confirmarLimpiezaDia === 'function' && confirmarLimpiezaDia(); break;
