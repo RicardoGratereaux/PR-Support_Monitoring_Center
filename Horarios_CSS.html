@@ -601,7 +601,8 @@
 
     .input-date-seamless::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator,
-    input[type="date"]::-webkit-calendar-picker-indicator {
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="month"]::-webkit-calendar-picker-indicator {
       cursor: pointer;
       opacity: 0.6;
       filter: none !important; /* Quitamos el invert para que sea blanco nítido */
@@ -610,7 +611,8 @@
 
     .input-date-seamless::-webkit-calendar-picker-indicator:hover,
     input[type="time"]::-webkit-calendar-picker-indicator:hover,
-    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    input[type="date"]::-webkit-calendar-picker-indicator:hover,
+    input[type="month"]::-webkit-calendar-picker-indicator:hover {
       opacity: 1;
       transform: scale(1.15);
       /* Le agregamos el resplandor neón al hacer hover */
@@ -705,19 +707,31 @@
       font-size: 12px;
     }
 
+    .table-perfil th:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    .table-perfil th:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
     .table-perfil th {
       background: var(--accent-glow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       color: var(--accent-primary);
       padding: 10px;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--glass-border);
       font-weight: 700;
       letter-spacing: 0.5px;
     }
 
     .table-perfil td {
       padding: 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--glass-border);
     }
 
     .table-perfil tr:hover {
