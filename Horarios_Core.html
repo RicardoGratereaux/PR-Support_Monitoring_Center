@@ -431,8 +431,8 @@ function pegarTurnosDia() {
               
               <input type="time" id="edit-main-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ''}" ${desactivadoInicial}>
             </div>
-            <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
           </div>
+          <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
         </div>`,
         showCancelButton: true, showDenyButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', denyButtonText: '<span class="material-symbols-outlined" style="font-size:20px; line-height:1;">delete</span>',
         customClass: { popup: 'swal-dark-popup', denyButton: 'swal-deny-right' },
@@ -499,8 +499,8 @@ function pegarTurnosDia() {
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
                   <input type="time" id="swal-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s;" value="" onchange="autoCompletarAlmuerzo('swal')"><input type="time" id="swal-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s;" value="">
                 </div>
-                <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="swal-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Escribe alguna instrucción, tardanza o detalle..."></textarea></div>
               </div>
+              <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="swal-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Escribe alguna instrucción, tardanza o detalle..."></textarea></div>
             </div>`,
         showCancelButton: true, confirmButtonText: 'Guardar Turno', cancelButtonText: 'Cancelar',
         didOpen: () => { setTimeout(() => triggerAutoSugerencia('swal', -1), 50); },
