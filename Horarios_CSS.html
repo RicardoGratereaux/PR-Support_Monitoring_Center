@@ -1123,11 +1123,11 @@
       position: fixed;
       top: 0;
       left: 0;
-      background: rgba(15, 15, 18, 0.95);
+      background: var(--swal-popup-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 10px 30px var(--shadow-color);
       color: var(--text-main);
       padding: 12px 16px;
       border-radius: 10px;
@@ -1154,7 +1154,7 @@
       color: var(--accent-primary);
       font-weight: 700;
       margin-bottom: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid var(--glass-border);
       padding-bottom: 6px;
       font-size: 13px;
     }
@@ -1174,7 +1174,7 @@
     .tooltip-nota {
       margin-top: 6px;
       padding-top: 8px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.15);
+      border-top: 1px dashed var(--glass-border);
       color: var(--warning);
       font-style: italic;
       line-height: 1.4;
@@ -1221,67 +1221,5 @@
     .toolbar-btn-primary:hover {
       background: var(--lavender) !important; /* Lavender */
       border-color: var(--lavender) !important;
-    }
-
-    /* Tooltip CSS */
-    .custom-tooltip {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      background: var(--swal-popup-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 8px;
-      padding: 10px;
-      box-shadow: 0 10px 25px var(--shadow-color);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: var(--text-main);
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(10px);
-      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-      font-size: 12px;
-    }
-    
-    .custom-tooltip.visible {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .tooltip-header {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-main);
-      border-bottom: 1px solid var(--glass-border);
-      padding-bottom: 6px;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .tooltip-body {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .tooltip-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .tooltip-nota {
-      margin-top: 6px;
-      padding-top: 6px;
-      border-top: 1px dashed var(--glass-border);
-      color: var(--text-muted);
-      font-style: italic;
-      font-size: 11px;
     }
   </style>
