@@ -515,9 +515,11 @@
     }
 
     .swal-dark-popup {
-      background: var(--mantle) !important; /* Mantle */
-      border: 1px solid var(--surface-0) !important; /* Surface 0 */
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      background: rgba(24, 24, 37, 0.75) !important; /* Mantle con transparencia */
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
       color: var(--text-main) !important;
       border-radius: 16px !important;
     }
