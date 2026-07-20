@@ -244,7 +244,7 @@ function pegarTurnosDia() {
         }
         
         let accionClick = (modoOrden || modoSeleccion) ? "" : `editarTurno(${index})`; 
-        let jsonNombre = JSON.stringify(item.nombre).replace(/"/g, '&quot;'); 
+        let jsonNombre = JSON.stringify(item.nombre || "").replace(/"/g, '&quot;'); 
         let clickPerfil = (modoOrden || modoSeleccion) ? "" : `verPerfilColaborador(${jsonNombre})`;
         
         // El icono de nota se inserta después del nombre del colaborador
