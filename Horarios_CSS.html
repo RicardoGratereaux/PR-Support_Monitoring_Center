@@ -237,9 +237,12 @@
     }
 
     .timeline-container {
-      background: var(--bg-main); /* Rich very dark flat background */
-      border: 1px solid var(--surface-0); /* Clean dark border */
-      border-radius: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px var(--shadow-color);
       padding: 20px;
       margin-bottom: 25px;
       width: 100%;
@@ -284,13 +287,19 @@
       grid-template-columns: 180px 1fr;
       gap: 15px;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03); /* Thin clean separator */
-      transition: background-color 0.2s ease;
+      padding: 12px 16px;
+      background: var(--mantle);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .timeline-row:hover {
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--glass-bg-hover);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px var(--shadow-color);
     }
 
     .colaborador-info {
