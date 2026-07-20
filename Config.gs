@@ -44,6 +44,7 @@ const CONFIG = {
     'reposicion': 'Reposicion',
     'dashboard': 'Dashboard',
     'horarios': 'Horarios',
-    'gestionsupervisor': 'GestionSupervisor'
+    'gestionsupervisor': 'GestionSupervisor',
+    'ajustes': 'Ajustes'
   }
 };

@@ -1187,4 +1187,70 @@ function pegarTurnosDia() {
         container.classList.remove("open");
       }
     }
+
+    // =========================================================
+    // ⌨️ MOTOR DE ATAJOS DE TECLADO (HOTKEYS)
+    // =========================================================
+    function parseHotkeyEvent(e) {
+      let keys = [];
+      if (e.ctrlKey) keys.push('Ctrl');
+      if (e.altKey) keys.push('Alt');
+      if (e.shiftKey) keys.push('Shift');
+      
+      let keyName = e.key;
+      if (keyName === ' ') keyName = 'Space';
+      if (keyName.length === 1) keyName = keyName.toUpperCase();
+      
+      keys.push(keyName);
+      return keys.join('+');
+    }
+
+    function initHotkeys() {
+      const defaultHotkeys = {
+        asignarTurno: 'Ctrl+N',
+        iaSugerencia: 'Ctrl+I',
+        reordenar: 'Alt+R',
+        seleccion: 'Ctrl+M',
+        copiar: 'Ctrl+C',
+        pegar: 'Ctrl+V',
+        limpiar: 'Ctrl+Backspace',
+        menuFlotante: 'Ctrl+Space'
+      };
+      
+      let configured = { ...defaultHotkeys };
+      try {
+        const saved = localStorage.getItem('appHotkeys');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          Object.keys(defaultHotkeys).forEach(k => {
+            if (parsed[k]) configured[k] = parsed[k];
+          });
+        }
+      } catch(e) {}
+      
+      document.addEventListener('keydown', (e) => {
+        // Ignorar si el usuario está escribiendo en un input, textarea o select (a menos que sea necesario)
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (['input', 'textarea', 'select'].includes(activeTag) && !['Ctrl+Backspace'].includes(parseHotkeyEvent(e))) {
+           // Allow copying/pasting text normally inside inputs
+           if (parseHotkeyEvent(e) === 'Ctrl+C' || parseHotkeyEvent(e) === 'Ctrl+V' || parseHotkeyEvent(e) === 'Ctrl+A') return;
+        }
+
+        const combo = parseHotkeyEvent(e);
+        
+        switch (combo) {
+          case configured.asignarTurno: e.preventDefault(); abrirModalNuevoHorario(); break;
+          case configured.iaSugerencia: e.preventDefault(); typeof triggerSugerenciaMasiva === 'function' && triggerSugerenciaMasiva(); break;
+          case configured.reordenar: e.preventDefault(); toggleModoOrden(); break;
+          case configured.seleccion: e.preventDefault(); toggleModoSeleccion(); break;
+          case configured.copiar: e.preventDefault(); copiarTurnosDia(); break;
+          case configured.pegar: e.preventDefault(); pegarTurnosDia(); break;
+          case configured.limpiar: e.preventDefault(); typeof confirmarLimpiezaDia === 'function' && confirmarLimpiezaDia(); break;
+          case configured.menuFlotante: e.preventDefault(); toggleAssistiveMenu(); break;
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initHotkeys);
+
   </script>
