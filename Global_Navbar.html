@@ -18,7 +18,7 @@
   </div>
   <div class="sidenav-links">
 
-    <span class="text-muted sidenav-links" > Espacio Monitores </span>
+    <span class="text-muted nav-section-title" > Espacio Monitores </span>
     <a href="<?= baseUrl ?>?page=index" target="_top" class="nav-link <?= (paginaActiva === 'index') ? 'active' : '' ?>">
       <span class="material-symbols-outlined">edit_document</span> Nuevo Reporte
     </a>
@@ -29,7 +29,7 @@
       <span class="material-symbols-outlined">phone_in_talk</span> Reposición Diaria
     </a>
 
-      <span class="text-muted sidenav-links" > Espacio de supervisión </span>
+      <span class="text-muted nav-section-title" style="margin-top: 15px;"> Espacio de supervisión </span>
     <? if (usuarioEsSupervisor) { ?>
       <a href="<?= baseUrl ?>?page=dashboard" target="_top" class="nav-link <?= (paginaActiva === 'dashboard') ? 'active' : '' ?>">
         <span class="material-symbols-outlined">dashboard</span> Dashboard
