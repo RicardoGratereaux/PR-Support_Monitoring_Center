@@ -158,8 +158,8 @@ function pegarTurnosDia() {
     background: 'transparent',
     customClass: { popup: 'swal-dark-popup' },
     showCancelButton: true,
-    confirmButtonColor: 'var(--accent-glow)',
-    confirmButtonText: '<span style="color:var(--accent-primary);">Sí, pegar aquí</span>'
+    confirmButtonText: 'Sí, pegar aquí',
+    cancelButtonText: 'Cancelar'
   }).then((result) => {
     if (result.isConfirmed) {
       mostrarModalSincronizando('Pegando Cronograma...');
@@ -434,7 +434,7 @@ function pegarTurnosDia() {
             <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
           </div>
         </div>`,
-        showCancelButton: true, showDenyButton: true, confirmButtonColor: 'var(--accent-glow)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', denyButtonColor: 'rgba(239, 68, 68, 0.2)', confirmButtonText: '<span style="color:var(--accent-primary); font-weight:bold;">Guardar</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>', denyButtonText: '<span style="color:var(--danger); font-weight:bold;">Eliminar</span>',
+        showCancelButton: true, showDenyButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', denyButtonText: 'Eliminar',
         preConfirm: () => {
           const tipo = document.getElementById('edit-main-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" }; const aplica = document.getElementById('edit-main-aplica-break').checked;
@@ -458,7 +458,7 @@ function pegarTurnosDia() {
             .withFailureHandler(manejarErrorServidor)
             .actualizarTurnoExistente(turnoAct);
         } else if (result.isDenied) {
-          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--danger); font-weight:bold;">Sí, eliminar</span>' }).then((deleteResult) => {
+          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((deleteResult) => {
             if (deleteResult.isConfirmed) {
               mostrarModalSincronizando('Eliminando...');
               google.script.run.withSuccessHandler(function() { turnosActuales.splice(index, 1); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Eliminado!', 'El turno fue borrado correctamente.'); }).withFailureHandler(manejarErrorServidor).eliminarTurno(turno.id);
@@ -499,7 +499,7 @@ function pegarTurnosDia() {
                 <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="swal-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Escribe alguna instrucción, tardanza o detalle..."></textarea></div>
               </div>
             </div>`,
-        showCancelButton: true, confirmButtonColor: 'var(--accent-glow)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--accent-primary); font-weight:bold;">Guardar Turno</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>',
+        showCancelButton: true, confirmButtonText: 'Guardar Turno', cancelButtonText: 'Cancelar',
         didOpen: () => { setTimeout(() => triggerAutoSugerencia('swal', -1), 50); },
         preConfirm: () => {
           const tipo = document.getElementById('swal-tipo').value;
@@ -723,8 +723,7 @@ function pegarTurnosDia() {
             </div>
           </div>`,
         showCancelButton: true,
-        confirmButtonColor: 'rgba(245, 158, 11, 0.2)',
-        confirmButtonText: '<span style="color:var(--warning); font-weight:bold;">Aplicar a Todos</span>',
+        confirmButtonText: 'Aplicar a Todos',
         preConfirm: () => {
           const tipo = document.getElementById('masivo-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
@@ -828,8 +827,7 @@ function pegarTurnosDia() {
             </div>
           </div>`,
         showCancelButton: true,
-        confirmButtonColor: 'rgba(245, 158, 11, 0.2)',
-        confirmButtonText: '<span style="color:var(--warning); font-weight:bold;">Aplicar a Todos</span>',
+        confirmButtonText: 'Aplicar a Todos',
         preConfirm: () => {
           const tipo = document.getElementById('masivo-tipo').value;
           if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
@@ -857,7 +855,7 @@ function pegarTurnosDia() {
 
     function ejecutarEliminacionMasiva() {
       if (turnosSeleccionados.length === 0) return;
-      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonColor: 'rgba(239, 68, 68, 0.2)', cancelButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--danger); font-weight:bold;">Sí, borrar todo</span>', cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>' }).then((result) => {
+      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonText: 'Sí, borrar todo', cancelButtonText: 'Cancelar' }).then((result) => {
         if (result.isConfirmed) {
           mostrarModalSincronizando('Eliminando...');
           google.script.run.withSuccessHandler(function() { turnosActuales = turnosActuales.filter(t => !turnosSeleccionados.includes(String(t.id))); toggleModoSeleccion(); analizarCobertura(); completarBarraYMostrarExito('¡Eliminados!', 'Se ha limpiado la base de datos.'); }).withFailureHandler(manejarErrorServidor).eliminarTurnosMasivo(turnosSeleccionados); 
@@ -905,7 +903,7 @@ function pegarTurnosDia() {
               <tbody id="tbody-perfil"></tbody>
             </table>
           </div>`,
-        showConfirmButton: true, confirmButtonColor: 'rgba(255, 255, 255, 0.05)', confirmButtonText: '<span style="color:var(--text-main);">Cerrar Panel</span>', width: '650px',
+        showConfirmButton: true, confirmButtonText: 'Cerrar Panel', width: '650px',
         didOpen: () => { renderizarFilasPerfil(mesActual); }
       });
     }
@@ -1094,10 +1092,9 @@ function pegarTurnosDia() {
                 <textarea id="${prefix}-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea>
               </div>
             </div>`,
-        showCancelButton: true, confirmButtonColor: 'var(--accent-glow)',
-        cancelButtonColor: 'rgba(255, 255, 255, 0.05)',
-        confirmButtonText: '<span style="color:var(--accent-primary); font-weight:bold;">Guardar Cambios</span>',
-        cancelButtonText: '<span style="color:var(--text-main);">Cancelar</span>',
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
         preConfirm: () => {
             const tipo = document.getElementById(`${prefix}-tipo`).value;
             const notaValue = document.getElementById(`${prefix}-nota`).value;
