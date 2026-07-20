@@ -1379,8 +1379,8 @@ function pegarTurnosDia() {
               if(simularCobertura(index, possibleLateIn, null)) {
                 let left = ((inM / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100;
                 let width = (1 / TOTAL_HORAS_GRID) * 100;
-                trackDiv.innerHTML += `<div class="benefit-overlay benefit-in" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed #10b981; background:rgba(16, 185, 129, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Llegar tarde (Hasta ${aHoraTexto(possibleLateIn)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Llegar ${aHoraTexto(possibleLateIn)}', '${aHoraTexto(possibleLateIn)}', null)">
-                  <span class="material-symbols-outlined" style="font-size:14px; color:#10b981;">schedule</span>
+                trackDiv.innerHTML += `<div class="benefit-overlay benefit-in" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed var(--success); background:rgba(166, 227, 161, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Llegar tarde (Hasta ${aHoraTexto(possibleLateIn)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Llegar ${aHoraTexto(possibleLateIn)}', '${aHoraTexto(possibleLateIn)}', null)">
+                  <span class="material-symbols-outlined" style="font-size:14px; color:var(--success);">schedule</span>
                 </div>`;
               }
               
@@ -1388,8 +1388,8 @@ function pegarTurnosDia() {
               if(simularCobertura(index, null, possibleEarlyOut)) {
                 let left = ((possibleEarlyOut / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100;
                 let width = (1 / TOTAL_HORAS_GRID) * 100;
-                trackDiv.innerHTML += `<div class="benefit-overlay benefit-out" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed #10b981; background:rgba(16, 185, 129, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Salir temprano (Desde ${aHoraTexto(possibleEarlyOut)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Salir ${aHoraTexto(possibleEarlyOut)}', null, '${aHoraTexto(possibleEarlyOut)}')">
-                  <span class="material-symbols-outlined" style="font-size:14px; color:#10b981;">directions_run</span>
+                trackDiv.innerHTML += `<div class="benefit-overlay benefit-out" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed var(--success); background:rgba(166, 227, 161, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Salir temprano (Desde ${aHoraTexto(possibleEarlyOut)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Salir ${aHoraTexto(possibleEarlyOut)}', null, '${aHoraTexto(possibleEarlyOut)}')">
+                  <span class="material-symbols-outlined" style="font-size:14px; color:var(--success);">directions_run</span>
                 </div>`;
               }
             } else if (emp && !emp.elegible) {
