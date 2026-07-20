@@ -73,6 +73,18 @@
         if (item.breakIn && item.breakOut) {
           html += `<div class="tooltip-row"><strong style="color:var(--warning);">Break:</strong> ${item.breakIn} a ${item.breakOut}</div>`;
         }
+        if (item.llegadaReal && item.llegadaReal.trim() !== "") {
+          let colorBadge = "var(--text-main)";
+          if(item.entrada && item.entrada.includes(':') && item.llegadaReal.includes(':')) {
+            let [hE, mE] = item.entrada.split(':').map(Number);
+            let [hR, mR] = item.llegadaReal.split(':').map(Number);
+            let diff = (hR * 60 + mR) - (hE * 60 + mE);
+            if (diff > 7) colorBadge = "var(--danger)";
+            else if (diff > 0) colorBadge = "var(--warning)";
+            else colorBadge = "var(--success)";
+          }
+          html += `<div class="tooltip-row"><strong style="color:${colorBadge};">Llegada Real:</strong> <span style="color:${colorBadge}; font-weight:bold;">${item.llegadaReal}</span></div>`;
+        }
       }
 
       if (item.nota && item.nota.trim() !== "") {
