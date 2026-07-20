@@ -195,7 +195,7 @@ function pegarTurnosDia() {
       if (!Array.isArray(lista)) lista = []; contenedor.innerHTML = ""; filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
       if (lista.length === 0) {
         document.getElementById('liveDashboard').style.display = 'none';
-        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: var(--glass-border); display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--accent-primary); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
+        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-main); display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--accent-primary); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
         return;
       }
 
@@ -250,7 +250,7 @@ function pegarTurnosDia() {
         // El icono de nota se inserta después del nombre del colaborador
         row.innerHTML = `
           <div class="colaborador-info" style="${modoOrden || modoSeleccion ? 'margin-left:-5px;' : 'cursor:pointer;'}" onclick="${clickPerfil}" title="Ver historial de ${nombreEscapado}">
-            ${controlesExtras}<img src="${item.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(item.nombre)+'&background=27272a&color=fff'}" alt="Foto"><span class="colaborador-name">${nombreEscapado}</span>${iconoNotaHtml}${iconoTardeHtml}
+            ${controlesExtras}<img src="${getAvatarUrl(item.nombre, item.foto)}" alt="Foto"><span class="colaborador-name">${nombreEscapado}</span>${iconoNotaHtml}${iconoTardeHtml}
           </div>
           <div class="shift-track" onclick="${accionClick}" onmousemove="handleTrackHover(event, ${index})" onmouseleave="ocultarTooltip()" style="${modoOrden || modoSeleccion ? 'cursor:default; opacity:0.5;' : ''}">
             ${barrasHTML}
@@ -296,7 +296,7 @@ function pegarTurnosDia() {
 
         if (estado === 'trabajando' || estado === 'break') {
           let dotClass = estado === 'trabajando' ? 'breathe-green' : 'breathe-amber';
-          let fotoUrl = t.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(t.nombre)+'&background=27272a&color=fff';
+          let fotoUrl = getAvatarUrl(t.nombre, t.foto);
           avatarsHTML += `<div class="avatar-live-badge" title="${escaparHTML(t.nombre)} | ${estado==='trabajando'?'Operando':'En Break'}"><img src="${fotoUrl}"><span style="color:var(--text-main); font-size:11px; font-weight:600;">${escaparHTML(t.nombre)}</span>
           </div>`;
         }
@@ -915,7 +915,7 @@ function pegarTurnosDia() {
 
     function dibujarModalPerfil(nombre) {
       let turnoHoy = turnosActuales.find(t => t.nombre === nombre); 
-      let fotoUrl = (turnoHoy && turnoHoy.foto) ? turnoHoy.foto : `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=27272a&color=fff`; 
+      let fotoUrl = getAvatarUrl(nombre, turnoHoy ? turnoHoy.foto : null); 
       let fechaMain = document.getElementById('fechaFiltro').value; 
       let mesActual = fechaMain.substring(0, 7); 
       

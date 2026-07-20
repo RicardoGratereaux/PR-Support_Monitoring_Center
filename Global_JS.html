@@ -90,4 +90,17 @@ function comprimirImagen(file, maxWidth, quality) {
     };
   });
 }
+
+// ===== THEMED AVATARS =====
+function getAvatarUrl(nombre, foto) {
+  if (foto && foto.trim() !== "") return foto;
+  
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  // Light: background = eff1f5 (Base), color = 4c4f69 (Text)
+  // Dark: background = 181825 (Mantle), color = cdd6f4 (Text)
+  const bg = isLight ? 'eff1f5' : '181825';
+  const color = isLight ? '4c4f69' : 'cdd6f4';
+  
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=${bg}&color=${color}`;
+}
 </script>

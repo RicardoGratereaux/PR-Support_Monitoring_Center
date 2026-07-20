@@ -515,17 +515,17 @@
     }
 
     .swal-dark-popup {
-      background: rgba(24, 24, 37, 0.75) !important; /* Mantle con transparencia */
+      background: var(--swal-popup-bg) !important;
       backdrop-filter: blur(16px) !important;
       -webkit-backdrop-filter: blur(16px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.05) !important;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: 0 10px 40px var(--shadow-color);
       color: var(--text-main) !important;
       border-radius: 16px !important;
     }
     .swal-dark-popup .swal2-confirm {
       background: var(--accent-primary);
-      color: var(--bg-main);
+      color: var(--btn-text-on-accent);
       border-radius: 8px !important;
       font-weight: 700 !important;
       padding: 10px 24px !important;
@@ -534,12 +534,12 @@
     }
     
     .swal-dark-popup .swal2-cancel {
-      background: #313244 !important;
+      background: var(--glass-bg-hover) !important;
       color: var(--text-main) !important;
       border-radius: 8px !important;
       padding: 10px 24px !important;
       font-size: 14px !important;
-      border: 1px solid #45475a !important;
+      border: 1px solid var(--glass-border) !important;
     }
 
     .swal-dark-popup .swal2-actions {
@@ -551,9 +551,9 @@
       position: relative !important;
       order: 3 !important;
       margin-left: 30px !important;
-      background: rgba(239, 68, 68, 0.1) !important;
+      background: var(--danger-glow) !important;
       color: var(--danger) !important;
-      border: 1px solid rgba(239, 68, 68, 0.2) !important;
+      border: 1px solid var(--danger) !important;
       border-radius: 8px !important;
       padding: 0 !important;
       width: 40px !important;
@@ -564,23 +564,24 @@
     }
     
     .swal-deny-right:hover {
-      background: rgba(239, 68, 68, 0.25) !important;
+      background: var(--danger) !important;
+      color: var(--btn-text-on-accent) !important;
     }
 
     .swal-dark-popup .input-filtro,
     .swal-dark-popup select,
     .swal-dark-popup input[type="time"],
     .swal-dark-popup input[type="date"] {
-      background: rgba(0, 0, 0, 0.3) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      background: var(--input-bg) !important;
+      border: 1px solid var(--glass-border) !important;
       backdrop-filter: blur(5px);
       color: var(--text-main);
     }
 
     .swal-dark-popup .input-filtro:focus {
       border-color: var(--accent-primary) !important;
-      background: rgba(0, 0, 0, 0.5) !important;
-      box-shadow: none !important;
+      background: var(--input-bg) !important;
+      box-shadow: 0 0 0 3px var(--accent-glow) !important;
     }
 
     input[type="time"],
@@ -1228,11 +1229,11 @@
       top: 0;
       left: 0;
       width: 250px;
-      background: rgba(30, 30, 46, 0.95);
+      background: var(--swal-popup-bg);
       border: 1px solid var(--glass-border);
       border-radius: 8px;
       padding: 10px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 25px var(--shadow-color);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       color: var(--text-main);
@@ -1254,7 +1255,7 @@
     .tooltip-header {
       font-size: 13px;
       font-weight: 700;
-      color: #cdd6f4;
+      color: var(--text-main);
       border-bottom: 1px solid var(--glass-border);
       padding-bottom: 6px;
       margin-bottom: 6px;
@@ -1278,8 +1279,8 @@
     .tooltip-nota {
       margin-top: 6px;
       padding-top: 6px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.1);
-      color: #a6adc8;
+      border-top: 1px dashed var(--glass-border);
+      color: var(--text-muted);
       font-style: italic;
       font-size: 11px;
     }
