@@ -451,6 +451,10 @@ function obtenerEstadoBeneficios(fechaReferenciaStr) {
     for (let nombre in empleados) {
       let emp = empleados[nombre];
       emp.elegible = emp.sabadoCompleto && emp.tardanzasLeves <= 2 && emp.tardanzasGraves <= 1;
+      emp.motivos = [];
+      if (!emp.sabadoCompleto) emp.motivos.push("No cumplió jornada de sábado completa (8hrs).");
+      if (emp.tardanzasLeves > 2) emp.motivos.push(`Exceso de tardanzas leves (${emp.tardanzasLeves} de 2 permitidas).`);
+      if (emp.tardanzasGraves > 1) emp.motivos.push(`Exceso de tardanzas graves (${emp.tardanzasGraves} de 1 permitida).`);
     }
 
     return empleados;

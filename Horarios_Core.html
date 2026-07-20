@@ -205,22 +205,16 @@ function pegarTurnosDia() {
 
         // INDICADOR DE LLEGADA REAL (Flotante)
         let llegadaBadgeHTML = "";
-        if (item.llegadaReal && item.llegadaReal.trim() !== "") {
-          let colorBadge = "var(--text-main)";
-          let leftPosition = "left: 0%;";
-          if(item.entrada && item.entrada.includes(':') && item.llegadaReal.includes(':')) {
+        let iconoTardeHtml = "";
+        if (item.llegadaReal && item.llegadaReal.trim() !== "" && item.entrada && item.entrada.includes(':') && item.llegadaReal.includes(':')) {
             let [hE, mE] = item.entrada.split(':').map(Number);
             let [hR, mR] = item.llegadaReal.split(':').map(Number);
             let diff = (hR * 60 + mR) - (hE * 60 + mE);
-            if (diff > 7) colorBadge = "var(--danger)";
-            else if (diff > 0) colorBadge = "var(--warning)";
-            else colorBadge = "var(--success)";
-            
-            const entradaDec = hE + (mE / 60);
-            const left = ((entradaDec - HORA_INICIO_GRID) / TOTAL_HORAS_GRID) * 100;
-            leftPosition = `left: calc(${left}% + 2px);`;
-          }
-          llegadaBadgeHTML = `<div style="position: absolute; ${leftPosition} top: -14px; background: rgba(17,17,27,0.9); padding: 1px 5px; border-radius: 4px; font-size: 9px; font-weight: 800; color: ${colorBadge}; border: 1px solid ${colorBadge}; z-index: 15; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none;" title="Llegada Real">R: ${item.llegadaReal}</div>`;
+            if (diff > 7) {
+                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--danger); cursor:help;" title="Llegada tardía: ${item.llegadaReal}">history_toggle_off</span>`;
+            } else if (diff > 0) {
+                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Llegada en gracia: ${item.llegadaReal}">history_toggle_off</span>`;
+            }
         }
 
         // BARRAS LIMPIAS: Ya no llevan el icono por dentro
@@ -252,7 +246,7 @@ function pegarTurnosDia() {
         // El icono de nota se inserta después del nombre del colaborador
         row.innerHTML = `
           <div class="colaborador-info" style="${modoOrden || modoSeleccion ? 'margin-left:-5px;' : 'cursor:pointer;'}" onclick="${clickPerfil}" title="Ver historial de ${nombreEscapado}">
-            ${controlesExtras}<img src="${item.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(item.nombre)+'&background=27272a&color=fff'}" alt="Foto"><span class="colaborador-name">${nombreEscapado}</span>${iconoNotaHtml}
+            ${controlesExtras}<img src="${item.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(item.nombre)+'&background=27272a&color=fff'}" alt="Foto"><span class="colaborador-name">${nombreEscapado}</span>${iconoNotaHtml}${iconoTardeHtml}
           </div>
           <div class="shift-track" onclick="${accionClick}" onmousemove="handleTrackHover(event, ${index})" onmouseleave="ocultarTooltip()" style="${modoOrden || modoSeleccion ? 'cursor:default; opacity:0.5;' : ''}">
             ${barrasHTML}
@@ -357,7 +351,7 @@ function pegarTurnosDia() {
         let msg = ""; let tipo = ""; 
         if (diaSemana === 0) { if (m >= 10 * 60 && m < 18 * 60) { if (m < 12 * 60 || m >= 16 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } } else { if (activos < 2) { msg = `Mínimo 2 en almuerzo (Hay ${activos})`; tipo = "danger"; } } } }
         else if (diaSemana === 6) { if (m >= 8 * 60 && m < 18 * 60) { if (m === 8 * 60) { if (activos < 2) { msg = `Mínimo 2 (Hay ${activos})`; tipo = "danger"; } } else if (m >= 8.5 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60) { if (activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } } else if (m >= 17 * 60 && m < 18 * 60) { if (activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } } } }
-        else { if (m === 7.5 * 60 && activos === 0) { msg = `Faltan, req 1`; tipo = "danger"; } else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } else if (m >= 17 * 60 && m < 19 * 60 && activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } }
+        else { if (m === 7.5 * 60 && activos === 0) { msg = `Faltan, req 1`; tipo = "danger"; } else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } else if (m >= 17 * 60 && m < 18 * 60 && activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } else if (m >= 18 * 60 && m < 19 * 60 && activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } }
         if(msg !== "") fallos.push({ inicio: m, fin: m + 30, mensaje: msg, tipo: tipo });
       }
 
@@ -1340,7 +1334,7 @@ function pegarTurnosDia() {
               // Reglas de cobertura (copiadas de analizarCobertura)
               if (diaSemana === 0) { if (m >= 10 * 60 && m < 18 * 60) { if (m < 12 * 60 || m >= 16 * 60) { if (activos < 3) return false; } else { if (activos < 2) return false; } } }
               else if (diaSemana === 6) { if (m >= 8 * 60 && m < 18 * 60) { if (m === 8 * 60) { if (activos < 2) return false; } else if (m >= 8.5 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60) { if (activos < 6) return false; } else if (m >= 17 * 60 && m < 18 * 60) { if (activos < 4) return false; } } }
-              else { if (m === 7.5 * 60 && activos === 0) return false; else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) return false; else if (m >= 17 * 60 && m < 19 * 60 && activos < 4) return false; }
+              else { if (m === 7.5 * 60 && activos === 0) return false; else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) return false; else if (m >= 17 * 60 && m < 18 * 60 && activos < 4) return false; else if (m >= 18 * 60 && m < 19 * 60 && activos < 3) return false; }
             }
             return true; // Pasa todas las pruebas de cobertura
           };
@@ -1378,6 +1372,15 @@ function pegarTurnosDia() {
                 let width = (1 / TOTAL_HORAS_GRID) * 100;
                 trackDiv.innerHTML += `<div class="benefit-overlay benefit-out" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed #10b981; background:rgba(16, 185, 129, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Salir temprano (Desde ${aHoraTexto(possibleEarlyOut)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Salir ${aHoraTexto(possibleEarlyOut)}', null, '${aHoraTexto(possibleEarlyOut)}')">
                   <span class="material-symbols-outlined" style="font-size:14px; color:#10b981;">directions_run</span>
+                </div>`;
+              }
+            } else if (emp && !emp.elegible) {
+              let trackDiv = tracks[index];
+              if(trackDiv) {
+                trackDiv.style.position = 'relative';
+                let razonesText = emp.motivos ? emp.motivos.join(' | ') : 'No cumple los requisitos';
+                trackDiv.innerHTML += `<div class="benefit-overlay" style="position:absolute; right:10px; top:5px; z-index:10; border-radius:4px; display:flex; align-items:center; gap:4px; padding:2px 6px; font-size:10px; font-weight:bold; color:var(--danger); background:rgba(239,68,68,0.1); border:1px solid var(--danger); cursor:help;" title="No aplica: ${razonesText}">
+                  <span class="material-symbols-outlined" style="font-size:12px;">cancel</span> Sin beneficio
                 </div>`;
               }
             }
