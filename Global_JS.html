@@ -96,7 +96,7 @@ function getAvatarUrl(nombre, foto) {
   if (foto && typeof foto === 'string' && foto.trim() !== "") return foto;
   
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  const bg = isLight ? 'eff1f5' : '181825';
+  const bg = isLight ? 'ccd0da' : '181825';
   const color = isLight ? '4c4f69' : 'cdd6f4';
   const safeName = nombre || "User";
   
