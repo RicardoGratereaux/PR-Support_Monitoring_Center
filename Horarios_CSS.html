@@ -347,10 +347,10 @@
       width: 100%;
       height: 28px;
       overflow: hidden; /* Prevent child overflow scrollbars */
-      background-color: rgba(255, 255, 255, 0.015); /* Softest flat indicator */
+      background-color: transparent; 
       border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.03); /* Thin minimalist border */
-      background-image: linear-gradient(to right, transparent calc(100% - 1px), rgba(255, 255, 255, 0.07) 100%);
+      border: 1px solid var(--glass-border); 
+      background-image: linear-gradient(to right, transparent calc(100% - 1px), var(--glass-border) 100%);
       background-size: calc(100% / 13) 100%;
       cursor: pointer;
       transition: transform 0.1s ease, background-color 0.2s ease;
