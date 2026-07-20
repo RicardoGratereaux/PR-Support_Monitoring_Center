@@ -976,22 +976,22 @@ function pegarTurnosDia() {
         return (h * 60) + m; 
       };
 
-      // 1. OBTENER LÍMITES DE LA SEMANA LITERAL
-      let fechaMain = document.getElementById('fechaFiltro').value;
-      let pMain = fechaMain.split('-');
-      let dMain = new Date(pMain[0], pMain[1] - 1, pMain[2]);
-      let diaSemana = dMain.getDay();
-      
-      let diffLunes = dMain.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
-      let dLunes = new Date(dMain.getFullYear(), dMain.getMonth(), diffLunes);
-      let dDomingo = new Date(dLunes); 
-      dDomingo.setDate(dLunes.getDate() + 6);
-      
-      const fmtD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      let strLunes = fmtD(dLunes);
-      let strDomingo = fmtD(dDomingo);
+    // 1. CALCULAR RANGO DE QUINCENA ACTUAL (1‑15 o 16‑fin de mes)
+let fechaMain = document.getElementById('fechaFiltro').value;
+let pMain = fechaMain.split('-');
+let dMain = new Date(pMain[0], pMain[1] - 1, pMain[2]);
 
-      // 2. CALCULAR HORAS DE LA SEMANA ACTUAL
+// Determine start and end day based on day of month
+let periodoInicioDia = dMain.getDate() <= 15 ? 1 : 16;
+let periodoFinDia = periodoInicioDia === 1 ? 15 : ultimoDiaMes;
+let dInicioPeriodo = new Date(dMain.getFullYear(), dMain.getMonth(), periodoInicioDia);
+let dFinPeriodo = new Date(dMain.getFullYear(), dMain.getMonth(), periodoFinDia);
+
+const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+let strLunes = fmt(dInicioPeriodo);
+let strDomingo = fmt(dFinPeriodo);
+
+     // 2. CALCULAR HORAS DE LA QUINCENA ACTUAL
       let minTrabajadosSemana = 0;
       historialActual.forEach(t => {
         if (t.fecha >= strLunes && t.fecha <= strDomingo) {
@@ -1079,9 +1079,9 @@ function pegarTurnosDia() {
         let horasQ2 = Math.floor(totalMinutosQ2 / 60);
         let minsQ2 = totalMinutosQ2 % 60;
         
-        // Horas Semana Actual
-        let horasSemana = Math.floor(minTrabajadosSemana / 60);
-        let minsSemana = minTrabajadosSemana % 60;
+        // Horas Quincena Actual
+        let horasQuincena = Math.floor(minTrabajadosSemana / 60);
+        let minsQuincena = minTrabajadosSemana % 60;
 
         statsDiv.innerHTML = `
           <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px; text-align: center;">
@@ -1092,10 +1092,10 @@ function pegarTurnosDia() {
             <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">2da Quincena (16 - ${ultimoDiaMes})</div>
             <div style="font-size: 18px; font-weight: bold; color: var(--text-main);">${horasQ2}h ${minsQ2 > 0 ? minsQ2 + 'm' : ''}</div>
           </div>
-          <div style="background: var(--accent-glow); border: 1px solid var(--accent-glow); padding: 12px 10px; border-radius: 8px; text-align: center;" title="Semana del Lunes ${strLunes.substring(8)} al Domingo ${strDomingo.substring(8)}">
-            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Semana (En curso)</div>
+          <div style="background: var(--accent-glow); border: 1px solid var(--accent-glow); padding: 12px 10px; border-radius: 8px; text-align: center;" title="Quincena del ${strLunes} al ${strDomingo}">
+            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Quincena (en curso)</div>
             <div style="font-size: 18px; font-weight: bold; color: var(--accent-primary); display: flex; justify-content: center; align-items: center; gap: 4px;">
-              <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> ${horasSemana}h ${minsSemana > 0 ? minsSemana + 'm' : ''}
+              <span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> ${horasQuincena}h ${minsQuincena > 0 ? minsQuincena + 'm' : ''}
             </div>
           </div>
         `;
