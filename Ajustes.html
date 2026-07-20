@@ -7,123 +7,188 @@
   <?!= include('Global_CSS'); ?>
   
   <style>
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
     .settings-container {
-      max-width: 800px;
-      margin: 80px auto 40px auto;
-      padding: 30px;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      animation: fadeUp 0.5s ease-out forwards;
+      max-width: 750px;
+      margin: 100px auto 60px auto;
+      padding: 40px;
+      background: rgba(30, 30, 46, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     
     .settings-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 30px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid var(--glass-border);
+      gap: 15px;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .settings-header .icon-container {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(203, 166, 247, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-primary);
     }
     
     .settings-header h2 {
       margin: 0;
       color: var(--text-main);
-      font-size: 22px;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .settings-header p {
+      margin: 4px 0 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
     }
     
     .settings-group {
-      margin-bottom: 30px;
+      margin-bottom: 40px;
     }
     
     .settings-group h3 {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--accent-primary);
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 15px;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .hotkey-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 15px;
-      background: rgba(20, 20, 22, 0.4);
-      border: 1px solid var(--glass-border);
-      border-radius: 8px;
-      margin-bottom: 10px;
-      transition: background 0.2s;
+      padding: 16px 20px;
+      background: rgba(24, 24, 37, 0.5);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .hotkey-row:hover {
-      background: rgba(20, 20, 22, 0.8);
+      background: rgba(24, 24, 37, 0.9);
+      border-color: rgba(255,255,255,0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     
     .hotkey-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       color: var(--text-main);
       font-weight: 500;
       font-size: 14px;
     }
     
+    .hotkey-label .material-symbols-outlined {
+      color: var(--text-muted);
+      font-size: 18px;
+      transition: 0.3s;
+    }
+    
+    .hotkey-row:hover .hotkey-label .material-symbols-outlined {
+      color: var(--accent-primary);
+    }
+    
     .hotkey-input-container {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     
     .hotkey-input {
-      background: #11111b;
-      border: 1px solid #45475a;
+      background: rgba(17, 17, 27, 0.8);
+      border: 1px solid rgba(203, 166, 247, 0.2);
       color: var(--accent-primary);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-family: monospace;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'Inter', monospace;
+      font-weight: 600;
       font-size: 13px;
-      width: 140px;
+      width: 150px;
       text-align: center;
       cursor: pointer;
       user-select: none;
+      transition: all 0.2s ease;
+      letter-spacing: 0.5px;
+    }
+    
+    .hotkey-input:hover {
+      background: rgba(17, 17, 27, 1);
+      border-color: var(--accent-primary);
     }
     
     .hotkey-input:focus {
       border-color: var(--accent-primary);
       outline: none;
-      box-shadow: 0 0 0 2px rgba(203, 166, 247, 0.3);
+      box-shadow: 0 0 0 3px rgba(203, 166, 247, 0.2);
       color: var(--text-main);
     }
     
     .hotkey-input.recording {
       background: var(--accent-primary);
       color: #11111b;
-      font-weight: bold;
+      font-weight: 700;
+      border-color: var(--accent-primary);
+      animation: pulseRecord 1.5s infinite;
+    }
+    
+    @keyframes pulseRecord {
+      0% { box-shadow: 0 0 0 0 rgba(203, 166, 247, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(203, 166, 247, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(203, 166, 247, 0); }
     }
     
     .reset-btn {
       background: transparent;
-      border: none;
+      border: 1px solid transparent;
       color: var(--text-muted);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 4px;
-      border-radius: 4px;
-      transition: 0.2s;
+      padding: 6px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
     }
     
     .reset-btn:hover {
       color: var(--danger);
       background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
     }
     
     .save-bar {
       display: flex;
       justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid var(--glass-border);
+      align-items: center;
+      gap: 15px;
+      margin-top: 40px;
+      padding-top: 25px;
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
     
     .toast {
@@ -154,37 +219,46 @@
   
   <div class="settings-container">
     <div class="settings-header">
-      <span class="material-symbols-outlined" style="font-size: 28px; color: var(--accent-primary);">settings</span>
-      <h2>Ajustes y Atajos de Teclado</h2>
+      <div class="icon-container">
+        <span class="material-symbols-outlined" style="font-size: 28px;">keyboard_command_key</span>
+      </div>
+      <div>
+        <h2>Ajustes y Atajos de Teclado</h2>
+        <p>Personaliza las teclas rápidas para navegar y trabajar más eficientemente.</p>
+      </div>
     </div>
     
     <div class="settings-group">
-      <h3>Horarios y Planificación</h3>
+      <h3><span class="material-symbols-outlined" style="font-size:16px;">edit_calendar</span> Horarios y Planificación</h3>
       <div id="hotkeys-container">
         <!-- Hotkeys rendered here -->
       </div>
     </div>
     
     <div class="save-bar">
-      <button class="btn-neon" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-main);" onclick="resetAllDefaults()">Restaurar Valores</button>
-      <button class="btn-neon btn-primary-neon" onclick="saveHotkeys()">Guardar Cambios</button>
+      <button class="btn-neon" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 10px 20px;" onclick="resetAllDefaults()">
+        <span class="material-symbols-outlined" style="font-size:18px; margin-right:6px; vertical-align:middle;">restart_alt</span> Restaurar Valores
+      </button>
+      <button class="btn-neon btn-primary-neon" style="padding: 10px 24px; font-weight: 700; box-shadow: 0 4px 15px rgba(203,166,247,0.3);" onclick="saveHotkeys()">
+        <span class="material-symbols-outlined" style="font-size:18px; margin-right:6px; vertical-align:middle;">save</span> Guardar Cambios
+      </button>
     </div>
   </div>
   
-  <div id="toast" class="toast">Ajustes guardados correctamente</div>
+  <div id="toast" class="toast"><span class="material-symbols-outlined" style="vertical-align:middle; margin-right:6px;">check_circle</span> Ajustes guardados correctamente</div>
 
   <?!= include('Global_JS'); ?>
   
   <script>
     const defaultHotkeys = {
-      asignarTurno: { label: 'Asignar Nuevo Turno', keys: 'Alt+N' },
-      iaSugerencia: { label: 'Sugerencia de IA (Masiva)', keys: 'Ctrl+I' },
-      reordenar: { label: 'Reordenar Lista', keys: 'Alt+R' },
-      seleccion: { label: 'Seleccionar Múltiple', keys: 'Ctrl+M' },
-      copiar: { label: 'Copiar Turnos del Día', keys: 'Ctrl+C' },
-      pegar: { label: 'Pegar Turnos del Día', keys: 'Ctrl+V' },
-      limpiar: { label: 'Limpiar Día', keys: 'Ctrl+Backspace' },
-      menuFlotante: { label: 'Mostrar/Ocultar Menú Flotante', keys: 'Ctrl+Space' }
+      asignarTurno: { label: 'Asignar Nuevo Turno', icon: 'add_circle', keys: 'Alt+N' },
+      iaSugerencia: { label: 'Sugerencia de IA (Masiva)', icon: 'auto_awesome', keys: 'Ctrl+I' },
+      reordenar: { label: 'Reordenar Lista', icon: 'swap_vert', keys: 'Alt+R' },
+      seleccion: { label: 'Seleccionar Múltiple', icon: 'checklist', keys: 'Ctrl+M' },
+      copiar: { label: 'Copiar Turnos del Día', icon: 'content_copy', keys: 'Ctrl+C' },
+      pegar: { label: 'Pegar Turnos del Día', icon: 'content_paste', keys: 'Ctrl+V' },
+      limpiar: { label: 'Limpiar Día', icon: 'delete_sweep', keys: 'Ctrl+Backspace' },
+      menuFlotante: { label: 'Mostrar/Ocultar Menú Flotante', icon: 'widgets', keys: 'Ctrl+Space' }
     };
     
     let currentHotkeys = {};
@@ -217,11 +291,11 @@
         const row = document.createElement('div');
         row.className = 'hotkey-row';
         row.innerHTML = `
-          <div class="hotkey-label">${item.label}</div>
+          <div class="hotkey-label"><span class="material-symbols-outlined">${item.icon || 'keyboard'}</span> ${item.label}</div>
           <div class="hotkey-input-container">
             <input type="text" id="hk-${key}" class="hotkey-input" value="${item.keys}" readonly onclick="startRecording('${key}')" onblur="stopRecording()">
             <button class="reset-btn" onclick="resetSingle('${key}')" title="Restaurar por defecto">
-              <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+              <span class="material-symbols-outlined" style="font-size:20px;">restart_alt</span>
             </button>
           </div>
         `;
