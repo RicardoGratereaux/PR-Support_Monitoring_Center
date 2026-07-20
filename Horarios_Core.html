@@ -1257,13 +1257,6 @@ function pegarTurnosDia() {
         const rect = container.getBoundingClientRect();
         startX = clientX;
         startY = clientY;
-        
-        // Cambiar temporalmente el anclaje a top/left absoluto para arrastre fluido
-        container.style.right = 'auto';
-        container.style.bottom = 'auto';
-        container.style.left = rect.left + 'px';
-        container.style.top = rect.top + 'px';
-        
         initialLeft = rect.left;
         initialTop = rect.top;
         
@@ -1282,30 +1275,33 @@ function pegarTurnosDia() {
         const dx = clientX - startX;
         const dy = clientY - startY;
         
-        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+        if (!assistiveDragged && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
           assistiveDragged = true;
+          // Cambiar temporalmente el anclaje a top/left absoluto solo cuando arrastre real inicia
+          container.style.right = 'auto';
+          container.style.bottom = 'auto';
         }
         
-        let nuevoLeft = initialLeft + dx;
-        let nuevoTop = initialTop + dy;
-        
-        const margen = 15;
-        const wWidth = window.innerWidth;
-        const wHeight = window.innerHeight;
-        const cWidth = container.offsetWidth || 56;
-        const cHeight = container.offsetHeight || 56;
-        
-        if (nuevoLeft < margen) nuevoLeft = margen;
-        if (nuevoLeft > wWidth - cWidth - margen) nuevoLeft = wWidth - cWidth - margen;
-        if (nuevoTop < margen) nuevoTop = margen;
-        if (nuevoTop > wHeight - cHeight - margen) nuevoTop = wHeight - cHeight - margen;
-        
-        container.style.left = nuevoLeft + 'px';
-        container.style.top = nuevoTop + 'px';
-        container.style.right = 'auto';
-        container.style.bottom = 'auto';
-        
-        if (e.cancelable) e.preventDefault();
+        if (assistiveDragged) {
+          let nuevoLeft = initialLeft + dx;
+          let nuevoTop = initialTop + dy;
+          
+          const margen = 15;
+          const wWidth = window.innerWidth;
+          const wHeight = window.innerHeight;
+          const cWidth = container.offsetWidth || 56;
+          const cHeight = container.offsetHeight || 56;
+          
+          if (nuevoLeft < margen) nuevoLeft = margen;
+          if (nuevoLeft > wWidth - cWidth - margen) nuevoLeft = wWidth - cWidth - margen;
+          if (nuevoTop < margen) nuevoTop = margen;
+          if (nuevoTop > wHeight - cHeight - margen) nuevoTop = wHeight - cHeight - margen;
+          
+          container.style.left = nuevoLeft + 'px';
+          container.style.top = nuevoTop + 'px';
+          
+          if (e.cancelable) e.preventDefault();
+        }
       }
 
       function dragEnd() {
@@ -1319,7 +1315,9 @@ function pegarTurnosDia() {
         
         window.getSelection().removeAllRanges();
         
-        updateAssistivePosition();
+        if (assistiveDragged) {
+          updateAssistivePosition();
+        }
       }
       
       // Control de resize para no ocultar el boton
