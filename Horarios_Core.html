@@ -1156,8 +1156,6 @@ function pegarTurnosDia() {
     // 🕹️ INICIALIZADOR DEL PANEL MÓVIL
     // =========================================================
     document.addEventListener("DOMContentLoaded", () => {
-      initPanelComandoArrastrable();
-
       // Cerrar panel al hacer clic fuera
       document.addEventListener("click", (e) => {
         const container = document.getElementById("assistive-container");
@@ -1166,68 +1164,16 @@ function pegarTurnosDia() {
           if (!container.contains(e.target)) {
             panel.style.display = "none";
             container.classList.remove("open");
-            updateAssistivePosition();
           }
         }
       });
     });
 
   // =========================================================
-    // 🕹️ MOTOR ASISTIVO DE ARRASTRE Y DESPLIEGUE
+    // 🕹️ MOTOR ASISTIVO DE DESPLIEGUE
     // =========================================================
-    let assistiveDragged = false; // Bandera para bloquear el clic si hubo arrastre
-
-    function updateAssistivePosition() {
-      const container = document.getElementById("assistive-container");
-      const button = document.getElementById("assistive-button");
-      const panel = document.getElementById("panel-comando-flotante");
-      if (!container || !button) return;
-
-      const handleRect = button.getBoundingClientRect();
-      const centroPantallaX = window.innerWidth / 2;
-      const margenSeguro = 15;
-
-      // 1. Anclaje y Alineación Horizontal usando el BOTÓN como referencia
-      if (handleRect.left + handleRect.width / 2 < centroPantallaX) {
-        container.style.alignItems = "flex-start";
-        container.style.right = "auto";
-        container.style.left = margenSeguro + "px";
-      } else {
-        container.style.alignItems = "flex-end";
-        container.style.left = "auto";
-        container.style.right = margenSeguro + "px";
-      }
-
-      // 2. Anclaje y Alineación Vertical usando el BOTÓN como referencia
-      const panelAlto = (panel && panel.style.display !== "none") ? panel.offsetHeight : 300;
-      let isReversed = false;
-      
-      if (handleRect.top + panelAlto + 60 > window.innerHeight) {
-        container.style.flexDirection = "column-reverse";
-        isReversed = true;
-      } else {
-        container.style.flexDirection = "column";
-      }
-
-      if (isReversed) {
-        container.style.top = "auto";
-        let bottomVal = window.innerHeight - handleRect.bottom;
-        if (bottomVal < margenSeguro) bottomVal = margenSeguro;
-        container.style.bottom = bottomVal + "px";
-      } else {
-        container.style.bottom = "auto";
-        let topVal = handleRect.top;
-        if (topVal < margenSeguro) topVal = margenSeguro;
-        container.style.top = topVal + "px";
-      }
-    }
 
     function toggleAssistiveMenu(e) {
-      if (assistiveDragged) {
-        assistiveDragged = false;
-        return;
-      }
-      
       const panel = document.getElementById("panel-comando-flotante");
       const container = document.getElementById("assistive-container");
       if (!panel || !container) return;
@@ -1239,124 +1185,5 @@ function pegarTurnosDia() {
         panel.style.display = "none";
         container.classList.remove("open");
       }
-      updateAssistivePosition();
-    }
-
-    function initPanelComandoArrastrable() {
-      const container = document.getElementById("assistive-container");
-      const handle = document.getElementById("assistive-button");
-      if (!container || !handle) return;
-
-      let isDragging = false;
-      let startX, startY;
-      let offsetX, offsetY;
-      let deltaX, deltaY;
-      let buttonW, buttonH;
-
-      handle.addEventListener('mousedown', dragStart);
-      handle.addEventListener('touchstart', dragStart, { passive: true });
-
-      function dragStart(e) {
-        if (e.type === 'mousedown' && e.button !== 0) return;
-        
-        isDragging = true;
-        assistiveDragged = false;
-        
-        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-        
-        startX = clientX;
-        startY = clientY;
-        
-        const handleRect = handle.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        
-        // Offset entre el mouse y la esquina superior izquierda del botón
-        offsetX = clientX - handleRect.left;
-        offsetY = clientY - handleRect.top;
-        
-        // Offset entre el contenedor y el botón (necesario si el panel está abierto)
-        deltaX = containerRect.left - handleRect.left;
-        deltaY = containerRect.top - handleRect.top;
-        
-        buttonW = handleRect.width;
-        buttonH = handleRect.height;
-        
-        document.addEventListener('mousemove', dragMove);
-        document.addEventListener('mouseup', dragEnd);
-        document.addEventListener('touchmove', dragMove, { passive: false });
-        document.addEventListener('touchend', dragEnd);
-      }
-
-      function dragMove(e) {
-        if (!isDragging) return;
-        
-        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-        
-        const dx = clientX - startX;
-        const dy = clientY - startY;
-        
-        if (!assistiveDragged && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-          assistiveDragged = true;
-          // Desactivar animaciones durante el arrastre y establecer la posición absoluta inicial
-          container.style.transition = 'none';
-          
-          const containerRect = container.getBoundingClientRect();
-          container.style.right = 'auto';
-          container.style.bottom = 'auto';
-          container.style.left = containerRect.left + 'px';
-          container.style.top = containerRect.top + 'px';
-        }
-        
-        if (assistiveDragged) {
-          // Calcular la nueva posición deseada del BOTÓN
-          let btnLeft = clientX - offsetX;
-          let btnTop = clientY - offsetY;
-          
-          const margen = 15;
-          const wWidth = window.innerWidth;
-          const wHeight = window.innerHeight;
-          
-          // Mantener el BOTÓN dentro de la pantalla
-          if (btnLeft < margen) btnLeft = margen;
-          if (btnLeft > wWidth - buttonW - margen) btnLeft = wWidth - buttonW - margen;
-          if (btnTop < margen) btnTop = margen;
-          if (btnTop > wHeight - buttonH - margen) btnTop = wHeight - buttonH - margen;
-          
-          // Posicionar el contenedor basado en la posición deseada del botón
-          container.style.left = (btnLeft + deltaX) + 'px';
-          container.style.top = (btnTop + deltaY) + 'px';
-          
-          if (e.cancelable) e.preventDefault();
-        }
-      }
-
-      function dragEnd() {
-        if (!isDragging) return;
-        isDragging = false;
-        
-        document.removeEventListener('mousemove', dragMove);
-        document.removeEventListener('mouseup', dragEnd);
-        document.removeEventListener('touchmove', dragMove);
-        document.removeEventListener('touchend', dragEnd);
-        
-        window.getSelection().removeAllRanges();
-        
-        if (assistiveDragged) {
-          // Reactivar transiciones para el snap animado
-          container.style.transition = '';
-          // Actualizar posición (snap a los bordes y alineación)
-          updateAssistivePosition();
-        }
-      }
-      
-      // Control de resize para no ocultar el boton
-      window.addEventListener('resize', function() {
-        if (container.style.top === "" && container.style.right === "" && container.style.left === "") {
-          return; // Deja que actue el CSS nativo
-        }
-        updateAssistivePosition();
-      });
     }
   </script>
