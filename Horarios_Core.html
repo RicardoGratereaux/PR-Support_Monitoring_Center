@@ -399,12 +399,11 @@ function pegarTurnosDia() {
         background: 'transparent',
         html: `<div style="text-align:left; color:var(--text-main);"><div style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: var(--glass-bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:var(--warning); font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
         
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
           <div>
             <label style="font-size:12px; font-weight:700;">
               ENTRADA
             </label>
-
             <input type="time" id="edit-main-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : '07:30'}">
           </div>
           
@@ -412,9 +411,15 @@ function pegarTurnosDia() {
             <label style="font-size:12px; font-weight:700;">
                 SALIDA
             </label>
-            
             <input type="time" id="edit-main-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : '19:00'}">
-            </div>
+          </div>
+            
+          <div>
+            <label style="font-size:12px; font-weight:700; color:var(--warning);" title="Hora real en la que el colaborador marcó su llegada">
+                LLEGADA REAL
+            </label>
+            <input type="time" id="edit-main-llegada-real" class="input-filtro" style="width:100%; box-sizing:border-box; border-color:var(--warning);" value="${turno.llegadaReal || ''}">
+          </div>
         </div>
 
             <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
@@ -439,20 +444,23 @@ function pegarTurnosDia() {
         preConfirm: () => {
           const tipo = document.getElementById('edit-main-tipo').value;
           const notaText = document.getElementById('edit-main-nota').value;
-          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "", nota: notaText }; 
+          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "", nota: notaText, llegadaReal: "" }; 
           const aplica = document.getElementById('edit-main-aplica-break').checked;
           return { entrada: document.getElementById('edit-main-entrada').value, salida: document.getElementById('edit-main-salida').value, breakIn: aplica ? document.getElementById('edit-main-break-in').value : "", breakOut: aplica ? document.getElementById('edit-main-break-out').value : "",
-          nota: document.getElementById('edit-main-nota').value }
+          nota: document.getElementById('edit-main-nota').value, llegadaReal: document.getElementById('edit-main-llegada-real').value }
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          const turnoAct = { id: turnosActuales[index].id, entrada: result.value.entrada, salida: result.value.salida, breakIn: result.value.breakIn, breakOut: result.value.breakOut, nota: result.value.nota };
+          const turnoAct = { id: turnosActuales[index].id, entrada: result.value.entrada, salida: result.value.salida, breakIn: result.value.breakIn, breakOut: result.value.breakOut, nota: result.value.nota, llegadaReal: result.value.llegadaReal };
           mostrarModalSincronizando('Actualizando Turno...');
           google.script.run
             .withSuccessHandler(function() { turnosActuales[index].entrada = turnoAct.entrada; 
             
             turnosActuales[index].salida = turnoAct.salida;
             turnosActuales[index].breakIn = turnoAct.breakIn;
+            turnosActuales[index].breakOut = turnoAct.breakOut;
+            turnosActuales[index].nota = turnoAct.nota;
+            turnosActuales[index].llegadaReal = turnoAct.llegadaReal;
             turnosActuales[index].breakOut = turnoAct.breakOut;
             turnosActuales[index].nota = turnoAct.nota;
             renderizarTimeline(turnosActuales);

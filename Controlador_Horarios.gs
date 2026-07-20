@@ -27,7 +27,8 @@ function getHorariosPorFecha(fechaStr) {
         breakOut: extraerHora(data[i][6]),
         foto: data[i][7] || "",
         orden: ordenFinal,
-        nota: data[i][9] || "" // <--- NUEVO: Lee la Columna J
+        nota: data[i][9] || "",
+        llegadaReal: data[i][10] || ""
       });
     }
   }
@@ -57,7 +58,8 @@ function guardarTurnoNuevo(turnoData) {
       turnoData.breakOut ? "'" + turnoData.breakOut : "",
       turnoData.foto || "",
       turnoData.orden || 999, // Columna I
-      turnoData.nota || ""    // <--- NUEVO: Escribe en la Columna J
+      turnoData.nota || "",    // Columna J
+      turnoData.llegadaReal ? "'" + turnoData.llegadaReal : "" // Columna K
     ]);
 
     return true;
@@ -77,14 +79,15 @@ function actualizarTurnoExistente(turnoData) {
     const data = ws.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
       if (String(data[i][0]) === String(turnoData.id)) {
-        ws.getRange(i + 1, 4, 1, 7).setValues([[
+        ws.getRange(i + 1, 4, 1, 8).setValues([[
           "'" + turnoData.entrada,
           turnoData.salida ? "'" + turnoData.salida : "",
           turnoData.breakIn ? "'" + turnoData.breakIn : "",
           turnoData.breakOut ? "'" + turnoData.breakOut : "",
           data[i][7],
           data[i][8],
-          turnoData.nota || ""
+          turnoData.nota || "",
+          turnoData.llegadaReal ? "'" + turnoData.llegadaReal : ""
         ]]);
         return true;
       }
@@ -317,7 +320,8 @@ function pegarTurnosMasivosBackend(fechaDestino, turnosCopiados) {
         turno.breakOut ? "'" + turno.breakOut : "",
         turno.foto || "",
         turno.orden || 999,
-        turno.nota || "" 
+        turno.nota || "",
+        turno.llegadaReal || ""
       ]);
     });
 
