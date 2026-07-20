@@ -100,6 +100,6 @@ function getAvatarUrl(nombre, foto) {
   const color = isLight ? '4c4f69' : 'cdd6f4';
   const safeName = nombre || "User";
   
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(safeName)}&background=${bg}&color=${color}`;
+  return "https://ui-avatars.com/api/?name=" + encodeURIComponent(safeName) + "&background=" + bg + "&color=" + color;
 }
 </script>
