@@ -341,7 +341,27 @@
     box-shadow: 0 0 0 3px var(--accent-glow);
   }
 
-  /* SWEETALERT2 */
+  /* SWEETALERT2 & MODAL ORIGIN ANIMATIONS */
+  @keyframes swalOriginExpand {
+    0% {
+      opacity: 0;
+      transform: scale(0.15);
+    }
+    70% {
+      transform: scale(1.03);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .swal2-popup.swal2-show,
+  .swal-origin-pop.swal2-show,
+  .modal-content.animate-spring {
+    animation: swalOriginExpand 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+
   .swal-glass-backdrop { background: var(--overlay-bg) !important; backdrop-filter: blur(10px) !important; }
   .swal-glass-popup {
     background: var(--swal-popup-bg) !important; backdrop-filter: blur(24px) !important;

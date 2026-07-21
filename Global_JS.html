@@ -1,4 +1,40 @@
 <script>
+// ===== GLOBAL CLICK POSITION TRACKER FOR MODAL ORIGIN ANIMATIONS =====
+window.lastClickPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+document.addEventListener('click', function(e) {
+  if (e.clientX !== undefined && e.clientY !== undefined && (e.clientX > 0 || e.clientY > 0)) {
+    window.lastClickPos = { x: e.clientX, y: e.clientY };
+  }
+}, true);
+
+// Observer to set transform-origin dynamically on all SweetAlert popups and custom modals
+const modalOriginObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === 1) {
+        let popup = null;
+        if (node.classList && node.classList.contains('swal2-popup')) {
+          popup = node;
+        } else if (node.querySelector) {
+          popup = node.querySelector('.swal2-popup') || node.querySelector('.modal-content');
+        }
+        if (popup && window.lastClickPos) {
+          popup.style.transformOrigin = `${window.lastClickPos.x}px ${window.lastClickPos.y}px`;
+          popup.classList.add('swal-origin-pop');
+        }
+      }
+    });
+  });
+});
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    modalOriginObserver.observe(document.body, { childList: true, subtree: true });
+  });
+} else {
+  modalOriginObserver.observe(document.body, { childList: true, subtree: true });
+}
+
 // ===== SWALERT2 CONFIGURATION =====
 const SWAL_GLASS_CONFIG = {
   customClass: {
@@ -28,7 +64,17 @@ function mostrarToast(mensaje, icono) {
 
 // ===== MODAL MANAGEMENT =====
 function abrirModal(modalId) {
-  document.getElementById(modalId).style.display = "flex";
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = "flex";
+    const content = modal.querySelector('.modal-content');
+    if (content && window.lastClickPos) {
+      content.style.transformOrigin = `${window.lastClickPos.x}px ${window.lastClickPos.y}px`;
+      content.classList.remove('animate-spring');
+      void content.offsetWidth;
+      content.classList.add('animate-spring');
+    }
+  }
 }
 function cerrarModal(modalId) {
   document.getElementById(modalId).style.display = "none";
