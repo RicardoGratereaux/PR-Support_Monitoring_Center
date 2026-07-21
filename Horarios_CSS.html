@@ -180,11 +180,23 @@
       transition: 0s;
     }
 
+    .btn-neon .material-symbols-outlined {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     .btn-neon:hover {
       background: var(--accent-glow);
       border-color: var(--accent-primary);
-      box-shadow: none;
-      transform: translateY(-1px);
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-neon:hover .material-symbols-outlined {
+      transform: rotate(12deg) scale(1.18);
+    }
+
+    .btn-neon:active {
+      transform: scale(0.96) translateY(0);
     }
 
     .btn-neon:hover::after {
@@ -970,9 +982,17 @@
     }
 
     .db-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px var(--shadow-color);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px var(--shadow-color);
       background: var(--glass-bg-hover);
+    }
+
+    .db-card:hover .db-card-icon {
+      transform: scale(1.22) rotate(10deg);
+    }
+
+    .db-card:active {
+      transform: scale(0.97) translateY(0);
     }
 
     .card-trabajando:hover {
