@@ -977,9 +977,9 @@ function pegarTurnosDia() {
       const diasTexto = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]; 
       let trs = "";
 
-      // Variables para semanas dentro de cada quincena
-      // Q1-S1: días 1-6, Q1-S2: días 7-12, Q1-Resto: días 13-15
-      // Q2-S1: días 16-21, Q2-S2: días 22-27, Q2-Resto: días 28-fin de mes
+      // Variables para semanas dentro de cada quincena (7 días calendario por semana)
+      // Q1-S1: días 1-7, Q1-S2: días 8-14, Q1-Resto: día 15
+      // Q2-S1: días 16-22, Q2-S2: días 23-29, Q2-Resto: días 30-fin de mes
       let minQ1S1 = 0, minQ1S2 = 0, minQ1Resto = 0;
       let minQ2S1 = 0, minQ2S2 = 0, minQ2Resto = 0;
 
@@ -1040,18 +1040,18 @@ function pegarTurnosDia() {
             ? (minSalida - minEntrada - minBreak) 
             : (minSalida - minEntrada);
 
-          // LÓGICA DE SEMANAS DENTRO DE QUINCENAS (BLOQUES DE 6 DÍAS + RESTANTE)
-          if (diaDelMes >= 1 && diaDelMes <= 6) {
+          // LÓGICA DE SEMANAS DENTRO DE QUINCENAS (7 DÍAS CALENDARIO POR SEMANA + RESTANTE)
+          if (diaDelMes >= 1 && diaDelMes <= 7) {
             minQ1S1 += minNetosTurno;
-          } else if (diaDelMes >= 7 && diaDelMes <= 12) {
+          } else if (diaDelMes >= 8 && diaDelMes <= 14) {
             minQ1S2 += minNetosTurno;
-          } else if (diaDelMes >= 13 && diaDelMes <= 15) {
+          } else if (diaDelMes === 15) {
             minQ1Resto += minNetosTurno;
-          } else if (diaDelMes >= 16 && diaDelMes <= 21) {
+          } else if (diaDelMes >= 16 && diaDelMes <= 22) {
             minQ2S1 += minNetosTurno;
-          } else if (diaDelMes >= 22 && diaDelMes <= 27) {
+          } else if (diaDelMes >= 23 && diaDelMes <= 29) {
             minQ2S2 += minNetosTurno;
-          } else if (diaDelMes >= 28 && diaDelMes <= ultimoDiaMes) {
+          } else if (diaDelMes >= 30 && diaDelMes <= ultimoDiaMes) {
             minQ2Resto += minNetosTurno;
           }
         }
@@ -1084,18 +1084,20 @@ function pegarTurnosDia() {
         // Función auxiliar para mostrar horas
         const fmtHM = (h, m) => `${h}h${m > 0 ? ' ' + m + 'm' : ''}`;
 
+        let labelQ2Resto = ultimoDiaMes >= 30 ? `Resto (30 - ${ultimoDiaMes})` : 'Resto (N/A)';
+
         statsDiv.innerHTML = `
           <div style="grid-column: 1 / -1; display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (1 - 6)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (1 - 7)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ1S1, mQ1S1)}</div>
             </div>
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (7 - 12)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (8 - 14)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ1S2, mQ1S2)}</div>
             </div>
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Resto (13 - 15)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Resto (15)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ1Resto, mQ1Resto)}</div>
             </div>
             <div style="text-align: center;">
@@ -1105,15 +1107,15 @@ function pegarTurnosDia() {
           </div>
           <div style="grid-column: 1 / -1; display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (16 - 21)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (16 - 22)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ2S1, mQ2S1)}</div>
             </div>
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (22 - 27)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (23 - ${ultimoDiaMes >= 29 ? 29 : ultimoDiaMes})</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ2S2, mQ2S2)}</div>
             </div>
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Resto (28 - ${ultimoDiaMes})</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">${labelQ2Resto}</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ2Resto, mQ2Resto)}</div>
             </div>
             <div style="text-align: center;">
