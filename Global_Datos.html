@@ -1,61 +1,131 @@
 <script>
-// ===== STORE DATA =====
-const TIENDAS = {
-  farmacias: ["FR-01 LITHEDA","FR-02 SENORIAL","FR-03 CAIMITO","FR-04 GURABO","FR-05 BARRIO OBRERO","FR-08 HUMACAO","FR-09 LAS PIEDRAS","FR-11 CATANO","FR-12 SANTURCE","FR-13 NARANJITO","FR-14 AIBONITO","FR-15 SALINAS","FR-16 SANTA ISABEL","FR-17 TRUJILLO ALTO","FR-18 GUAYNABO","FR-19 CAROLINA","FR-20 VIEQUES","FR-21 CAYEY","FR-23 JUNCOS","FR-24 BARRANQUITAS"],
-  chinatown: ["CT-01 ARECIBO","CT-02 SALINAS","CT-03 TRUJILLO ALTO","CT-04 HUMACAO","CT-05 AGUADA","CT-06 BAYAMON","CT-07 CAROLINA","CT-08 FAJARDO","CT-09 GUAYAMA","CT-10 SANTURCE","CT-12 RIO GRANDE","CT-13 BARRANQUITAS","CT-14 PONCE","CT-15 COAMO","CT-16 LEVITTOWN","CT-17 VEGA ALTA", "CT-18 BARRIO OBRERO"],
-  exchange: ["QTD-01 CAROLINA","QTD-02 SAN JUAN","QTD-03 GURABO","QTD-04 JUANA DIAZ","QTD-05 AGUADILLA","QTD-06 VEGA BAJA","QTD-07 ARECIBO","QTD-08 CEIBA","QTD-09 MAYAGUEZ","QTD-10 CAYEY"]
-};
-const PUESTOS = {
-  "RD01": ["FR-05", "FR-16", "FR-21", "QTD-06"], "RD02": ["FR-04", "FR24", "CT-18"], "RD03": ["FR-02", "FR-19", "CT-09"],
-  "RD04": ["FR-01", "FR-08", "FR-23"], "RD05": ["FR-03", "FR-15", "FR-18", "FR-20", "CT-01"], "RD06": ["CT-02", "CT-14", "CT-15", "QTD-02"],
-  "RD07": ["CT-05", "CT-07", "FR-09", "FR-14"], "RD08": ["CT-08", "CT-16", "CT-17", "QTD-09"], "RD09": ["CT-12", "QTD-01", "QTD-03", "AC-A", "AC-B"],
-  "RD10": ["CT-03", "CT-06", "QTD-08"], "RD11": ["CT-04", "CT-10", "FR-17", "QTD-04"], "RD12": ["FR-11", "FR-13", "FR-21", "QTD-07"],
-  "RD13": ["FR-12", "CT-13", "QTD-05", "QTD-10"]
-};
+  const TIENDAS = {
+    farmacias: [
+      "FR-01 LITHEDA",
+      "FR-02 SENORIAL",
+      "FR-03 CAIMITO",
+      "FR-04 GURABO",
+      "FR-05 BARRIO OBRERO",
+      "FR-08 HUMACAO",
+      "FR-09 LAS PIEDRAS",
+      "FR-11 CATANO",
+      "FR-12 SANTURCE",
+      "FR-13 NARANJITO",
+      "FR-14 AIBONITO",
+      "FR-15 SALINAS",
+      "FR-16 SANTA ISABEL",
+      "FR-17 TRUJILLO ALTO",
+      "FR-18 GUAYNABO",
+      "FR-19 CAROLINA",
+      "FR-20 VIEQUES",
+      "FR-21 CAYEY",
+      "FR-23 JUNCOS",
+      "FR-24 BARRANQUITAS",
+    ],
+    chinatown: [
+      "CT-01 ARECIBO",
+      "CT-02 SALINAS",
+      "CT-03 TRUJILLO ALTO",
+      "CT-04 HUMACAO",
+      "CT-05 AGUADA",
+      "CT-06 BAYAMON",
+      "CT-07 CAROLINA",
+      "CT-08 FAJARDO",
+      "CT-09 GUAYAMA",
+      "CT-10 SANTURCE",
+      "CT-12 RIO GRANDE",
+      "CT-13 BARRANQUITAS",
+      "CT-14 PONCE",
+      "CT-15 COAMO",
+      "CT-16 LEVITTOWN",
+      "CT-17 VEGA ALTA",
+      "CT-18 BARRIO OBRERO",
+    ],
+    exchange: [
+      "QTD-01 CAROLINA",
+      "QTD-02 SAN JUAN",
+      "QTD-03 GURABO",
+      "QTD-04 JUANA DIAZ",
+      "QTD-05 AGUADILLA",
+      "QTD-06 VEGA BAJA",
+      "QTD-07 ARECIBO",
+      "QTD-08 CEIBA",
+      "QTD-09 MAYAGUEZ",
+      "QTD-10 CAYEY",
+    ],
+  };
+  const PUESTOS = {
+    RD01: ["FR-05", "FR-16", "FR-21", "QTD-06"],
+    RD02: ["FR-04", "FR24", "CT-18"],
+    RD03: ["FR-02", "FR-19", "CT-09"],
+    RD04: ["FR-01", "FR-08", "FR-23"],
+    RD05: ["FR-03", "FR-15", "FR-18", "FR-20", "CT-01"],
+    RD06: ["CT-02", "CT-14", "CT-15", "QTD-02"],
+    RD07: ["CT-05", "CT-07", "FR-09", "FR-14"],
+    RD08: ["CT-08", "CT-16", "CT-17", "QTD-09"],
+    RD09: ["CT-12", "QTD-01", "QTD-03", "AC-A", "AC-B"],
+    RD10: ["CT-03", "CT-06", "QTD-08"],
+    RD11: ["CT-04", "CT-10", "FR-17", "QTD-04"],
+    RD12: ["FR-11", "FR-13", "FR-21", "QTD-07"],
+    RD13: ["FR-12", "CT-13", "QTD-05", "QTD-10"],
+  };
 
-// ===== STORE FUNCTIONS =====
-function cargarTiendas(empresaId, tiendaId, posicionId) {
-  const empresa = document.getElementById(empresaId).value;
-  const selectTienda = document.getElementById(tiendaId);
-  selectTienda.innerHTML = '<option value="">Seleccione una tienda</option>';
-  if (posicionId) document.getElementById(posicionId).value = "";
-  if (!empresa) return;
+  function cargarTiendas(empresaId, tiendaId, posicionId) {
+    const empresa = document.getElementById(empresaId).value;
+    const selectTienda = document.getElementById(tiendaId);
+    selectTienda.innerHTML = '<option value="">Seleccione una tienda</option>';
+    if (posicionId) document.getElementById(posicionId).value = "";
+    if (!empresa) return;
 
-  TIENDAS[empresa].forEach(t => {
-    let opt = document.createElement("option");
-    opt.value = t; opt.textContent = t;
-    selectTienda.appendChild(opt);
-  });
-}
-
-function actualizarPosicion(tiendaId, posicionId) {
-  const tiendaValue = document.getElementById(tiendaId).value;
-  const posicionInput = document.getElementById(posicionId);
-  if (!posicionInput) return;
-  if (!tiendaValue) { posicionInput.value = ""; return; }
-
-  const codigoLimpio = tiendaValue.split(" ")[0].toUpperCase().replace("-", "");
-  let puestoFinal = "Personal de Turno";
-
-  for (const [puesto, lista] of Object.entries(PUESTOS)) {
-    if (lista.some(t => t.toUpperCase().replace("-", "") === codigoLimpio)) {
-      puestoFinal = puesto; break;
-    }
+    TIENDAS[empresa].forEach((t) => {
+      let opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      selectTienda.appendChild(opt);
+    });
   }
-  posicionInput.value = puestoFinal;
-}
 
-function generarIniciales(nombreId, inicialesId) {
-  const nombre = document.getElementById(nombreId).value.trim();
-  const campoIniciales = document.getElementById(inicialesId);
-  if (!campoIniciales) return;
-  if (!nombre) { campoIniciales.value = ""; return; }
+  function actualizarPosicion(tiendaId, posicionId) {
+    const tiendaValue = document.getElementById(tiendaId).value;
+    const posicionInput = document.getElementById(posicionId);
+    if (!posicionInput) return;
+    if (!tiendaValue) {
+      posicionInput.value = "";
+      return;
+    }
 
-  const iniciales = nombre.split(/\s+/)
-    .map(palabra => palabra.charAt(0).toUpperCase())
-    .join("")
-    .substring(0, 4);
+    const codigoLimpio = tiendaValue
+      .split(" ")[0]
+      .toUpperCase()
+      .replace("-", "");
+    let puestoFinal = "Personal de Turno";
 
-  campoIniciales.value = iniciales;
-}
+    for (const [puesto, lista] of Object.entries(PUESTOS)) {
+      if (
+        lista.some((t) => t.toUpperCase().replace("-", "") === codigoLimpio)
+      ) {
+        puestoFinal = puesto;
+        break;
+      }
+    }
+    posicionInput.value = puestoFinal;
+  }
+
+  function generarIniciales(nombreId, inicialesId) {
+    const nombre = document.getElementById(nombreId).value.trim();
+    const campoIniciales = document.getElementById(inicialesId);
+    if (!campoIniciales) return;
+    if (!nombre) {
+      campoIniciales.value = "";
+      return;
+    }
+
+    const iniciales = nombre
+      .split(/\s+/)
+      .map((palabra) => palabra.charAt(0).toUpperCase())
+      .join("")
+      .substring(0, 4);
+
+    campoIniciales.value = iniciales;
+  }
 </script>

@@ -5,12 +5,15 @@ function gatherDailyBreachData(ss, dateObj, timezone) {
 
   const breachItems = [];
   const pendingItems = [];
-  let cumplidas = 0, pendientes = 0, incumplidas = 0, recordatoriosEnviados = 0;
+  let cumplidas = 0,
+    pendientes = 0,
+    incumplidas = 0,
+    recordatoriosEnviados = 0;
 
   for (let i = 0; i < data.length; i++) {
     const fila = data[i];
     if (!fila[0]) continue;
-    
+
     const fechaCeldaStr = Utilities.formatDate(new Date(fila[0]), timezone, "dd/MM/yyyy");
     if (fechaCeldaStr !== hoyStr) continue;
 
@@ -18,27 +21,29 @@ function gatherDailyBreachData(ss, dateObj, timezone) {
     const horaAlertaObj = fila[2];
     const estado = (fila[3] || "Pendiente").trim();
     const observacion = fila[4] || "Sin observaciones registradas.";
-    const correoEnviado = fila[5]; 
+    const correoEnviado = fila[5];
 
     let horaFormateada = "";
     if (horaAlertaObj) {
       try {
         horaFormateada = Utilities.formatDate(new Date(horaAlertaObj), timezone, "HH:mm");
-      } catch (e) { horaFormateada = String(horaAlertaObj); }
+      } catch (e) {
+        horaFormateada = String(horaAlertaObj);
+      }
     }
 
     if (estado === "Incumplido") {
       incumplidas++;
-      breachItems.push({ 
-        tienda, 
-        hora: horaFormateada, 
-        observacion: observacion 
+      breachItems.push({
+        tienda,
+        hora: horaFormateada,
+        observacion: observacion
       });
     } else if (estado === "Pendiente") {
       pendientes++;
       pendingItems.push({ tienda, hora: horaFormateada });
-    } else if (estado === "Cumplido") { 
-      cumplidas++; 
+    } else if (estado === "Cumplido") {
+      cumplidas++;
     }
 
     if (correoEnviado && correoEnviado.toString().indexOf("Enviado") === 0) {
@@ -46,15 +51,22 @@ function gatherDailyBreachData(ss, dateObj, timezone) {
     }
   }
 
-  return { breachItems, pendingItems, numCumplidas: cumplidas, numPendientes: pendientes, numIncumplidas: incumplidas, numRecordatoriosEnviados: recordatoriosEnviados };
+  return {
+    breachItems,
+    pendingItems,
+    numCumplidas: cumplidas,
+    numPendientes: pendientes,
+    numIncumplidas: incumplidas,
+    numRecordatoriosEnviados: recordatoriosEnviados
+  };
 }
 
 function generateStyledDailySummaryHtml(dateStr, data) {
   const totalStores = data.numCumplidas + data.numPendientes + data.numIncumplidas;
-  
+
   let colorEstatus = "#16a34a";
   let headerText = "Alertas cumplidas correctamente";
-  
+
   if (data.numIncumplidas > 0) {
     colorEstatus = "#dc2626";
     headerText = "Alerta de Incumplimiento";
@@ -77,14 +89,17 @@ function generateStyledDailySummaryHtml(dateStr, data) {
       <p style="margin-top:0; margin-bottom: 12px; font-size:14px; color:#4b5563; line-height: 1.5; font-weight: 600;">Sucursales con Incumplimiento:</p>
       <div style="margin-bottom: 25px; width: 100%;">
     `;
-    
-    data.breachItems.forEach(item => {
+
+    data.breachItems.forEach((item) => {
       let observacionFormateada = item.observacion || "";
-      
-      observacionFormateada = observacionFormateada.replace(/\[?\s*📸?\s*Evidencia de tienda:\s*https?:\/\/[^\s\]]+/gi, "");
-      observacionFormateada = observacionFormateada.replace(/\[\s*\]/g, ""); 
+
+      observacionFormateada = observacionFormateada.replace(
+        /\[?\s*📸?\s*Evidencia de tienda:\s*https?:\/\/[^\s\]]+/gi,
+        ""
+      );
+      observacionFormateada = observacionFormateada.replace(/\[\s*\]/g, "");
       observacionFormateada = observacionFormateada.trim();
-      
+
       if (!observacionFormateada || observacionFormateada === '""') {
         observacionFormateada = "Sin observaciones registradas.";
       }
@@ -113,8 +128,8 @@ function generateStyledDailySummaryHtml(dateStr, data) {
       <p style="margin-top: 15px; font-size:14px; color:#4b5563; line-height: 1.5;">Se detalla a continuación el reporte de las sucursales que permanecen en estado <b>pendiente de alerta</b>:</p>
       <div style="margin-top: 15px; margin-bottom: 25px; display: block; width: 100%;">
     `;
-    
-    data.pendingItems.forEach(item => {
+
+    data.pendingItems.forEach((item) => {
       bodyHtml += `
         <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; padding: 14px 16px; border-radius: 8px; margin-bottom: 16px; display: block; clear: both;">
           <span style="font-size: 12px; color: #b45309; font-weight: bold; float: right; background: #fef3c7; padding: 2px 8px; border-radius: 4px;">Hora asignada: ${item.hora}</span>
@@ -164,24 +179,25 @@ function sendStyledDailyBreachSummaryEmail() {
   const hoyStr = Utilities.formatDate(ahora, zona, "dd/MM/yyyy");
 
   const breachData = gatherDailyBreachData(ss, ahora, zona);
-  const totalStores = breachData.numCumplidas + breachData.numPendientes + breachData.numIncumplidas;
+  const totalStores =
+    breachData.numCumplidas + breachData.numPendientes + breachData.numIncumplidas;
   if (totalStores === 0) return;
 
   const htmlBody = generateStyledDailySummaryHtml(hoyStr, breachData);
 
   const asunto = `Resumen diario reposición tiendas - ${hoyStr}`;
   const destinatarioPruebas = CONFIG.NOTIFICACIONES.RESUMEN_DIARIO_TO;
-  
+
   if (MailApp.getRemainingDailyQuota() > 0) {
     try {
-      MailApp.sendEmail({ 
+      MailApp.sendEmail({
         to: destinatarioPruebas,
         cc: CONFIG.NOTIFICACIONES.RESUMEN_DIARIO_CC,
-        subject: asunto, 
-        htmlBody: htmlBody 
+        subject: asunto,
+        htmlBody: htmlBody
       });
       Logger.log("Resumen de control despachado directo al punto a: " + destinatarioPruebas);
-    } catch(e) {
+    } catch (e) {
       logError("sendStyledDailyBreachSummaryEmail", e);
     }
   } else {
@@ -196,9 +212,8 @@ function ejecutarCronExacto() {
     const horaMinutosStr = Utilities.formatDate(ahora, zona, "HH:mm");
 
     if (horaMinutosStr === "07:30") {
-      // transferirDatos();
     }
-    
+
     if (horaMinutosStr === "18:00") {
       sendStyledDailyBreachSummaryEmail();
     }
@@ -207,11 +222,9 @@ function ejecutarCronExacto() {
   }
 }
 
-// Wrapper por compatibilidad hacia atrás
 function executarCronExacto() {
   ejecutarCronExacto();
 }
-
 
 function enviarAlertaCorreo(datos, idReporte, urlCarpeta) {
   try {
@@ -219,17 +232,16 @@ function enviarAlertaCorreo(datos, idReporte, urlCarpeta) {
       Logger.log("Alerta: Cuota de MailApp agotada. No se pudo enviar alerta.");
       return;
     }
-    const correosDestino = CONFIG.NOTIFICACIONES.ALERTA_CRITICA; 
-    
-    // Array of critical keywords to trigger alerts
+    const correosDestino = CONFIG.NOTIFICACIONES.ALERTA_CRITICA;
+
     const palabrasCriticas = ["robo", "asalto", "violencia", "fraude", "urgente", "amenaza"];
     const tipo = (datos.tipoReporte || "").toLowerCase();
-    
-    const esUrgente = palabrasCriticas.some(palabra => tipo.includes(palabra));
-    
+
+    const esUrgente = palabrasCriticas.some((palabra) => tipo.includes(palabra));
+
     if (esUrgente) {
       const asunto = ` ALERTA CRÍTICA: ${datos.tienda} - ${datos.tipoReporte}`;
-      
+
       const mensajeHtml = `
         <div style="font-family: Arial, sans-serif; color: #374151; max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
           <div style="background-color: #dc2626; color: white; padding: 15px 20px;">
@@ -253,7 +265,7 @@ function enviarAlertaCorreo(datos, idReporte, urlCarpeta) {
           </div>
         </div>
       `;
-      
+
       try {
         MailApp.sendEmail({
           to: correosDestino,
@@ -270,7 +282,7 @@ function enviarAlertaCorreo(datos, idReporte, urlCarpeta) {
 }
 
 function enviarResolucionMonitor(idReporte, estado, datos, correoDestino) {
-  const correoMonitor = correoDestino || "seguridad@empresa.com"; 
+  const correoMonitor = correoDestino || "seguridad@empresa.com";
 
   const esAprobado = estado === "Aprobado";
   const colorEstatus = esAprobado ? "#16a34a" : "#dc2626";
@@ -300,7 +312,9 @@ function enviarResolucionMonitor(idReporte, estado, datos, correoDestino) {
     if (MailApp.getRemainingDailyQuota() > 0) {
       MailApp.sendEmail({ to: correoMonitor, subject: asunto, htmlBody: mensajeHtml });
     }
-  } catch(e) { logError("enviarResolucionMonitor", e); }
+  } catch (e) {
+    logError("enviarResolucionMonitor", e);
+  }
 }
 
 function obtenerPlantillaRecordatorio(fecha, nombreTienda, hora) {
@@ -338,7 +352,7 @@ function obtenerPlantillaRecordatorio(fecha, nombreTienda, hora) {
 
 function ejecutarRecordatoriosProgramadosGlobal() {
   const idSpreadsheetReposicion = CONFIG.ID_SPREADSHEET_REPOSICION;
-  
+
   try {
     if (MailApp.getRemainingDailyQuota() <= 0) {
       Logger.log("Alerta: Cuota de MailApp agotada. No se pudo enviar recordatorios.");
@@ -347,7 +361,7 @@ function ejecutarRecordatoriosProgramadosGlobal() {
     const ss = SpreadsheetApp.openById(idSpreadsheetReposicion);
     const hojaCalendario = ss.getSheetByName(CONFIG.HOJAS.CALENDARIO_PROTOCOLOS);
     const hojaTiendas = ss.getSheetByName(CONFIG.HOJAS.TIENDAS);
-    
+
     if (!hojaCalendario || !hojaTiendas) {
       Logger.log("⚠️ Error en Recordatorios: No se encontraron las pestañas en el Sheets externo.");
       return;
@@ -380,7 +394,8 @@ function ejecutarRecordatoriosProgramadosGlobal() {
       const fechaFormateada = Utilities.formatDate(new Date(fechaCelda), zona, "dd/MM/yyyy");
       if (fechaFormateada !== hoy) continue;
 
-      if (yaEnviado.indexOf("Enviado") === 0 || estado === "Cumplido" || estado === "Incumplido") continue;
+      if (yaEnviado.indexOf("Enviado") === 0 || estado === "Cumplido" || estado === "Incumplido")
+        continue;
 
       const horaObj = new Date(horaCelda);
       const fechaAlerta = new Date(fechaCelda);
@@ -391,7 +406,6 @@ function ejecutarRecordatoriosProgramadosGlobal() {
 
       if (ahora >= fechaEnvio && ahora < fechaAlerta) {
         if (mapaCorreos[tienda]) {
-          
           const cuerpoHtml = obtenerPlantillaRecordatorio(hoy, tienda, horaAlertaStr);
 
           if (MailApp.getRemainingDailyQuota() > 0) {
@@ -402,36 +416,34 @@ function ejecutarRecordatoriosProgramadosGlobal() {
             });
           }
 
-          hojaCalendario.getRange(i + 1, 6).setValue("Enviado " + Utilities.formatDate(ahora, zona, "HH:mm"));
+          hojaCalendario
+            .getRange(i + 1, 6)
+            .setValue("Enviado " + Utilities.formatDate(ahora, zona, "HH:mm"));
           Logger.log("📨 Recordatorio enviado desde App Principal a: " + mapaCorreos[tienda]);
         }
       }
     }
-  } catch(errorCrítico) {
+  } catch (errorCrítico) {
     logError("ejecutarRecordatoriosProgramadosGlobal", errorCrítico);
   }
 }
-
-// === TEST FUNCTIONS ===
-
 
 function PROBAR_Recordatorio_Ahora() {
   const correoTest = "seguridad09@prsup.net";
   const tiendaEjemplo = "CT-01 ARECIBO";
   const horaAlertaFormateada = "17:00";
   const hoyStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy");
-  
+
   try {
-    // Aquí llamamos a la función real que genera el diseño
     const cuerpoHtml = obtenerPlantillaRecordatorio(hoyStr, tiendaEjemplo, horaAlertaFormateada);
-    
+
     MailApp.sendEmail({
       to: correoTest,
       subject: "Recordatorio de Reposición - " + tiendaEjemplo + " (" + horaAlertaFormateada + ")",
       htmlBody: cuerpoHtml
     });
     Logger.log("Correo de prueba de recordatorio enviado con éxito a: " + correoTest);
-  } catch(e) {
+  } catch (e) {
     Logger.log("Error en prueba de recordatorio: " + e.message);
   }
 }
@@ -439,7 +451,7 @@ function PROBAR_Recordatorio_Ahora() {
 function PROBAR_ResumenDirectivos_Ahora() {
   const correoTest = "seguridad09@prsup.net";
   const hoyStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy");
-  
+
   const datosFicticiosPrueba = {
     numCumplidas: 12,
     numPendientes: 3,
@@ -448,7 +460,8 @@ function PROBAR_ResumenDirectivos_Ahora() {
       {
         tienda: "CT-01 ARECIBO",
         hora: "17:00",
-        observacion: "Llamada no contestada tras los intentos reglamentarios por el personal de turno."
+        observacion:
+          "Llamada no contestada tras los intentos reglamentarios por el personal de turno."
       }
     ],
     pendingItems: [
@@ -457,18 +470,17 @@ function PROBAR_ResumenDirectivos_Ahora() {
       { tienda: "CT-09 MAYAGUEZ", hora: "18:00" }
     ]
   };
-  
+
   try {
     const cuerpoHtml = generateStyledDailySummaryHtml(hoyStr, datosFicticiosPrueba);
-    
+
     MailApp.sendEmail({
       to: correoTest,
       subject: "Resumen diario reposicion tiendas - " + hoyStr,
       htmlBody: cuerpoHtml
     });
     Logger.log("Correo de prueba corporativo enviado con exito a: " + correoTest);
-  } catch(e) {
+  } catch (e) {
     Logger.log("Error en prueba corporativa: " + e.message);
   }
 }
-

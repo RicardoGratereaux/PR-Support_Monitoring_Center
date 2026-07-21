@@ -1,454 +1,965 @@
-  <script>
-    const TODOS_LOS_EMPLEADOS = ["Angel", "Daniel", "Gary", "Jose Luis", "Britniel", "Maxwell", "Jelissa", "Omar", "Diego", "Katherine", "Oliver", "Ricardo"];
+<script>
+  const TODOS_LOS_EMPLEADOS = [
+    "Angel",
+    "Daniel",
+    "Gary",
+    "Jose Luis",
+    "Britniel",
+    "Maxwell",
+    "Jelissa",
+    "Omar",
+    "Diego",
+    "Katherine",
+    "Oliver",
+    "Ricardo",
+  ];
 
-    let portapapelesTurnos = null;
+  let portapapelesTurnos = null;
 
-    function escaparHTML(str) {
-      if (!str) return '';
-      return String(str).replace(/[&<>"']/g, function(match) { const mapa = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }; return mapa[match]; });
+  function escaparHTML(str) {
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, function (match) {
+      const mapa = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      };
+      return mapa[match];
+    });
+  }
+
+  function manejarErrorServidor(err) {
+    const msg =
+      err && err.message
+        ? err.message
+        : "Ocurrió un error inesperado al contactar con el servidor.";
+    Swal.fire({
+      title: "Error del Servidor",
+      text: msg,
+      icon: "error",
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+    });
+  }
+
+  function formatearFechaLocal(fechaActual) {
+    const yyyy = fechaActual.getFullYear();
+    const mm = String(fechaActual.getMonth() + 1).padStart(2, "0");
+    const dd = String(fechaActual.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function mostrarModalSincronizando(titulo = "Sincronizando...") {
+    Swal.fire({
+      title: titulo,
+      html: `<div style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Guardando de forma segura en la base de datos...</div><div class="progress-container-swal"><div id="loading-bar" class="progress-bar-swal"></div></div>`,
+      background: "transparent",
+      customClass: { popup: "swal-dark-popup" },
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        const bar = document.getElementById("loading-bar");
+        if (!bar) return;
+        let progreso = 0;
+        const intervalo = setInterval(() => {
+          if (progreso < 50) {
+            progreso += 10;
+          } else if (progreso < 85) {
+            progreso += 3;
+          } else if (progreso < 93) {
+            progreso += 1;
+          } else {
+            clearInterval(intervalo);
+          }
+          bar.style.width = progreso + "%";
+        }, 200);
+        bar.dataset.intervalId = intervalo;
+      },
+    });
+  }
+
+  function completarBarraYMostrarExito(tituloExito, textoExito) {
+    const bar = document.getElementById("loading-bar");
+    if (bar) {
+      if (bar.dataset.intervalId)
+        clearInterval(parseInt(bar.dataset.intervalId));
+      bar.style.width = "100%";
+      bar.style.background = "var(--success)";
+      bar.style.boxShadow = "0 0 15px var(--success)";
     }
-
-    function manejarErrorServidor(err) {
-      const msg = err && err.message ? err.message : "Ocurrió un error inesperado al contactar con el servidor.";
-      Swal.fire({ title: "Error del Servidor", text: msg, icon: "error", customClass: { popup: 'swal-dark-popup' }, background: 'transparent' });
-    }
-
-    function formatearFechaLocal(fechaActual) {
-      const yyyy = fechaActual.getFullYear(); const mm = String(fechaActual.getMonth() + 1).padStart(2, '0'); const dd = String(fechaActual.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function mostrarModalSincronizando(titulo = 'Sincronizando...') {
+    setTimeout(() => {
       Swal.fire({
-        title: titulo,
-        html: `<div style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Guardando de forma segura en la base de datos...</div><div class="progress-container-swal"><div id="loading-bar" class="progress-bar-swal"></div></div>`,
-        background: 'transparent', customClass: { popup: 'swal-dark-popup' }, allowOutsideClick: false, allowEscapeKey: false, showConfirmButton: false,
-        didOpen: () => {
-          const bar = document.getElementById('loading-bar'); if (!bar) return;
-          let progreso = 0;
-          const intervalo = setInterval(() => {
-            if (progreso < 50) { progreso += 10; } else if (progreso < 85) { progreso += 3; } else if (progreso < 93) { progreso += 1; } else { clearInterval(intervalo); }
-            bar.style.width = progreso + '%';
-          }, 200);
-          bar.dataset.intervalId = intervalo;
+        title: tituloExito,
+        text: textoExito,
+        icon: "success",
+        customClass: { popup: "swal-dark-popup" },
+        background: "transparent",
+        confirmButtonColor: "var(--glass-border)",
+      });
+    }, 400);
+  }
+
+  const HORA_INICIO_GRID = 7;
+  const TOTAL_HORAS_GRID = 13;
+  let turnosActuales = [];
+  let filtroEstadoLiveActual = "todos";
+  let memoriaContadores = { working: -1, break: -1, inactive: -1 };
+  let memoriaAvataresHTML = "";
+
+  const EXCEPCIONES = [
+    "Licencia",
+    "Vacaciones",
+    "Libre Cumpleaños",
+    "Clases",
+    "Ausencia",
+    "Feriado",
+    "Dia Libre",
+  ];
+  const ICONOS_EXCEPCION = {
+    Licencia: "medical_services",
+    Vacaciones: "flight_takeoff",
+    "Libre Cumpleaños": "cake",
+    Clases: "school",
+    Ausencia: "person_off",
+    Feriado: "celebration",
+    "Dia Libre": "weekend",
+  };
+
+  let modoSeleccion = false;
+  let turnosSeleccionados = [];
+  let modoOrden = false;
+  let draggedRow = null;
+
+  function handleTrackHover(event, index) {
+    if (modoOrden || modoSeleccion) return;
+
+    const item = turnosActuales[index];
+    if (!item) return;
+
+    const tooltip = document.getElementById("custom-tooltip");
+    if (!tooltip) return;
+
+    let html = `<div class="tooltip-header"><span class="material-symbols-outlined" style="font-size:16px;">person</span> ${escaparHTML(item.nombre)}</div><div class="tooltip-body">`;
+
+    if (EXCEPCIONES.includes(item.entrada)) {
+      html += `<div class="tooltip-row"><strong style="color:var(--danger);">Estado:</strong> ${item.entrada}</div>`;
+    } else {
+      html += `<div class="tooltip-row"><strong style="color:var(--accent-primary);">Horario:</strong> ${item.entrada} a ${item.salida}</div>`;
+      if (item.breakIn && item.breakOut) {
+        html += `<div class="tooltip-row"><strong style="color:var(--warning);">Break:</strong> ${item.breakIn} a ${item.breakOut}</div>`;
+      }
+      if (item.llegadaReal && item.llegadaReal.trim() !== "") {
+        let colorBadge = "var(--text-main)";
+        if (
+          item.entrada &&
+          item.entrada.includes(":") &&
+          item.llegadaReal.includes(":")
+        ) {
+          let [hE, mE] = item.entrada.split(":").map(Number);
+          let [hR, mR] = item.llegadaReal.split(":").map(Number);
+          let diff = hR * 60 + mR - (hE * 60 + mE);
+          if (diff > 7) colorBadge = "var(--danger)";
+          else if (diff > 0) colorBadge = "var(--warning)";
+          else colorBadge = "var(--success)";
+        }
+        html += `<div class="tooltip-row"><strong style="color:${colorBadge};">Llegada Real:</strong> <span style="color:${colorBadge}; font-weight:bold;">${item.llegadaReal}</span></div>`;
+      }
+    }
+
+    if (item.rechazoBeneficio) {
+      html += `<div class="tooltip-row"><strong style="color:var(--danger);">Beneficios:</strong> No aplica (${item.rechazoBeneficio})</div>`;
+    }
+
+    if (item.nota && item.nota.trim() !== "") {
+      html += `<div class="tooltip-nota"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle; margin-right:4px;">edit_note</span>${escaparHTML(item.nota)}</div>`;
+    }
+    html += `</div>`;
+
+    tooltip.innerHTML = html;
+    tooltip.classList.add("visible");
+
+    let x = event.clientX + 15;
+    let y = event.clientY + 15;
+    if (x + 280 > window.innerWidth) x = window.innerWidth - 290;
+    if (y + 150 > window.innerHeight)
+      y = event.clientY - tooltip.offsetHeight - 15;
+
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  }
+
+  function ocultarTooltip() {
+    const tooltip = document.getElementById("custom-tooltip");
+    if (tooltip) tooltip.classList.remove("visible");
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("fechaFiltro").value = formatearFechaLocal(
+      new Date(),
+    );
+    cargarHorarios();
+    const contenedorRows = document.getElementById("contenedorRows");
+    if (contenedorRows) {
+      contenedorRows.addEventListener("dragover", (e) => {
+        if (!modoOrden) return;
+        e.preventDefault();
+        const afterElement = getDragAfterElement(contenedorRows, e.clientY);
+        if (afterElement == null) {
+          contenedorRows.appendChild(draggedRow);
+        } else {
+          contenedorRows.insertBefore(draggedRow, afterElement);
         }
       });
     }
-
-    function completarBarraYMostrarExito(tituloExito, textoExito) {
-      const bar = document.getElementById('loading-bar');
-      if (bar) {
-        if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId));
-        bar.style.width = '100%'; bar.style.background = 'var(--success)'; bar.style.boxShadow = '0 0 15px var(--success)';
-      }
-      setTimeout(() => {
-        Swal.fire({ title: tituloExito, text: textoExito, icon: 'success', customClass: { popup: 'swal-dark-popup' }, background: 'transparent', confirmButtonColor: 'var(--glass-border)' });
-      }, 400);
-    }
-
-    const HORA_INICIO_GRID = 7; const TOTAL_HORAS_GRID = 13;
-    let turnosActuales = []; let filtroEstadoLiveActual = 'todos'; 
-    let memoriaContadores = { working: -1, break: -1, inactive: -1 };
-    let memoriaAvataresHTML = ""; 
-
-    const EXCEPCIONES = ["Licencia", "Vacaciones", "Libre Cumpleaños", "Clases", "Ausencia", "Feriado", "Dia Libre"];
-    const ICONOS_EXCEPCION = { "Licencia": "medical_services", "Vacaciones": "flight_takeoff", "Libre Cumpleaños": "cake", "Clases": "school", "Ausencia": "person_off", "Feriado": "celebration", "Dia Libre": "weekend" };
-
-    let modoSeleccion = false; let turnosSeleccionados = []; let modoOrden = false; let draggedRow = null;
-
-    function handleTrackHover(event, index) {
-      if (modoOrden || modoSeleccion) return; // No mostrar si estamos editando en lote
-      const item = turnosActuales[index];
-      if (!item) return;
-
-      const tooltip = document.getElementById('custom-tooltip');
-      if (!tooltip) return;
-
-      let html = `<div class="tooltip-header"><span class="material-symbols-outlined" style="font-size:16px;">person</span> ${escaparHTML(item.nombre)}</div><div class="tooltip-body">`;
-      
-      if (EXCEPCIONES.includes(item.entrada)) {
-        html += `<div class="tooltip-row"><strong style="color:var(--danger);">Estado:</strong> ${item.entrada}</div>`;
-      } else {
-        html += `<div class="tooltip-row"><strong style="color:var(--accent-primary);">Horario:</strong> ${item.entrada} a ${item.salida}</div>`;
-        if (item.breakIn && item.breakOut) {
-          html += `<div class="tooltip-row"><strong style="color:var(--warning);">Break:</strong> ${item.breakIn} a ${item.breakOut}</div>`;
-        }
-        if (item.llegadaReal && item.llegadaReal.trim() !== "") {
-          let colorBadge = "var(--text-main)";
-          if(item.entrada && item.entrada.includes(':') && item.llegadaReal.includes(':')) {
-            let [hE, mE] = item.entrada.split(':').map(Number);
-            let [hR, mR] = item.llegadaReal.split(':').map(Number);
-            let diff = (hR * 60 + mR) - (hE * 60 + mE);
-            if (diff > 7) colorBadge = "var(--danger)";
-            else if (diff > 0) colorBadge = "var(--warning)";
-            else colorBadge = "var(--success)";
-          }
-          html += `<div class="tooltip-row"><strong style="color:${colorBadge};">Llegada Real:</strong> <span style="color:${colorBadge}; font-weight:bold;">${item.llegadaReal}</span></div>`;
-        }
-      }
-
-      if (item.rechazoBeneficio) {
-        html += `<div class="tooltip-row"><strong style="color:var(--danger);">Beneficios:</strong> No aplica (${item.rechazoBeneficio})</div>`;
-      }
-
-      if (item.nota && item.nota.trim() !== "") {
-        html += `<div class="tooltip-nota"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle; margin-right:4px;">edit_note</span>${escaparHTML(item.nota)}</div>`;
-      }
-      html += `</div>`;
-
-      tooltip.innerHTML = html;
-      tooltip.classList.add('visible');
-
-      // Calcular posición para que siga al ratón sin salirse de la pantalla
-      let x = event.clientX + 15;
-      let y = event.clientY + 15;
-      if (x + 280 > window.innerWidth) x = window.innerWidth - 290;
-      if (y + 150 > window.innerHeight) y = event.clientY - tooltip.offsetHeight - 15;
-
-      tooltip.style.left = `${x}px`;
-      tooltip.style.top = `${y}px`;
-    }
-
-    function ocultarTooltip() {
-      const tooltip = document.getElementById('custom-tooltip');
-      if (tooltip) tooltip.classList.remove('visible');
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById('fechaFiltro').value = formatearFechaLocal(new Date());
-      cargarHorarios();
-      const contenedorRows = document.getElementById("contenedorRows");
-      if (contenedorRows) {
-        contenedorRows.addEventListener("dragover", e => {
-          if(!modoOrden) return; e.preventDefault(); 
-          const afterElement = getDragAfterElement(contenedorRows, e.clientY);
-          if (afterElement == null) { contenedorRows.appendChild(draggedRow); } else { contenedorRows.insertBefore(draggedRow, afterElement); }
-        });
-      }
-      setInterval(() => { actualizarDashboardVivo(); }, 1000);
-    });
-
-    function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll('.timeline-row:not(.dragging)')];
-      return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect(); const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) return { offset: offset, element: child }; else return closest;
-      }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    function cargarHorarios() {
-      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
-      const fechaInput = document.getElementById('fechaFiltro').value; const spanDia = document.getElementById('dia-semana-toolbar');
-      if (fechaInput && spanDia) { const partes = fechaInput.split('-'); const diaTexto = new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('es-ES', {weekday: 'long'}).toUpperCase(); spanDia.innerText = diaTexto; }
-      const contenedor = document.getElementById("contenedorRows");
-      if (contenedor) contenedor.innerHTML = `<div style="padding: 30px; color:var(--text-muted); text-align:center; font-size:13px; width: 90%;">Buscando turnos en Google Sheets...</div>`;
-      google.script.run
-        .withSuccessHandler(function(datosDeLaHoja) { turnosActuales = Array.isArray(datosDeLaHoja) ? datosDeLaHoja : []; renderizarTimeline(turnosActuales); analizarCobertura(); })
-        .withFailureHandler(manejarErrorServidor)
-        .getHorariosPorFecha(fechaInput); 
-    }
-    
-    
-  function copiarTurnosDia() {
-  if (!turnosActuales || turnosActuales.length === 0) {
-    return Swal.fire({ title: "Día Vacío", text: "No hay turnos para copiar en este día.", icon: "info", background: 'transparent', customClass: { popup: 'swal-dark-popup' } });
-  }
-  // Hacemos una copia profunda de los turnos actuales
-  portapapelesTurnos = JSON.parse(JSON.stringify(turnosActuales));
-  
-  // Mostramos el botón de pegar
-  document.getElementById('btn-pegar-dia').style.display = 'flex';
-  
-  const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, background: 'rgba(15, 15, 18, 0.9)', color: 'var(--accent-primary)' });
-  Toast.fire({ icon: 'success', title: `¡${portapapelesTurnos.length} turnos copiados!` });
-}
-
-function pegarTurnosDia() {
-  if (!portapapelesTurnos || portapapelesTurnos.length === 0) return;
-  const fechaDestino = document.getElementById('fechaFiltro').value;
-  
-  Swal.fire({
-    title: '¿Pegar Turnos?',
-    text: `Se insertarán ${portapapelesTurnos.length} turnos en el día ${fechaDestino}.`,
-    icon: 'question',
-    background: 'transparent',
-    customClass: { popup: 'swal-dark-popup' },
-    showCancelButton: true,
-    confirmButtonText: 'Sí, pegar aquí',
-    cancelButtonText: 'Cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      mostrarModalSincronizando('Pegando Cronograma...');
-      google.script.run
-        .withSuccessHandler(function() {
-          cargarHorarios();
-          completarBarraYMostrarExito('¡Completado!', 'Los turnos fueron clonados exitosamente.');
-        })
-        .withFailureHandler(manejarErrorServidor)
-        .pegarTurnosMasivosBackend(fechaDestino, portapapelesTurnos);
-    }
+    setInterval(() => {
+      actualizarDashboardVivo();
+    }, 1000);
   });
-}
 
-    function renderizarTimeline(lista) {
-      const contenedor = document.getElementById("contenedorRows"); if (!contenedor) return;
-      if (!Array.isArray(lista)) lista = []; contenedor.innerHTML = ""; filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
-      if (lista.length === 0) {
-        document.getElementById('liveDashboard').style.display = 'none';
-        contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-main); display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--accent-primary); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
-        return;
+  function getDragAfterElement(container, y) {
+    const draggableElements = [
+      ...container.querySelectorAll(".timeline-row:not(.dragging)"),
+    ];
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset)
+          return { offset: offset, element: child };
+        else return closest;
+      },
+      { offset: Number.NEGATIVE_INFINITY },
+    ).element;
+  }
+
+  function cargarHorarios() {
+    filtroEstadoLiveActual = "todos";
+    document
+      .querySelectorAll(".db-card")
+      .forEach((c) => (c.style.borderColor = "var(--glass-border)"));
+    const fechaInput = document.getElementById("fechaFiltro").value;
+    const spanDia = document.getElementById("dia-semana-toolbar");
+    if (fechaInput && spanDia) {
+      const partes = fechaInput.split("-");
+      const diaTexto = new Date(partes[0], partes[1] - 1, partes[2])
+        .toLocaleDateString("es-ES", { weekday: "long" })
+        .toUpperCase();
+      spanDia.innerText = diaTexto;
+    }
+    const contenedor = document.getElementById("contenedorRows");
+    if (contenedor)
+      contenedor.innerHTML = `<div style="padding: 30px; color:var(--text-muted); text-align:center; font-size:13px; width: 90%;">Buscando turnos en Google Sheets...</div>`;
+    google.script.run
+      .withSuccessHandler(function (datosDeLaHoja) {
+        turnosActuales = Array.isArray(datosDeLaHoja) ? datosDeLaHoja : [];
+        renderizarTimeline(turnosActuales);
+        analizarCobertura();
+      })
+      .withFailureHandler(manejarErrorServidor)
+      .getHorariosPorFecha(fechaInput);
+  }
+
+  function copiarTurnosDia() {
+    if (!turnosActuales || turnosActuales.length === 0) {
+      return Swal.fire({
+        title: "Día Vacío",
+        text: "No hay turnos para copiar en este día.",
+        icon: "info",
+        background: "transparent",
+        customClass: { popup: "swal-dark-popup" },
+      });
+    }
+
+    portapapelesTurnos = JSON.parse(JSON.stringify(turnosActuales));
+
+    document.getElementById("btn-pegar-dia").style.display = "flex";
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      background: "rgba(15, 15, 18, 0.9)",
+      color: "var(--accent-primary)",
+    });
+    Toast.fire({
+      icon: "success",
+      title: `¡${portapapelesTurnos.length} turnos copiados!`,
+    });
+  }
+
+  function pegarTurnosDia() {
+    if (!portapapelesTurnos || portapapelesTurnos.length === 0) return;
+    const fechaDestino = document.getElementById("fechaFiltro").value;
+
+    Swal.fire({
+      title: "¿Pegar Turnos?",
+      text: `Se insertarán ${portapapelesTurnos.length} turnos en el día ${fechaDestino}.`,
+      icon: "question",
+      background: "transparent",
+      customClass: { popup: "swal-dark-popup" },
+      showCancelButton: true,
+      confirmButtonText: "Sí, pegar aquí",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mostrarModalSincronizando("Pegando Cronograma...");
+        google.script.run
+          .withSuccessHandler(function () {
+            cargarHorarios();
+            completarBarraYMostrarExito(
+              "¡Completado!",
+              "Los turnos fueron clonados exitosamente.",
+            );
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .pegarTurnosMasivosBackend(fechaDestino, portapapelesTurnos);
+      }
+    });
+  }
+
+  function renderizarTimeline(lista) {
+    const contenedor = document.getElementById("contenedorRows");
+    if (!contenedor) return;
+    if (!Array.isArray(lista)) lista = [];
+    contenedor.innerHTML = "";
+    filtroEstadoLiveActual = "todos";
+    document
+      .querySelectorAll(".db-card")
+      .forEach((c) => (c.style.borderColor = "var(--glass-border)"));
+    if (lista.length === 0) {
+      document.getElementById("liveDashboard").style.display = "none";
+      contenedor.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; background: var(--glass-bg); border-radius: 8px; margin-top: 10px; width:100%; box-sizing:border-box;"><span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-main); display: block; margin-bottom: 8px;">calendar_today</span>No hay turnos planificados para esta fecha.<br><span style="color: var(--accent-primary); font-weight:600; cursor:pointer;" onclick="abrirModalNuevoHorario()">Haz clic aquí para asignar el primer turno</span></div>`;
+      return;
+    }
+
+    let seleccionadosStr = turnosSeleccionados.map(String);
+    lista.forEach((item, index) => {
+      const row = document.createElement("div");
+      row.className = "timeline-row";
+      row.style.opacity = "0";
+      row.style.animation = `fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards`;
+      row.style.animationDelay = `${index * 0.04}s`;
+      let barrasHTML = "";
+      let nombreEscapado = escaparHTML(item.nombre);
+
+      let iconoNotaHtml =
+        item.nota && item.nota.trim() !== ""
+          ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Tiene una nota en su turno">edit_note</span>`
+          : "";
+
+      let llegadaBadgeHTML = "";
+      let iconoTardeHtml = "";
+      if (
+        item.llegadaReal &&
+        item.llegadaReal.trim() !== "" &&
+        item.entrada &&
+        item.entrada.includes(":") &&
+        item.llegadaReal.includes(":")
+      ) {
+        let [hE, mE] = item.entrada.split(":").map(Number);
+        let [hR, mR] = item.llegadaReal.split(":").map(Number);
+        let diff = hR * 60 + mR - (hE * 60 + mE);
+        if (diff > 7) {
+          iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--danger); cursor:help;" title="Llegada tardía: ${item.llegadaReal}">history_toggle_off</span>`;
+        } else if (diff > 0) {
+          iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Llegada en gracia: ${item.llegadaReal}">history_toggle_off</span>`;
+        }
       }
 
-      let seleccionadosStr = turnosSeleccionados.map(String);
-      lista.forEach((item, index) => {
-        const row = document.createElement("div"); row.className = "timeline-row"; row.style.opacity = "0"; row.style.animation = `fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards`; row.style.animationDelay = `${index * 0.04}s`;
-        let barrasHTML = ""; let nombreEscapado = escaparHTML(item.nombre);
-        
-        // INDICADOR DE NOTA: Ahora está diseñado para ir al lado del nombre
-        let iconoNotaHtml = (item.nota && item.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Tiene una nota en su turno">edit_note</span>` : '';
+      if (EXCEPCIONES.includes(item.entrada)) {
+        let icono = ICONOS_EXCEPCION[item.entrada] || "event_busy";
+        barrasHTML =
+          llegadaBadgeHTML +
+          `<div class="block-excepcion"><span class="material-symbols-outlined" style="font-size: 15px; margin-right: 6px; margin-bottom: 2px;">${icono}</span>${item.entrada}</div>`;
+      } else if (item.breakIn && item.breakOut) {
+        const estiloTrabajo1 = calcularPosicion(item.entrada, item.breakIn);
+        const estiloBreak = calcularPosicion(item.breakIn, item.breakOut);
+        const estiloTrabajo2 = calcularPosicion(item.breakOut, item.salida);
+        barrasHTML =
+          llegadaBadgeHTML +
+          `<div class="block-laboral" style="${estiloTrabajo1}">${item.entrada} a ${item.breakIn}</div><div class="block-descanso" style="${estiloBreak}">BREAK</div><div class="block-laboral" style="${estiloTrabajo2}">${item.breakOut} a ${item.salida}</div>`;
+      } else {
+        const estiloCompleto = calcularPosicion(item.entrada, item.salida);
+        barrasHTML =
+          llegadaBadgeHTML +
+          `<div class="block-laboral" style="${estiloCompleto}">${item.entrada} a ${item.salida}</div>`;
+      }
 
-        // INDICADOR DE LLEGADA REAL (Flotante)
-        let llegadaBadgeHTML = "";
-        let iconoTardeHtml = "";
-        if (item.llegadaReal && item.llegadaReal.trim() !== "" && item.entrada && item.entrada.includes(':') && item.llegadaReal.includes(':')) {
-            let [hE, mE] = item.entrada.split(':').map(Number);
-            let [hR, mR] = item.llegadaReal.split(':').map(Number);
-            let diff = (hR * 60 + mR) - (hE * 60 + mE);
-            if (diff > 7) {
-                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--danger); cursor:help;" title="Llegada tardía: ${item.llegadaReal}">history_toggle_off</span>`;
-            } else if (diff > 0) {
-                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help;" title="Llegada en gracia: ${item.llegadaReal}">history_toggle_off</span>`;
-            }
-        }
+      let controlesExtras = "";
+      if (modoOrden) {
+        controlesExtras = `<div style="display:flex; align-items:center; margin-right:8px;"><span class="material-symbols-outlined drag-handle" style="font-size:20px;">drag_indicator</span></div>`;
+        row.draggable = true;
+        row.setAttribute("data-id", item.id);
+        row.addEventListener("dragstart", function () {
+          draggedRow = row;
+          setTimeout(() => row.classList.add("dragging"), 0);
+        });
+        row.addEventListener("dragend", function () {
+          row.classList.remove("dragging");
+          draggedRow = null;
+          sincronizarOrdenSilencioso();
+        });
+      } else if (modoSeleccion) {
+        const isChecked = seleccionadosStr.includes(String(item.id))
+          ? "checked"
+          : "";
+        controlesExtras = `<div style="display:flex; align-items:center; margin-right:12px;"><input type="checkbox" class="checkbox-masivo" ${isChecked} onclick="event.stopPropagation(); toggleSeleccionTurno('${item.id}')"></div>`;
+      }
 
-        // BARRAS LIMPIAS: Ya no llevan el icono por dentro
-        if (EXCEPCIONES.includes(item.entrada)) {
-          let icono = ICONOS_EXCEPCION[item.entrada] || "event_busy";
-          barrasHTML = llegadaBadgeHTML + `<div class="block-excepcion"><span class="material-symbols-outlined" style="font-size: 15px; margin-right: 6px; margin-bottom: 2px;">${icono}</span>${item.entrada}</div>`;
-        } else if (item.breakIn && item.breakOut) {
-          const estiloTrabajo1 = calcularPosicion(item.entrada, item.breakIn); const estiloBreak = calcularPosicion(item.breakIn, item.breakOut); const estiloTrabajo2 = calcularPosicion(item.breakOut, item.salida);
-          barrasHTML = llegadaBadgeHTML + `<div class="block-laboral" style="${estiloTrabajo1}">${item.entrada} a ${item.breakIn}</div><div class="block-descanso" style="${estiloBreak}">BREAK</div><div class="block-laboral" style="${estiloTrabajo2}">${item.breakOut} a ${item.salida}</div>`;
-        } else {
-          const estiloCompleto = calcularPosicion(item.entrada, item.salida); 
-          barrasHTML = llegadaBadgeHTML + `<div class="block-laboral" style="${estiloCompleto}">${item.entrada} a ${item.salida}</div>`;
-        }
-        
-        let controlesExtras = "";
-        if (modoOrden) {
-          controlesExtras = `<div style="display:flex; align-items:center; margin-right:8px;"><span class="material-symbols-outlined drag-handle" style="font-size:20px;">drag_indicator</span></div>`;
-          row.draggable = true; row.setAttribute("data-id", item.id);
-          row.addEventListener("dragstart", function() { draggedRow = row; setTimeout(() => row.classList.add("dragging"), 0); }); row.addEventListener("dragend", function() { row.classList.remove("dragging"); draggedRow = null; sincronizarOrdenSilencioso(); });
-        } else if (modoSeleccion) {
-          const isChecked = seleccionadosStr.includes(String(item.id)) ? "checked" : "";
-          controlesExtras = `<div style="display:flex; align-items:center; margin-right:12px;"><input type="checkbox" class="checkbox-masivo" ${isChecked} onclick="event.stopPropagation(); toggleSeleccionTurno('${item.id}')"></div>`;
-        }
-        
-        let accionClick = (modoOrden || modoSeleccion) ? "" : `editarTurno(${index})`; 
-        let jsonNombre = JSON.stringify(item.nombre || "").replace(/"/g, '&quot;'); 
-        let clickPerfil = (modoOrden || modoSeleccion) ? "" : `verPerfilColaborador(${jsonNombre})`;
-        
-        // El icono de nota se inserta después del nombre del colaborador
-        row.innerHTML = `
-          <div class="colaborador-info" style="${modoOrden || modoSeleccion ? 'margin-left:-5px;' : 'cursor:pointer;'}" onclick="${clickPerfil}" title="Ver historial de ${nombreEscapado}">
+      let accionClick =
+        modoOrden || modoSeleccion ? "" : `editarTurno(${index})`;
+      let jsonNombre = JSON.stringify(item.nombre || "").replace(
+        /"/g,
+        "&quot;",
+      );
+      let clickPerfil =
+        modoOrden || modoSeleccion ? "" : `verPerfilColaborador(${jsonNombre})`;
+
+      row.innerHTML = `
+          <div class="colaborador-info" style="${modoOrden || modoSeleccion ? "margin-left:-5px;" : "cursor:pointer;"}" onclick="${clickPerfil}" title="Ver historial de ${nombreEscapado}">
             ${controlesExtras}<img src="${getAvatarUrl(item.nombre, item.foto)}" alt="Foto"><span class="colaborador-name">${nombreEscapado}</span>${iconoNotaHtml}${iconoTardeHtml}
           </div>
-          <div class="shift-track" onclick="${accionClick}" onmousemove="handleTrackHover(event, ${index})" onmouseleave="ocultarTooltip()" style="${modoOrden || modoSeleccion ? 'cursor:default; opacity:0.5;' : ''}">
+          <div class="shift-track" onclick="${accionClick}" onmousemove="handleTrackHover(event, ${index})" onmouseleave="ocultarTooltip()" style="${modoOrden || modoSeleccion ? "cursor:default; opacity:0.5;" : ""}">
             ${barrasHTML}
           </div>`;
-        contenedor.appendChild(row);
-      });
-      actualizarDashboardVivo(); 
+      contenedor.appendChild(row);
+    });
+    actualizarDashboardVivo();
+  }
+
+  function animarContadorDash(id, nuevoValor, llave) {
+    if (memoriaContadores[llave] === nuevoValor) return;
+    memoriaContadores[llave] = nuevoValor;
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerText = nuevoValor;
+    el.style.transition = "none";
+    el.style.transform = "scale(1.5)";
+    el.style.color = "var(--text-main)";
+    setTimeout(() => {
+      el.style.transition = "all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+      el.style.transform = "scale(1)";
+      el.style.color = "var(--text-main)";
+    }, 50);
+  }
+
+  function actualizarDashboardVivo() {
+    const dbContainer = document.getElementById("liveDashboard");
+    if (!dbContainer || turnosActuales.length === 0) {
+      if (dbContainer) dbContainer.style.display = "none";
+      return;
+    }
+    dbContainer.style.display = "block";
+    const ahora = new Date();
+
+    const clkH = document.getElementById("clk-h");
+    const clkM = document.getElementById("clk-m");
+    const clkS = document.getElementById("clk-s");
+    if (clkH && clkM && clkS) {
+      clkH.innerText = String(ahora.getHours()).padStart(2, "0");
+      clkM.innerText = String(ahora.getMinutes()).padStart(2, "0");
+      clkS.innerText = String(ahora.getSeconds()).padStart(2, "0");
     }
 
-    function animarContadorDash(id, nuevoValor, llave) {
-      if (memoriaContadores[llave] === nuevoValor) return; memoriaContadores[llave] = nuevoValor;
-      const el = document.getElementById(id); if (!el) return;
-      el.innerText = nuevoValor; el.style.transition = 'none'; el.style.transform = 'scale(1.5)'; el.style.color = 'var(--text-main)';
-      setTimeout(() => { el.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; el.style.transform = 'scale(1)'; el.style.color = 'var(--text-main)'; }, 50);
-    }
+    const horaActualMins = ahora.getHours() * 60 + ahora.getMinutes();
+    const fechaFiltro = document.getElementById("fechaFiltro").value;
+    const hoyStr = formatearFechaLocal(new Date());
+    const isToday = fechaFiltro === hoyStr;
+    const dotLive = document.querySelector(".dot-live");
+    const textLive = document.getElementById("live-text");
 
-    function actualizarDashboardVivo() {
-      const dbContainer = document.getElementById('liveDashboard');
-      if (!dbContainer || turnosActuales.length === 0) { if (dbContainer) dbContainer.style.display = 'none'; return; }
-      dbContainer.style.display = 'block'; const ahora = new Date();
-      
-      const clkH = document.getElementById('clk-h'); const clkM = document.getElementById('clk-m'); const clkS = document.getElementById('clk-s');
-      if (clkH && clkM && clkS) { clkH.innerText = String(ahora.getHours()).padStart(2, '0'); clkM.innerText = String(ahora.getMinutes()).padStart(2, '0'); clkS.innerText = String(ahora.getSeconds()).padStart(2, '0'); }
-
-      const horaActualMins = ahora.getHours() * 60 + ahora.getMinutes(); const fechaFiltro = document.getElementById('fechaFiltro').value; const hoyStr = formatearFechaLocal(new Date());
-      const isToday = (fechaFiltro === hoyStr); const dotLive = document.querySelector('.dot-live'); const textLive = document.getElementById('live-text');
-
-      if (dotLive && textLive) {
-        if (isToday) { dotLive.className = 'dot-live'; textLive.innerText = 'MONITOREO EN VIVO'; textLive.style.color = 'var(--text-main)'; } 
-        else { dotLive.className = 'dot-live simulated'; textLive.innerText = 'VISTA SIMULADA (SEGÚN HORA ACTUAL)'; textLive.style.color = 'var(--warning)'; }
-      }
-
-      let trabajando = 0, enBreak = 0, fuera = 0; let avatarsHTML = `<span style="margin-right:8px; font-weight:700; color:var(--text-muted); text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Monitoreando:</span>`;
-      const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
-
-      turnosActuales.forEach(t => {
-        let estado = 'fuera';
-        if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
-          let inM = aMinutos(t.entrada), outM = aMinutos(t.salida); let bIn = t.breakIn ? aMinutos(t.breakIn) : -1, bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
-          if (horaActualMins >= inM && horaActualMins < outM) { if (bIn !== -1 && horaActualMins >= bIn && horaActualMins < bOut) { estado = 'break'; enBreak++; } else { estado = 'trabajando'; trabajando++; } } else { fuera++; }
-        } else { fuera++; }
-        t._estadoLive = estado; 
-
-        if (estado === 'trabajando' || estado === 'break') {
-          let dotClass = estado === 'trabajando' ? 'breathe-green' : 'breathe-amber';
-          let fotoUrl = getAvatarUrl(t.nombre, t.foto);
-          avatarsHTML += `<div class="avatar-live-badge" title="${escaparHTML(t.nombre)} | ${estado==='trabajando'?'Operando':'En Break'}"><img src="${fotoUrl}"><span style="color:var(--text-main); font-size:11px; font-weight:600;">${escaparHTML(t.nombre)}</span>
-          </div>`;
-        }
-      });
-
-      animarContadorDash('count-working', trabajando, 'working'); animarContadorDash('count-break', enBreak, 'break'); animarContadorDash('count-inactive', fuera, 'inactive');
-      
-      let nuevoHTMLAvatares = (trabajando + enBreak > 0) ? avatarsHTML : '<span style="color:var(--text-muted); font-style:italic;">Ningún colaborador operando activamente.</span>';
-      if (memoriaAvataresHTML !== nuevoHTMLAvatares) { document.getElementById('active-avatars').innerHTML = nuevoHTMLAvatares; memoriaAvataresHTML = nuevoHTMLAvatares; }
-    }
-
-    function filtrarPorEstadoLive(estado) {
-      if (modoOrden || modoSeleccion) return;
-      if (filtroEstadoLiveActual === estado) { filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)'); } 
-      else { filtroEstadoLiveActual = estado; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)'); let card = document.querySelector(`.card-${estado}`); if (card) card.style.borderColor = estado === 'trabajando' ? 'var(--accent-primary)' : (estado === 'break' ? 'var(--warning)' : 'var(--text-muted)'); }
-      const filas = document.querySelectorAll(".timeline-row");
-      turnosActuales.forEach((t, idx) => {
-        if (!filas[idx]) return;
-        if (filtroEstadoLiveActual === 'todos') { filas[idx].style.display = "grid"; } else { filas[idx].style.display = (t._estadoLive === filtroEstadoLiveActual) ? "grid" : "none"; }
-      });
-      document.getElementById("buscarColaborador").value = "";
-    }
-
-    function calcularPosicion(hEntrada, hSalida) {
-      if (!hEntrada || !hSalida) return "display:none;";
-      const [entH, entM] = hEntrada.split(':').map(Number); const [salH, salM] = hSalida.split(':').map(Number);
-      const entradaDec = entH + (entM / 60); const salidaDec = salH + (salM / 60);
-      const left = ((entradaDec - HORA_INICIO_GRID) / TOTAL_HORAS_GRID) * 100; const width = ((salidaDec - entradaDec) / TOTAL_HORAS_GRID) * 100;
-      return `left: ${left}%; width: calc(${width}% - 2px);`;
-    }
-
-    function filtrarTimeline() {
-      filtroEstadoLiveActual = 'todos'; document.querySelectorAll('.db-card').forEach(c => c.style.borderColor = 'var(--glass-border)');
-      const buscar = document.getElementById("buscarColaborador").value.toLowerCase(); const filas = document.querySelectorAll(".timeline-row");
-      filas.forEach(fila => { const span = fila.querySelector(".colaborador-name"); if (!span) return; const nombre = span.innerText.toLowerCase(); fila.style.display = nombre.includes(buscar) ? "grid" : "none"; });
-    }
-
-    function cambiarDia(dias) {
-      const input = document.getElementById('fechaFiltro'); let fechaActual = new Date(input.value + 'T00:00:00'); fechaActual.setDate(fechaActual.getDate() + dias); input.value = formatearFechaLocal(fechaActual); cargarHorarios();
-    }
-
-    function analizarCobertura() {
-      if (!Array.isArray(turnosActuales)) return;
-      const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
-      const aHoraTexto = (mins) => { return `${Math.floor(mins / 60).toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`; };
-      const fechaSel = document.getElementById('fechaFiltro').value; const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const diaSemana = objetoFecha.getDay(); 
-      let fallos = [];
-
-      for(let m = 7.5 * 60; m < 19 * 60; m += 30) {
-        let activos = 0;
-        turnosActuales.forEach(t => {
-          if(!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) return;
-          let inM = aMinutos(t.entrada); let outM = aMinutos(t.salida); let bIn = t.breakIn ? aMinutos(t.breakIn) : -1; let bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
-          if ((m >= inM && m < outM) && !(bIn !== -1 && m >= bIn && m < bOut)) activos++;
-        });
-        let msg = ""; let tipo = ""; 
-        if (diaSemana === 0) { if (m >= 10 * 60 && m < 18 * 60) { if (m < 12 * 60 || m >= 16 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } } else { if (activos < 2) { msg = `Mínimo 2 en almuerzo (Hay ${activos})`; tipo = "danger"; } } } }
-        else if (diaSemana === 6) { if (m >= 8 * 60 && m < 18 * 60) { if (m === 8 * 60) { if (activos < 2) { msg = `Mínimo 2 (Hay ${activos})`; tipo = "danger"; } } else if (m >= 8.5 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60) { if (activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } } else if (m >= 17 * 60 && m < 18 * 60) { if (activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } } } }
-        else { if (m === 7.5 * 60 && activos === 0) { msg = `Faltan, req 1`; tipo = "danger"; } else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } else if (activos > 4) { msg = `Exceso (Hay ${activos})`; tipo = "warning"; } } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) { msg = `Mínimo 6 (Hay ${activos})`; tipo = "danger"; } else if (m >= 17 * 60 && m < 18 * 60 && activos < 4) { msg = `Mínimo 4 (Hay ${activos})`; tipo = "danger"; } else if (m >= 18 * 60 && m < 19 * 60 && activos < 3) { msg = `Mínimo 3 (Hay ${activos})`; tipo = "danger"; } }
-        if(msg !== "") fallos.push({ inicio: m, fin: m + 30, mensaje: msg, tipo: tipo });
-      }
-
-      let fallosAgrupados = [];
-      if(fallos.length > 0) { let actual = fallos[0]; for(let i = 1; i < fallos.length; i++) { if(fallos[i].mensaje === actual.mensaje && fallos[i].inicio === actual.fin) actual.fin = fallos[i].fin; else { fallosAgrupados.push(actual); actual = fallos[i]; } } fallosAgrupados.push(actual); }
-
-      const container = document.getElementById("diagnosticoTrack"); if(!container) return; container.innerHTML = "";
-      if(fallosAgrupados.length === 0 && turnosActuales.length > 0) { container.innerHTML = `<div class="diagnostico-row" style="background: rgba(16, 185, 129, 0.05); border-color: var(--success); animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label" style="color: var(--success);"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> COBERTURA OK</div><div class="diagnostico-track"><div class="alerta-block ok" style="left:0; width:100%;">Todo el personal necesario está cubierto para el turno de este día</div></div></div>`; } 
-      else if (fallosAgrupados.length > 0) {
-        let bloquesHTML = ""; fallosAgrupados.forEach(f => { let left = ((f.inicio / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100; let width = (((f.fin - f.inicio) / 60) / TOTAL_HORAS_GRID) * 100; bloquesHTML += `<div class="alerta-block ${f.tipo}" style="left: ${left}%; width: calc(${width}% - 6px); margin-left: 3px;" title="De ${aHoraTexto(f.inicio)} a ${aHoraTexto(f.fin)} | ${f.mensaje}">${f.mensaje}</div>`; });
-        container.innerHTML = `<div class="diagnostico-row" style="animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label"><span class="material-symbols-outlined" style="font-size:16px;">warning</span> ALERTAS</div><div class="diagnostico-track">${bloquesHTML}</div></div>`;
-      }
-    }
-
-    function sugerirBreak(entrada, salida, turnosExistentes, editIndex = -1) {
-      if (!entrada || !salida) return { breakIn: "", breakOut: "" }; let turnosAComparar = turnosExistentes.filter((_, i) => i !== editIndex);
-      const aMinutos = (hstr) => { if(!hstr) return 0; let [h, m] = hstr.split(':').map(Number); return (h * 60) + m; }; const aHoraTexto = (mins) => { return `${Math.floor(mins / 60).toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`; };
-      let minEntrada = aMinutos(entrada); let minSalida = aMinutos(salida); let duracionTurno = minSalida - minEntrada; let esTurnoTarde = (minEntrada >= 12 * 60); 
-
-      if (duracionTurno <= 180) return { breakIn: "", breakOut: "" }; if (!esTurnoTarde && duracionTurno <= 360) return { breakIn: "", breakOut: "" };
-      let slotsPermitidos = [];
-      if (esTurnoTarde) { let mitadJornada = minEntrada + (duracionTurno / 2); let centro = Math.floor(mitadJornada / 30) * 30; slotsPermitidos = [centro, centro - 30, centro + 30, centro - 60, centro + 60]; } 
-      else { slotsPermitidos = [12*60, 13*60, 14*60, 12.5*60, 13.5*60]; }
-
-      let candidatos = slotsPermitidos.filter(s => s >= (minEntrada + 60) && (s + 60) <= (minSalida - 60)).map(slot => { let overlaps = 0; turnosAComparar.forEach(turno => { if (turno.breakIn && slot < aMinutos(turno.breakOut) && (slot + 60) > aMinutos(turno.breakIn)) overlaps++; }); let ideal = minEntrada + (duracionTurno / 2); return { slot, overlaps, isPrimary: (slot % 60 === 0), distancia: Math.abs(slot - ideal) }; });
-      if (candidatos.length === 0) return { breakIn: "", breakOut: "" };
-      candidatos.sort((a, b) => { if (a.overlaps !== b.overlaps) return a.overlaps - b.overlaps; if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1; return a.distancia - b.distancia; });
-      return { breakIn: aHoraTexto(candidatos[0].slot), breakOut: aHoraTexto(candidatos[0].slot + 60) };
-    }
-
-    function triggerAutoSugerencia(prefix = 'swal', editIndex = -1) {
-      const ent = document.getElementById(`${prefix}-entrada`)?.value; const sal = document.getElementById(`${prefix}-salida`)?.value; if (!ent || !sal) return;
-      const aMinutos = (hstr) => { let [h, m] = hstr.split(':').map(Number); return (h * 60) + m; };
-      let minEntrada = aMinutos(ent); let duracionTurno = aMinutos(sal) - minEntrada; let esTurnoTarde = (minEntrada >= 12 * 60);
-      const checkbox = document.getElementById(`${prefix}-aplica-break`); const inputIn = document.getElementById(`${prefix}-break-in`); const inputOut = document.getElementById(`${prefix}-break-out`); const textoAuto = document.getElementById(`${prefix}-texto-auto`); 
-      if (textoAuto) textoAuto.style.display = "none";
-      if (!esTurnoTarde && duracionTurno <= 360) {
-        if (checkbox) checkbox.checked = false; if (inputIn) { inputIn.value = ""; inputIn.disabled = true; inputIn.style.opacity = "0.4"; } if (inputOut) { inputOut.value = ""; inputOut.disabled = true; inputOut.style.opacity = "0.4"; } return; 
+    if (dotLive && textLive) {
+      if (isToday) {
+        dotLive.className = "dot-live";
+        textLive.innerText = "MONITOREO EN VIVO";
+        textLive.style.color = "var(--text-main)";
       } else {
-        if (checkbox && !checkbox.disabled && !checkbox.checked) { checkbox.checked = true; if (inputIn) { inputIn.disabled = false; inputIn.style.opacity = "1"; } if (inputOut) { inputOut.disabled = false; inputOut.style.opacity = "1"; } }
-      }
-      if (checkbox && !checkbox.checked) return;
-      const sugerencia = sugerirBreak(ent, sal, turnosActuales, editIndex);
-      if(sugerencia.breakIn && inputIn && inputOut) {
-        inputIn.value = sugerencia.breakIn; inputOut.value = sugerencia.breakOut; if(textoAuto) textoAuto.style.display = "inline";
-        inputIn.style.boxShadow = inputOut.style.boxShadow = "0 0 10px var(--accent-glow)"; inputIn.style.borderColor = inputOut.style.borderColor = "var(--accent-primary)"; setTimeout(() => { inputIn.style.boxShadow = inputOut.style.boxShadow = "none"; inputIn.style.borderColor = "var(--glass-border)"; }, 600);
+        dotLive.className = "dot-live simulated";
+        textLive.innerText = "VISTA SIMULADA (SEGÚN HORA ACTUAL)";
+        textLive.style.color = "var(--warning)";
       }
     }
 
-    function toggleBreakFields(prefix, index = -1) {
-      const chk = document.getElementById(`${prefix}-aplica-break`); const inField = document.getElementById(`${prefix}-break-in`); const outField = document.getElementById(`${prefix}-break-out`);
-      if (!chk || !inField || !outField) return; const aplica = chk.checked;
-      inField.disabled = !aplica; outField.disabled = !aplica; inField.style.opacity = aplica ? '1' : '0.4'; outField.style.opacity = aplica ? '1' : '0.4';
-      if (!aplica) { inField.value = ''; outField.value = ''; }
+    let trabajando = 0,
+      enBreak = 0,
+      fuera = 0;
+    let avatarsHTML = `<span style="margin-right:8px; font-weight:700; color:var(--text-muted); text-transform:uppercase; font-size:10px; letter-spacing:0.5px;">Monitoreando:</span>`;
+    const aMinutos = (hora) => {
+      if (!hora) return 0;
+      let [h, m] = hora.split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    turnosActuales.forEach((t) => {
+      let estado = "fuera";
+      if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
+        let inM = aMinutos(t.entrada),
+          outM = aMinutos(t.salida);
+        let bIn = t.breakIn ? aMinutos(t.breakIn) : -1,
+          bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
+        if (horaActualMins >= inM && horaActualMins < outM) {
+          if (bIn !== -1 && horaActualMins >= bIn && horaActualMins < bOut) {
+            estado = "break";
+            enBreak++;
+          } else {
+            estado = "trabajando";
+            trabajando++;
+          }
+        } else {
+          fuera++;
+        }
+      } else {
+        fuera++;
+      }
+      t._estadoLive = estado;
+
+      if (estado === "trabajando" || estado === "break") {
+        let dotClass =
+          estado === "trabajando" ? "breathe-green" : "breathe-amber";
+        let fotoUrl = getAvatarUrl(t.nombre, t.foto);
+        avatarsHTML += `<div class="avatar-live-badge" title="${escaparHTML(t.nombre)} | ${estado === "trabajando" ? "Operando" : "En Break"}"><img src="${fotoUrl}"><span style="color:var(--text-main); font-size:11px; font-weight:600;">${escaparHTML(t.nombre)}</span>
+          </div>`;
+      }
+    });
+
+    animarContadorDash("count-working", trabajando, "working");
+    animarContadorDash("count-break", enBreak, "break");
+    animarContadorDash("count-inactive", fuera, "inactive");
+
+    let nuevoHTMLAvatares =
+      trabajando + enBreak > 0
+        ? avatarsHTML
+        : '<span style="color:var(--text-muted); font-style:italic;">Ningún colaborador operando activamente.</span>';
+    if (memoriaAvataresHTML !== nuevoHTMLAvatares) {
+      document.getElementById("active-avatars").innerHTML = nuevoHTMLAvatares;
+      memoriaAvataresHTML = nuevoHTMLAvatares;
+    }
+  }
+
+  function filtrarPorEstadoLive(estado) {
+    if (modoOrden || modoSeleccion) return;
+    if (filtroEstadoLiveActual === estado) {
+      filtroEstadoLiveActual = "todos";
+      document
+        .querySelectorAll(".db-card")
+        .forEach((c) => (c.style.borderColor = "var(--glass-border)"));
+    } else {
+      filtroEstadoLiveActual = estado;
+      document
+        .querySelectorAll(".db-card")
+        .forEach((c) => (c.style.borderColor = "var(--glass-border)"));
+      let card = document.querySelector(`.card-${estado}`);
+      if (card)
+        card.style.borderColor =
+          estado === "trabajando"
+            ? "var(--accent-primary)"
+            : estado === "break"
+              ? "var(--warning)"
+              : "var(--text-muted)";
+    }
+    const filas = document.querySelectorAll(".timeline-row");
+    turnosActuales.forEach((t, idx) => {
+      if (!filas[idx]) return;
+      if (filtroEstadoLiveActual === "todos") {
+        filas[idx].style.display = "grid";
+      } else {
+        filas[idx].style.display =
+          t._estadoLive === filtroEstadoLiveActual ? "grid" : "none";
+      }
+    });
+    document.getElementById("buscarColaborador").value = "";
+  }
+
+  function calcularPosicion(hEntrada, hSalida) {
+    if (!hEntrada || !hSalida) return "display:none;";
+    const [entH, entM] = hEntrada.split(":").map(Number);
+    const [salH, salM] = hSalida.split(":").map(Number);
+    const entradaDec = entH + entM / 60;
+    const salidaDec = salH + salM / 60;
+    const left = ((entradaDec - HORA_INICIO_GRID) / TOTAL_HORAS_GRID) * 100;
+    const width = ((salidaDec - entradaDec) / TOTAL_HORAS_GRID) * 100;
+    return `left: ${left}%; width: calc(${width}% - 2px);`;
+  }
+
+  function filtrarTimeline() {
+    filtroEstadoLiveActual = "todos";
+    document
+      .querySelectorAll(".db-card")
+      .forEach((c) => (c.style.borderColor = "var(--glass-border)"));
+    const buscar = document
+      .getElementById("buscarColaborador")
+      .value.toLowerCase();
+    const filas = document.querySelectorAll(".timeline-row");
+    filas.forEach((fila) => {
+      const span = fila.querySelector(".colaborador-name");
+      if (!span) return;
+      const nombre = span.innerText.toLowerCase();
+      fila.style.display = nombre.includes(buscar) ? "grid" : "none";
+    });
+  }
+
+  function cambiarDia(dias) {
+    const input = document.getElementById("fechaFiltro");
+    let fechaActual = new Date(input.value + "T00:00:00");
+    fechaActual.setDate(fechaActual.getDate() + dias);
+    input.value = formatearFechaLocal(fechaActual);
+    cargarHorarios();
+  }
+
+  function analizarCobertura() {
+    if (!Array.isArray(turnosActuales)) return;
+    const aMinutos = (hora) => {
+      if (!hora) return 0;
+      let [h, m] = hora.split(":").map(Number);
+      return h * 60 + m;
+    };
+    const aHoraTexto = (mins) => {
+      return `${Math.floor(mins / 60)
+        .toString()
+        .padStart(2, "0")}:${(mins % 60).toString().padStart(2, "0")}`;
+    };
+    const fechaSel = document.getElementById("fechaFiltro").value;
+    const partes = fechaSel.split("-");
+    const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]);
+    const diaSemana = objetoFecha.getDay();
+    let fallos = [];
+
+    for (let m = 7.5 * 60; m < 19 * 60; m += 30) {
+      let activos = 0;
+      turnosActuales.forEach((t) => {
+        if (!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) return;
+        let inM = aMinutos(t.entrada);
+        let outM = aMinutos(t.salida);
+        let bIn = t.breakIn ? aMinutos(t.breakIn) : -1;
+        let bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
+        if (m >= inM && m < outM && !(bIn !== -1 && m >= bIn && m < bOut))
+          activos++;
+      });
+      let msg = "";
+      let tipo = "";
+      if (diaSemana === 0) {
+        if (m >= 10 * 60 && m < 18 * 60) {
+          if (m < 12 * 60 || m >= 16 * 60) {
+            if (activos < 3) {
+              msg = `Mínimo 3 (Hay ${activos})`;
+              tipo = "danger";
+            }
+          } else {
+            if (activos < 2) {
+              msg = `Mínimo 2 en almuerzo (Hay ${activos})`;
+              tipo = "danger";
+            }
+          }
+        }
+      } else if (diaSemana === 6) {
+        if (m >= 8 * 60 && m < 18 * 60) {
+          if (m === 8 * 60) {
+            if (activos < 2) {
+              msg = `Mínimo 2 (Hay ${activos})`;
+              tipo = "danger";
+            }
+          } else if (m >= 8.5 * 60 && m < 9 * 60) {
+            if (activos < 3) {
+              msg = `Mínimo 3 (Hay ${activos})`;
+              tipo = "danger";
+            } else if (activos > 4) {
+              msg = `Exceso (Hay ${activos})`;
+              tipo = "warning";
+            }
+          } else if (m >= 9 * 60 && m < 17 * 60) {
+            if (activos < 6) {
+              msg = `Mínimo 6 (Hay ${activos})`;
+              tipo = "danger";
+            }
+          } else if (m >= 17 * 60 && m < 18 * 60) {
+            if (activos < 4) {
+              msg = `Mínimo 4 (Hay ${activos})`;
+              tipo = "danger";
+            }
+          }
+        }
+      } else {
+        if (m === 7.5 * 60 && activos === 0) {
+          msg = `Faltan, req 1`;
+          tipo = "danger";
+        } else if (m >= 8 * 60 && m < 9 * 60) {
+          if (activos < 3) {
+            msg = `Mínimo 3 (Hay ${activos})`;
+            tipo = "danger";
+          } else if (activos > 4) {
+            msg = `Exceso (Hay ${activos})`;
+            tipo = "warning";
+          }
+        } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) {
+          msg = `Mínimo 6 (Hay ${activos})`;
+          tipo = "danger";
+        } else if (m >= 17 * 60 && m < 18 * 60 && activos < 4) {
+          msg = `Mínimo 4 (Hay ${activos})`;
+          tipo = "danger";
+        } else if (m >= 18 * 60 && m < 19 * 60 && activos < 3) {
+          msg = `Mínimo 3 (Hay ${activos})`;
+          tipo = "danger";
+        }
+      }
+      if (msg !== "")
+        fallos.push({ inicio: m, fin: m + 30, mensaje: msg, tipo: tipo });
     }
 
-    function autoCompletarAlmuerzo(prefix) {
-      const inField = document.getElementById(`${prefix}-break-in`); const outField = document.getElementById(`${prefix}-break-out`);
-      if (inField && outField && inField.value) { const [h, m] = inField.value.split(':'); let outH = String((parseInt(h) + 1) % 24).padStart(2, '0'); outField.value = `${outH}:${m}`; }
+    let fallosAgrupados = [];
+    if (fallos.length > 0) {
+      let actual = fallos[0];
+      for (let i = 1; i < fallos.length; i++) {
+        if (
+          fallos[i].mensaje === actual.mensaje &&
+          fallos[i].inicio === actual.fin
+        )
+          actual.fin = fallos[i].fin;
+        else {
+          fallosAgrupados.push(actual);
+          actual = fallos[i];
+        }
+      }
+      fallosAgrupados.push(actual);
     }
 
-    function editarTurno(index) {
-      const turno = turnosActuales[index]; if (!turno) return;
-      let tieneAlmuerzo = (turno.breakIn && turno.breakOut) ? 'checked' : ''; let opacidadInicial = tieneAlmuerzo ? '1' : '0.4'; let desactivadoInicial = tieneAlmuerzo ? '' : 'disabled';
-      let esExcepcion = EXCEPCIONES.includes(turno.entrada); let displayTiempos = esExcepcion ? 'none' : 'block'; let displayBotonIA = esExcepcion ? 'none' : 'flex'; 
-      let fechaEdicion = turno.fecha || document.getElementById('fechaFiltro').value; let partes = fechaEdicion.split('-'); let diaSemanaTexto = new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('es-ES', {weekday: 'long'}).toUpperCase(); let jsonNombre = JSON.stringify(turno.nombre).replace(/"/g,/*  */ '&quot;');
+    const container = document.getElementById("diagnosticoTrack");
+    if (!container) return;
+    container.innerHTML = "";
+    if (fallosAgrupados.length === 0 && turnosActuales.length > 0) {
+      container.innerHTML = `<div class="diagnostico-row" style="background: rgba(16, 185, 129, 0.05); border-color: var(--success); animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label" style="color: var(--success);"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> COBERTURA OK</div><div class="diagnostico-track"><div class="alerta-block ok" style="left:0; width:100%;">Todo el personal necesario está cubierto para el turno de este día</div></div></div>`;
+    } else if (fallosAgrupados.length > 0) {
+      let bloquesHTML = "";
+      fallosAgrupados.forEach((f) => {
+        let left =
+          ((f.inicio / 60 - HORA_INICIO_GRID) / TOTAL_HORAS_GRID) * 100;
+        let width = ((f.fin - f.inicio) / 60 / TOTAL_HORAS_GRID) * 100;
+        bloquesHTML += `<div class="alerta-block ${f.tipo}" style="left: ${left}%; width: calc(${width}% - 6px); margin-left: 3px;" title="De ${aHoraTexto(f.inicio)} a ${aHoraTexto(f.fin)} | ${f.mensaje}">${f.mensaje}</div>`;
+      });
+      container.innerHTML = `<div class="diagnostico-row" style="animation: slideDownAlert 0.4s ease forwards; overflow: hidden;"><div class="diagnostico-label"><span class="material-symbols-outlined" style="font-size:16px;">warning</span> ALERTAS</div><div class="diagnostico-track">${bloquesHTML}</div></div>`;
+    }
+  }
 
-      Swal.fire({
-        title: `Editar Turno: ${escaparHTML(turno.nombre)}`,
-        customClass: { popup: 'swal-dark-popup' },
-        background: 'transparent',
-        html: `<div style="text-align:left; color:var(--text-main);"><div style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: var(--glass-bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:var(--warning); font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span></div><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button></div><select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select><div id="edit-main-ia-status" style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div><div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
+  function sugerirBreak(entrada, salida, turnosExistentes, editIndex = -1) {
+    if (!entrada || !salida) return { breakIn: "", breakOut: "" };
+    let turnosAComparar = turnosExistentes.filter((_, i) => i !== editIndex);
+    const aMinutos = (hstr) => {
+      if (!hstr) return 0;
+      let [h, m] = hstr.split(":").map(Number);
+      return h * 60 + m;
+    };
+    const aHoraTexto = (mins) => {
+      return `${Math.floor(mins / 60)
+        .toString()
+        .padStart(2, "0")}:${(mins % 60).toString().padStart(2, "0")}`;
+    };
+    let minEntrada = aMinutos(entrada);
+    let minSalida = aMinutos(salida);
+    let duracionTurno = minSalida - minEntrada;
+    let esTurnoTarde = minEntrada >= 12 * 60;
+
+    if (duracionTurno <= 180) return { breakIn: "", breakOut: "" };
+    if (!esTurnoTarde && duracionTurno <= 360)
+      return { breakIn: "", breakOut: "" };
+    let slotsPermitidos = [];
+    if (esTurnoTarde) {
+      let mitadJornada = minEntrada + duracionTurno / 2;
+      let centro = Math.floor(mitadJornada / 30) * 30;
+      slotsPermitidos = [
+        centro,
+        centro - 30,
+        centro + 30,
+        centro - 60,
+        centro + 60,
+      ];
+    } else {
+      slotsPermitidos = [12 * 60, 13 * 60, 14 * 60, 12.5 * 60, 13.5 * 60];
+    }
+
+    let candidatos = slotsPermitidos
+      .filter((s) => s >= minEntrada + 60 && s + 60 <= minSalida - 60)
+      .map((slot) => {
+        let overlaps = 0;
+        turnosAComparar.forEach((turno) => {
+          if (
+            turno.breakIn &&
+            slot < aMinutos(turno.breakOut) &&
+            slot + 60 > aMinutos(turno.breakIn)
+          )
+            overlaps++;
+        });
+        let ideal = minEntrada + duracionTurno / 2;
+        return {
+          slot,
+          overlaps,
+          isPrimary: slot % 60 === 0,
+          distancia: Math.abs(slot - ideal),
+        };
+      });
+    if (candidatos.length === 0) return { breakIn: "", breakOut: "" };
+    candidatos.sort((a, b) => {
+      if (a.overlaps !== b.overlaps) return a.overlaps - b.overlaps;
+      if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+      return a.distancia - b.distancia;
+    });
+    return {
+      breakIn: aHoraTexto(candidatos[0].slot),
+      breakOut: aHoraTexto(candidatos[0].slot + 60),
+    };
+  }
+
+  function triggerAutoSugerencia(prefix = "swal", editIndex = -1) {
+    const ent = document.getElementById(`${prefix}-entrada`)?.value;
+    const sal = document.getElementById(`${prefix}-salida`)?.value;
+    if (!ent || !sal) return;
+    const aMinutos = (hstr) => {
+      let [h, m] = hstr.split(":").map(Number);
+      return h * 60 + m;
+    };
+    let minEntrada = aMinutos(ent);
+    let duracionTurno = aMinutos(sal) - minEntrada;
+    let esTurnoTarde = minEntrada >= 12 * 60;
+    const checkbox = document.getElementById(`${prefix}-aplica-break`);
+    const inputIn = document.getElementById(`${prefix}-break-in`);
+    const inputOut = document.getElementById(`${prefix}-break-out`);
+    const textoAuto = document.getElementById(`${prefix}-texto-auto`);
+    if (textoAuto) textoAuto.style.display = "none";
+    if (!esTurnoTarde && duracionTurno <= 360) {
+      if (checkbox) checkbox.checked = false;
+      if (inputIn) {
+        inputIn.value = "";
+        inputIn.disabled = true;
+        inputIn.style.opacity = "0.4";
+      }
+      if (inputOut) {
+        inputOut.value = "";
+        inputOut.disabled = true;
+        inputOut.style.opacity = "0.4";
+      }
+      return;
+    } else {
+      if (checkbox && !checkbox.disabled && !checkbox.checked) {
+        checkbox.checked = true;
+        if (inputIn) {
+          inputIn.disabled = false;
+          inputIn.style.opacity = "1";
+        }
+        if (inputOut) {
+          inputOut.disabled = false;
+          inputOut.style.opacity = "1";
+        }
+      }
+    }
+    if (checkbox && !checkbox.checked) return;
+    const sugerencia = sugerirBreak(ent, sal, turnosActuales, editIndex);
+    if (sugerencia.breakIn && inputIn && inputOut) {
+      inputIn.value = sugerencia.breakIn;
+      inputOut.value = sugerencia.breakOut;
+      if (textoAuto) textoAuto.style.display = "inline";
+      inputIn.style.boxShadow = inputOut.style.boxShadow =
+        "0 0 10px var(--accent-glow)";
+      inputIn.style.borderColor = inputOut.style.borderColor =
+        "var(--accent-primary)";
+      setTimeout(() => {
+        inputIn.style.boxShadow = inputOut.style.boxShadow = "none";
+        inputIn.style.borderColor = "var(--glass-border)";
+      }, 600);
+    }
+  }
+
+  function toggleBreakFields(prefix, index = -1) {
+    const chk = document.getElementById(`${prefix}-aplica-break`);
+    const inField = document.getElementById(`${prefix}-break-in`);
+    const outField = document.getElementById(`${prefix}-break-out`);
+    if (!chk || !inField || !outField) return;
+    const aplica = chk.checked;
+    inField.disabled = !aplica;
+    outField.disabled = !aplica;
+    inField.style.opacity = aplica ? "1" : "0.4";
+    outField.style.opacity = aplica ? "1" : "0.4";
+    if (!aplica) {
+      inField.value = "";
+      outField.value = "";
+    }
+  }
+
+  function autoCompletarAlmuerzo(prefix) {
+    const inField = document.getElementById(`${prefix}-break-in`);
+    const outField = document.getElementById(`${prefix}-break-out`);
+    if (inField && outField && inField.value) {
+      const [h, m] = inField.value.split(":");
+      let outH = String((parseInt(h) + 1) % 24).padStart(2, "0");
+      outField.value = `${outH}:${m}`;
+    }
+  }
+
+  function editarTurno(index) {
+    const turno = turnosActuales[index];
+    if (!turno) return;
+    let tieneAlmuerzo = turno.breakIn && turno.breakOut ? "checked" : "";
+    let opacidadInicial = tieneAlmuerzo ? "1" : "0.4";
+    let desactivadoInicial = tieneAlmuerzo ? "" : "disabled";
+    let esExcepcion = EXCEPCIONES.includes(turno.entrada);
+    let displayTiempos = esExcepcion ? "none" : "block";
+    let displayBotonIA = esExcepcion ? "none" : "flex";
+    let fechaEdicion =
+      turno.fecha || document.getElementById("fechaFiltro").value;
+    let partes = fechaEdicion.split("-");
+    let diaSemanaTexto = new Date(partes[0], partes[1] - 1, partes[2])
+      .toLocaleDateString("es-ES", { weekday: "long" })
+      .toUpperCase();
+    let jsonNombre = JSON.stringify(turno.nombre).replace(/"/g, "&quot;");
+
+    Swal.fire({
+      title: `Editar Turno: ${escaparHTML(turno.nombre)}`,
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+      html: `<div style="text-align:left; color:var(--text-main);">
+          <div style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: var(--glass-bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);">
+            <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span> Editando el día: <b>${fechaEdicion}</b> <span style="color:var(--warning); font-weight:bold; margin-left:4px;">(${diaSemanaTexto})</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label>
+            <button id="btn-ia-edit-main" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA(${jsonNombre}, 'edit-main')">
+              <span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA
+            </button>
+          </div>
+          <select id="edit-main-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('edit-main'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-edit-main').click();">
+            <option value="Normal" ${!esExcepcion ? "selected" : ""}>Horario Laboral Regular</option>
+            <option value="Licencia" ${turno.entrada === "Licencia" ? "selected" : ""}>Licencia (L)</option>
+            <option value="Vacaciones" ${turno.entrada === "Vacaciones" ? "selected" : ""}>Vacaciones (V)</option>
+            <option value="Libre Cumpleaños" ${turno.entrada === "Libre Cumpleaños" ? "selected" : ""}>Libre Cumpleaños (LC)</option>
+            <option value="Clases" ${turno.entrada === "Clases" ? "selected" : ""}>Clases (C)</option>
+            <option value="Ausencia" ${turno.entrada === "Ausencia" ? "selected" : ""}>Ausencia (A)</option>
+            <option value="Feriado" ${turno.entrada === "Feriado" ? "selected" : ""}>Feriado (F)</option>
+            <option value="Dia Libre" ${turno.entrada === "Dia Libre" ? "selected" : ""}>Dia Libre (DL)</option>
+          </select>
+          <div id="edit-main-ia-status" style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;"></div>
+          <div id="edit-main-contenedor-tiempos" style="display: ${displayTiempos};">
         
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
           <div>
             <label style="font-size:12px; font-weight:700;">
               ENTRADA
             </label>
-            <input type="time" id="edit-main-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : '07:30'}">
+            <input type="time" id="edit-main-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : "07:30"}">
           </div>
           
           <div>
             <label style="font-size:12px; font-weight:700;">
                 SALIDA
             </label>
-            <input type="time" id="edit-main-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : '19:00'}">
+            <input type="time" id="edit-main-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : "19:00"}">
           </div>
             
           <div>
             <label style="font-size:12px; font-weight:700; color:var(--warning);" title="Hora real en la que el colaborador marcó su llegada">
                 LLEGADA REAL
             </label>
-            <input type="time" id="edit-main-llegada-real" class="input-filtro" style="width:100%; box-sizing:border-box; border-color:var(--warning);" value="${turno.llegadaReal || ''}">
+            <input type="time" id="edit-main-llegada-real" class="input-filtro" style="width:100%; box-sizing:border-box; border-color:var(--warning);" value="${turno.llegadaReal || ""}">
           </div>
         </div>
 
@@ -462,30 +973,64 @@ function pegarTurnosDia() {
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
         
-              <input type="time" id="edit-main-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ''}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('edit-main')">
+              <input type="time" id="edit-main-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ""}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('edit-main')">
               
-              <input type="time" id="edit-main-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ''}" ${desactivadoInicial}>
+              <input type="time" id="edit-main-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ""}" ${desactivadoInicial}>
             </div>
           </div>
-          <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea></div>
+          <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="edit-main-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ""}</textarea></div>
         </div>`,
-        showCancelButton: true, showDenyButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', denyButtonText: '<span class="material-symbols-outlined" style="font-size:20px; line-height:1;">delete</span>',
-        customClass: { popup: 'swal-dark-popup', denyButton: 'swal-deny-right' },
-        preConfirm: () => {
-          const tipo = document.getElementById('edit-main-tipo').value;
-          const notaText = document.getElementById('edit-main-nota').value;
-          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "", nota: notaText, llegadaReal: "" }; 
-          const aplica = document.getElementById('edit-main-aplica-break').checked;
-          return { entrada: document.getElementById('edit-main-entrada').value, salida: document.getElementById('edit-main-salida').value, breakIn: aplica ? document.getElementById('edit-main-break-in').value : "", breakOut: aplica ? document.getElementById('edit-main-break-out').value : "",
-          nota: document.getElementById('edit-main-nota').value, llegadaReal: document.getElementById('edit-main-llegada-real').value }
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const turnoAct = { id: turnosActuales[index].id, entrada: result.value.entrada, salida: result.value.salida, breakIn: result.value.breakIn, breakOut: result.value.breakOut, nota: result.value.nota, llegadaReal: result.value.llegadaReal };
-          mostrarModalSincronizando('Actualizando Turno...');
-          google.script.run
-            .withSuccessHandler(function() { turnosActuales[index].entrada = turnoAct.entrada; 
-            
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: "Guardar",
+      cancelButtonText: "Cancelar",
+      denyButtonText:
+        '<span class="material-symbols-outlined" style="font-size:20px; line-height:1;">delete</span>',
+      customClass: { popup: "swal-dark-popup", denyButton: "swal-deny-right" },
+      preConfirm: () => {
+        const tipo = document.getElementById("edit-main-tipo").value;
+        const notaText = document.getElementById("edit-main-nota").value;
+        if (tipo !== "Normal")
+          return {
+            entrada: tipo,
+            salida: "",
+            breakIn: "",
+            breakOut: "",
+            nota: notaText,
+            llegadaReal: "",
+          };
+        const aplica = document.getElementById(
+          "edit-main-aplica-break",
+        ).checked;
+        return {
+          entrada: document.getElementById("edit-main-entrada").value,
+          salida: document.getElementById("edit-main-salida").value,
+          breakIn: aplica
+            ? document.getElementById("edit-main-break-in").value
+            : "",
+          breakOut: aplica
+            ? document.getElementById("edit-main-break-out").value
+            : "",
+          nota: document.getElementById("edit-main-nota").value,
+          llegadaReal: document.getElementById("edit-main-llegada-real").value,
+        };
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const turnoAct = {
+          id: turnosActuales[index].id,
+          entrada: result.value.entrada,
+          salida: result.value.salida,
+          breakIn: result.value.breakIn,
+          breakOut: result.value.breakOut,
+          nota: result.value.nota,
+          llegadaReal: result.value.llegadaReal,
+        };
+        mostrarModalSincronizando("Actualizando Turno...");
+        google.script.run
+          .withSuccessHandler(function () {
+            turnosActuales[index].entrada = turnoAct.entrada;
+
             turnosActuales[index].salida = turnoAct.salida;
             turnosActuales[index].breakIn = turnoAct.breakIn;
             turnosActuales[index].breakOut = turnoAct.breakOut;
@@ -495,29 +1040,60 @@ function pegarTurnosDia() {
             turnosActuales[index].nota = turnoAct.nota;
             renderizarTimeline(turnosActuales);
             analizarCobertura();
-            completarBarraYMostrarExito('¡Actualizado!', 'Sincronizado en Google Sheets de forma correcta.'); })
-            .withFailureHandler(manejarErrorServidor)
-            .actualizarTurnoExistente(turnoAct);
-        } else if (result.isDenied) {
-          Swal.fire({ title: '¿Eliminar turno?', text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' }).then((deleteResult) => {
-            if (deleteResult.isConfirmed) {
-              mostrarModalSincronizando('Eliminando...');
-              google.script.run.withSuccessHandler(function() { turnosActuales.splice(index, 1); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Eliminado!', 'El turno fue borrado correctamente.'); }).withFailureHandler(manejarErrorServidor).eliminarTurno(turno.id);
-            }
-          });
-        }
-      });
-    }
+            completarBarraYMostrarExito(
+              "¡Actualizado!",
+              "Sincronizado en Google Sheets de forma correcta.",
+            );
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .actualizarTurnoExistente(turnoAct);
+      } else if (result.isDenied) {
+        Swal.fire({
+          title: "¿Eliminar turno?",
+          text: `Se borrará el horario de ${escaparHTML(turno.nombre)}.`,
+          icon: "warning",
+          background: "transparent",
+          customClass: { popup: "swal-dark-popup" },
+          showCancelButton: true,
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((deleteResult) => {
+          if (deleteResult.isConfirmed) {
+            mostrarModalSincronizando("Eliminando...");
+            google.script.run
+              .withSuccessHandler(function () {
+                turnosActuales.splice(index, 1);
+                renderizarTimeline(turnosActuales);
+                analizarCobertura();
+                completarBarraYMostrarExito(
+                  "¡Eliminado!",
+                  "El turno fue borrado correctamente.",
+                );
+              })
+              .withFailureHandler(manejarErrorServidor)
+              .eliminarTurno(turno.id);
+          }
+        });
+      }
+    });
+  }
 
-    function abrirModalNuevoHorario() {
-      const asignadosHoy = turnosActuales.map(t => t.nombre); const empleadosDisponibles = TODOS_LOS_EMPLEADOS.filter(nombre => !asignadosHoy.includes(nombre));
-      let opcionesHTML = empleadosDisponibles.map(nombre => `<option value="${nombre}"></option>`).join(''); if (empleadosDisponibles.length === 0) opcionesHTML = `<option value="Todos los colaboradores ya fueron asignados"></option>`;
+  function abrirModalNuevoHorario() {
+    const asignadosHoy = turnosActuales.map((t) => t.nombre);
+    const empleadosDisponibles = TODOS_LOS_EMPLEADOS.filter(
+      (nombre) => !asignadosHoy.includes(nombre),
+    );
+    let opcionesHTML = empleadosDisponibles
+      .map((nombre) => `<option value="${nombre}"></option>`)
+      .join("");
+    if (empleadosDisponibles.length === 0)
+      opcionesHTML = `<option value="Todos los colaboradores ya fueron asignados"></option>`;
 
-      Swal.fire({
-        title: 'Asignar Nuevo Turno',
-        customClass: { popup: 'swal-dark-popup' },
-        background: 'transparent',
-        html: `<div style="text-align:left; color:var(--text-main);">
+    Swal.fire({
+      title: "Asignar Nuevo Turno",
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+      html: `<div style="text-align:left; color:var(--text-main);">
               <label style="font-size:12px; font-weight:700;">COLABORADOR</label><input type="text" id="swal-monitor" class="input-filtro" list="lista-empleados" style="width:100%; margin-bottom:5px; box-sizing:border-box;" placeholder="Escribe o selecciona un nombre..." oninput="ejecutarPrediccionIA(this.value, 'swal')"><datalist
                 id="lista-empleados">${opcionesHTML}</datalist>
               <div id="swal-ia-status"
@@ -540,197 +1116,320 @@ function pegarTurnosDia() {
               </div>
               <div style="margin-top:15px;"><label style="font-size:12px; font-weight:700;">NOTAS / OBSERVACIONES</label><textarea id="swal-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Escribe alguna instrucción, tardanza o detalle..."></textarea></div>
             </div>`,
-        showCancelButton: true, confirmButtonText: 'Guardar Turno', cancelButtonText: 'Cancelar',
-        didOpen: () => { setTimeout(() => triggerAutoSugerencia('swal', -1), 50); },
-        preConfirm: () => {
-          const tipo = document.getElementById('swal-tipo').value;
-          const notaText = document.getElementById('swal-nota').value;
-          if (tipo !== "Normal") 
-            return { 
-              id: Date.now(), nombre: document.getElementById('swal-monitor').value, entrada: tipo, salida: "", breakIn: "", breakOut: "", nota: notaText 
-            };
-          const aplica = document.getElementById('swal-aplica-break').checked;
-        
+      showCancelButton: true,
+      confirmButtonText: "Guardar Turno",
+      cancelButtonText: "Cancelar",
+      didOpen: () => {
+        setTimeout(() => triggerAutoSugerencia("swal", -1), 50);
+      },
+      preConfirm: () => {
+        const tipo = document.getElementById("swal-tipo").value;
+        const notaText = document.getElementById("swal-nota").value;
+        if (tipo !== "Normal")
           return {
-            id: Date.now(), nombre: document.getElementById('swal-monitor').value,
-            entrada: document.getElementById('swal-entrada').value,
-            salida: document.getElementById('swal-salida').value,
-            breakIn: aplica ? document.getElementById('swal-break-in').value : "",
-            breakOut: aplica ? document.getElementById('swal-break-out').value : "",
-            nota: document.getElementById('swal-nota').value
-          }
-        }
-          }).then((result) => {
-            if (result.isConfirmed) {
-              const fechaAct = document.getElementById('fechaFiltro').value; const nuevoT = result.value; nuevoT.fecha = fechaAct;
-              mostrarModalSincronizando('Asignando Turno...');
-              google.script.run.withSuccessHandler(function() { turnosActuales.push(nuevoT); renderizarTimeline(turnosActuales); analizarCobertura(); completarBarraYMostrarExito('¡Éxito!', 'El nuevo turno ha sido registrado.'); }).withFailureHandler(manejarErrorServidor).guardarTurnoNuevo(nuevoT);
-            }
-          });
-    }
+            id: Date.now(),
+            nombre: document.getElementById("swal-monitor").value,
+            entrada: tipo,
+            salida: "",
+            breakIn: "",
+            breakOut: "",
+            nota: notaText,
+          };
+        const aplica = document.getElementById("swal-aplica-break").checked;
 
-    const debounceTimers = {}; const ultimasBusquedasIA = {};
-
-    function ejecutarPrediccionIA(nombre, prefix = 'swal') {
-      const statusDiv = document.getElementById(`${prefix}-ia-status`); if (!statusDiv) return;
-      if(debounceTimers[prefix]) clearTimeout(debounceTimers[prefix]);
-      if (!nombre || nombre.trim() === "") {
-        if (prefix === 'swal') ultimasBusquedasIA[prefix] = ""; statusDiv.style.color = "var(--text-muted)"; statusDiv.innerHTML = prefix === 'swal' ? "Selecciona un colaborador para predecir su horario..." : "";
-        if (prefix === 'swal') { document.getElementById("swal-entrada").value = "07:30"; document.getElementById("swal-salida").value = "19:00"; document.getElementById("swal-aplica-break").checked = true; toggleBreakFields('swal', -1); }
-        return; 
-      }
-      if (prefix === 'swal') ultimasBusquedasIA[prefix] = nombre;
-      statusDiv.style.display = "flex"; statusDiv.style.color = "var(--text-muted)"; statusDiv.innerHTML = "Teclando..."; 
-
-      debounceTimers[prefix] = setTimeout(() => {
-        if (prefix === 'swal' && ultimasBusquedasIA[prefix] !== nombre) return;
-        const fechaSel = document.getElementById('fechaFiltro').value; const diasSemana = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
-        const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const nombreDia = diasSemana[objetoFecha.getDay()];
-        statusDiv.style.color = "var(--warning)"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s linear infinite; display:inline-block;">sync</span> Analizando historial de los ${nombreDia}...`;
-
+        return {
+          id: Date.now(),
+          nombre: document.getElementById("swal-monitor").value,
+          entrada: document.getElementById("swal-entrada").value,
+          salida: document.getElementById("swal-salida").value,
+          breakIn: aplica ? document.getElementById("swal-break-in").value : "",
+          breakOut: aplica
+            ? document.getElementById("swal-break-out").value
+            : "",
+          nota: document.getElementById("swal-nota").value,
+        };
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const fechaAct = document.getElementById("fechaFiltro").value;
+        const nuevoT = result.value;
+        nuevoT.fecha = fechaAct;
+        mostrarModalSincronizando("Asignando Turno...");
         google.script.run
-          .withSuccessHandler(function(sugerencia) {
-            if (prefix === 'swal' && ultimasBusquedasIA[prefix] !== nombre) return;
-            if (!sugerencia) { statusDiv.style.color = "var(--text-muted)"; statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">info</span> Sin historial previo para ${nombreDia}.`; return; }
-
-            const selectTipo = document.getElementById(`${prefix}-tipo`); const inpEntrada = document.getElementById(`${prefix}-entrada`); const inpSalida = document.getElementById(`${prefix}-salida`); const chkBreak = document.getElementById(`${prefix}-aplica-break`); const inpBreakIn = document.getElementById(`${prefix}-break-in`); const inpBreakOut = document.getElementById(`${prefix}-break-out`); const txtSugerenciaAutomatica = document.getElementById(`${prefix}-texto-auto`);
-            if(txtSugerenciaAutomatica) txtSugerenciaAutomatica.style.display = "none";
-
-            if (EXCEPCIONES.includes(sugerencia.entrada)) {
-              if (selectTipo) { selectTipo.value = sugerencia.entrada; toggleTipoTurno(prefix); }
-            } else {
-              if (selectTipo) { selectTipo.value = "Normal"; toggleTipoTurno(prefix); }
-              if (inpEntrada) inpEntrada.value = sugerencia.entrada; if (inpSalida) inpSalida.value = sugerencia.salida;
-              if (sugerencia.breakIn && sugerencia.breakOut) {
-                if (chkBreak) chkBreak.checked = true;
-                if (inpBreakIn && inpBreakOut) { inpBreakIn.disabled = inpBreakOut.disabled = false; inpBreakIn.style.opacity = inpBreakOut.style.opacity = "1"; inpBreakIn.value = sugerencia.breakIn; inpBreakOut.value = sugerencia.breakOut; }
-              } else {
-                if (chkBreak) chkBreak.checked = false;
-                if (inpBreakIn && inpBreakOut) { inpBreakIn.disabled = inpBreakOut.disabled = true; inpBreakIn.style.opacity = inpBreakOut.style.opacity = "0.4"; inpBreakIn.value = ""; inpBreakOut.value = ""; }
-              }
-            }
-
-            const inputsToGlow = [];
-            if (selectTipo && EXCEPCIONES.includes(sugerencia.entrada)) inputsToGlow.push(selectTipo);
-            if (!EXCEPCIONES.includes(sugerencia.entrada)) {
-              if (inpEntrada) inputsToGlow.push(inpEntrada); if (inpSalida) inputsToGlow.push(inpSalida);
-              if (chkBreak && chkBreak.checked) { if (inpBreakIn) inputsToGlow.push(inpBreakIn); if (inpBreakOut) inputsToGlow.push(inpBreakOut); }
-            }
-            inputsToGlow.forEach(input => {
-              input.style.boxShadow = "0 0 12px var(--accent-glow)"; input.style.borderColor = "var(--accent-primary)";
-              setTimeout(() => { input.style.boxShadow = "none"; input.style.borderColor = "rgba(255, 255, 255, 0.1)"; }, 800); 
-            });
-
-            statusDiv.style.color = "var(--accent-primary)"; 
-            if (sugerencia.esFallback) statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón general sugerido.`;
-            else statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón sugerido basado en sus últimos ${nombreDia}.`;
+          .withSuccessHandler(function () {
+            turnosActuales.push(nuevoT);
+            renderizarTimeline(turnosActuales);
+            analizarCobertura();
+            completarBarraYMostrarExito(
+              "¡Éxito!",
+              "El nuevo turno ha sido registrado.",
+            );
           })
           .withFailureHandler(manejarErrorServidor)
-          .predecirHorarioColaborador(nombre, fechaSel);
-      }, 500); 
+          .guardarTurnoNuevo(nuevoT);
+      }
+    });
+  }
+
+  const debounceTimers = {};
+  const ultimasBusquedasIA = {};
+
+  function ejecutarPrediccionIA(nombre, prefix = "swal") {
+    const statusDiv = document.getElementById(`${prefix}-ia-status`);
+    if (!statusDiv) return;
+    if (debounceTimers[prefix]) clearTimeout(debounceTimers[prefix]);
+    if (!nombre || nombre.trim() === "") {
+      if (prefix === "swal") ultimasBusquedasIA[prefix] = "";
+      statusDiv.style.color = "var(--text-muted)";
+      statusDiv.innerHTML =
+        prefix === "swal"
+          ? "Selecciona un colaborador para predecir su horario..."
+          : "";
+      if (prefix === "swal") {
+        document.getElementById("swal-entrada").value = "07:30";
+        document.getElementById("swal-salida").value = "19:00";
+        document.getElementById("swal-aplica-break").checked = true;
+        toggleBreakFields("swal", -1);
+      }
+      return;
+    }
+    if (prefix === "swal") ultimasBusquedasIA[prefix] = nombre;
+    statusDiv.style.display = "flex";
+    statusDiv.style.color = "var(--text-muted)";
+    statusDiv.innerHTML = "Teclando...";
+
+    debounceTimers[prefix] = setTimeout(() => {
+      if (prefix === "swal" && ultimasBusquedasIA[prefix] !== nombre) return;
+      const fechaSel = document.getElementById("fechaFiltro").value;
+      const diasSemana = [
+        "domingos",
+        "lunes",
+        "martes",
+        "miércoles",
+        "jueves",
+        "viernes",
+        "sábados",
+      ];
+      const partes = fechaSel.split("-");
+      const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]);
+      const nombreDia = diasSemana[objetoFecha.getDay()];
+      statusDiv.style.color = "var(--warning)";
+      statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px; animation: spin 1s linear infinite; display:inline-block;">sync</span> Analizando historial de los ${nombreDia}...`;
+
+      google.script.run
+        .withSuccessHandler(function (sugerencia) {
+          if (prefix === "swal" && ultimasBusquedasIA[prefix] !== nombre)
+            return;
+          if (!sugerencia) {
+            statusDiv.style.color = "var(--text-muted)";
+            statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">info</span> Sin historial previo para ${nombreDia}.`;
+            return;
+          }
+
+          const selectTipo = document.getElementById(`${prefix}-tipo`);
+          const inpEntrada = document.getElementById(`${prefix}-entrada`);
+          const inpSalida = document.getElementById(`${prefix}-salida`);
+          const chkBreak = document.getElementById(`${prefix}-aplica-break`);
+          const inpBreakIn = document.getElementById(`${prefix}-break-in`);
+          const inpBreakOut = document.getElementById(`${prefix}-break-out`);
+          const txtSugerenciaAutomatica = document.getElementById(
+            `${prefix}-texto-auto`,
+          );
+          if (txtSugerenciaAutomatica)
+            txtSugerenciaAutomatica.style.display = "none";
+
+          if (EXCEPCIONES.includes(sugerencia.entrada)) {
+            if (selectTipo) {
+              selectTipo.value = sugerencia.entrada;
+              toggleTipoTurno(prefix);
+            }
+          } else {
+            if (selectTipo) {
+              selectTipo.value = "Normal";
+              toggleTipoTurno(prefix);
+            }
+            if (inpEntrada) inpEntrada.value = sugerencia.entrada;
+            if (inpSalida) inpSalida.value = sugerencia.salida;
+            if (sugerencia.breakIn && sugerencia.breakOut) {
+              if (chkBreak) chkBreak.checked = true;
+              if (inpBreakIn && inpBreakOut) {
+                inpBreakIn.disabled = inpBreakOut.disabled = false;
+                inpBreakIn.style.opacity = inpBreakOut.style.opacity = "1";
+                inpBreakIn.value = sugerencia.breakIn;
+                inpBreakOut.value = sugerencia.breakOut;
+              }
+            } else {
+              if (chkBreak) chkBreak.checked = false;
+              if (inpBreakIn && inpBreakOut) {
+                inpBreakIn.disabled = inpBreakOut.disabled = true;
+                inpBreakIn.style.opacity = inpBreakOut.style.opacity = "0.4";
+                inpBreakIn.value = "";
+                inpBreakOut.value = "";
+              }
+            }
+          }
+
+          const inputsToGlow = [];
+          if (selectTipo && EXCEPCIONES.includes(sugerencia.entrada))
+            inputsToGlow.push(selectTipo);
+          if (!EXCEPCIONES.includes(sugerencia.entrada)) {
+            if (inpEntrada) inputsToGlow.push(inpEntrada);
+            if (inpSalida) inputsToGlow.push(inpSalida);
+            if (chkBreak && chkBreak.checked) {
+              if (inpBreakIn) inputsToGlow.push(inpBreakIn);
+              if (inpBreakOut) inputsToGlow.push(inpBreakOut);
+            }
+          }
+          inputsToGlow.forEach((input) => {
+            input.style.boxShadow = "0 0 12px var(--accent-glow)";
+            input.style.borderColor = "var(--accent-primary)";
+            setTimeout(() => {
+              input.style.boxShadow = "none";
+              input.style.borderColor = "rgba(255, 255, 255, 0.1)";
+            }, 800);
+          });
+
+          statusDiv.style.color = "var(--accent-primary)";
+          if (sugerencia.esFallback)
+            statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón general sugerido.`;
+          else
+            statusDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">auto_awesome</span> Patrón sugerido basado en sus últimos ${nombreDia}.`;
+        })
+        .withFailureHandler(manejarErrorServidor)
+        .predecirHorarioColaborador(nombre, fechaSel);
+    }, 500);
+  }
+
+  function toggleTipoTurno(prefix) {
+    const tipo = document.getElementById(`${prefix}-tipo`).value;
+    const contenedorTiempos = document.getElementById(
+      `${prefix}-contenedor-tiempos`,
+    );
+    const btnIA = document.getElementById(`btn-ia-${prefix}`);
+    if (EXCEPCIONES.includes(tipo)) {
+      if (contenedorTiempos) contenedorTiempos.style.display = "none";
+      if (btnIA) btnIA.style.display = "none";
+    } else {
+      if (contenedorTiempos) contenedorTiempos.style.display = "block";
+      if (btnIA) btnIA.style.display = "flex";
+    }
+  }
+
+  function toggleModoOrden() {
+    if (!Array.isArray(turnosActuales)) turnosActuales = [];
+    modoOrden = !modoOrden;
+    let targetBtn = document.getElementById("btn-modo-orden");
+    if (!targetBtn) return;
+    if (modoOrden) {
+      targetBtn.style.background = "rgba(245, 158, 11, 0.15)";
+      targetBtn.style.color = "var(--warning)";
+      targetBtn.style.borderColor = "var(--warning)";
+      targetBtn.innerHTML =
+        "<span class='material-symbols-outlined' style='font-size:18px;'>lock_open</span> Terminar de Ordenar";
+    } else {
+      targetBtn.style.background = "transparent";
+      targetBtn.style.color = "var(--text-muted)";
+      targetBtn.style.borderColor = "var(--glass-border)";
+      targetBtn.innerHTML =
+        "<span class='material-symbols-outlined' style='font-size:18px;'>swap_vert</span> Reordenar";
+    }
+    renderizarTimeline(turnosActuales);
+  }
+
+  function sincronizarOrdenSilencioso() {
+    const filasDOM = [...document.querySelectorAll(".timeline-row")];
+    const nuevosIds = filasDOM.map((row) =>
+      String(row.getAttribute("data-id")),
+    );
+    turnosActuales.sort(
+      (a, b) =>
+        nuevosIds.indexOf(String(a.id)) - nuevosIds.indexOf(String(b.id)),
+    );
+    google.script.run
+      .withFailureHandler(manejarErrorServidor)
+      .actualizarOrdenTurnos(nuevosIds);
+  }
+
+  function toggleModoSeleccion() {
+    modoSeleccion = !modoSeleccion;
+    turnosSeleccionados = [];
+
+    const btnSeleccion = document.getElementById("btn-modo-seleccion"),
+      btnAsignar = document.getElementById("btn-asignar-turno"),
+      btnEliminar = document.getElementById("btn-eliminar-masivo"),
+      btnEditar = document.getElementById("btn-editar-masivo"),
+      btnOrden = document.getElementById("btn-modo-orden");
+
+    if (modoSeleccion) {
+      if (modoOrden) toggleModoOrden();
+
+      if (btnOrden) btnOrden.style.display = "none";
+      if (btnAsignar) btnAsignar.style.display = "none";
+
+      if (btnSeleccion) {
+        btnSeleccion.style.color = "var(--text-muted)";
+        btnSeleccion.style.borderColor = "var(--glass-border)";
+        btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">close</span> Cancelar`;
+      }
+
+      if (btnEliminar) btnEliminar.style.display = "flex";
+      if (btnEditar) btnEditar.style.display = "flex";
+
+      actualizarBotonEliminar();
+    } else {
+      if (btnOrden) btnOrden.style.display = "flex";
+
+      if (btnSeleccion) {
+        btnSeleccion.style.color = "var(--text-muted)";
+        btnSeleccion.style.borderColor = "var(--glass-border)";
+        btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">checklist</span> Selección Múltiple`;
+      }
+
+      if (btnAsignar) btnAsignar.style.display = "flex";
+      if (btnEliminar) btnEliminar.style.display = "none";
+      if (btnEditar) btnEditar.style.display = "none";
     }
 
-    function toggleTipoTurno(prefix) {
-      const tipo = document.getElementById(`${prefix}-tipo`).value; const contenedorTiempos = document.getElementById(`${prefix}-contenedor-tiempos`); const btnIA = document.getElementById(`btn-ia-${prefix}`);
-      if (EXCEPCIONES.includes(tipo)) { if (contenedorTiempos) contenedorTiempos.style.display = "none"; if (btnIA) btnIA.style.display = "none"; } 
-      else { if (contenedorTiempos) contenedorTiempos.style.display = "block"; if (btnIA) btnIA.style.display = "flex"; }
-    }
+    renderizarTimeline(turnosActuales);
+  }
 
-    function toggleModoOrden() {
-      if (!Array.isArray(turnosActuales)) turnosActuales = []; modoOrden = !modoOrden; let targetBtn = document.getElementById("btn-modo-orden"); if (!targetBtn) return; 
-      if (modoOrden) { targetBtn.style.background = "rgba(245, 158, 11, 0.15)"; targetBtn.style.color = "var(--warning)"; targetBtn.style.borderColor = "var(--warning)"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>lock_open</span> Terminar de Ordenar"; } 
-      else { targetBtn.style.background = "transparent"; targetBtn.style.color = "var(--text-muted)"; targetBtn.style.borderColor = "var(--glass-border)"; targetBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:18px;'>swap_vert</span> Reordenar"; }
-      renderizarTimeline(turnosActuales);
-    }
+  function actualizarBotonEliminar() {
+    const btnEliminar = document.getElementById("btn-eliminar-masivo");
+    const btnEditar = document.getElementById("btn-editar-masivo");
 
-    function sincronizarOrdenSilencioso() {
-      const filasDOM = [...document.querySelectorAll('.timeline-row')]; const nuevosIds = filasDOM.map(row => String(row.getAttribute("data-id")));
-      turnosActuales.sort((a, b) => nuevosIds.indexOf(String(a.id)) - nuevosIds.indexOf(String(b.id))); google.script.run.withFailureHandler(manejarErrorServidor).actualizarOrdenTurnos(nuevosIds);
-    }
-    
-// 1. CONTROL DEL MODO SELECCIÓN
-    function toggleModoSeleccion() {
-      modoSeleccion = !modoSeleccion; 
-      turnosSeleccionados = []; 
-      
-      const btnSeleccion = document.getElementById("btn-modo-seleccion"), 
-            btnAsignar = document.getElementById("btn-asignar-turno"), 
-            btnEliminar = document.getElementById("btn-eliminar-masivo"), 
-            btnEditar = document.getElementById("btn-editar-masivo"), 
-            btnOrden = document.getElementById("btn-modo-orden");
-
-      if (modoSeleccion) {
-        if (modoOrden) toggleModoOrden(); 
-        
-        if (btnOrden) btnOrden.style.display = "none"; 
-        if (btnAsignar) btnAsignar.style.display = "none"; 
-        
-        if (btnSeleccion) {
-          btnSeleccion.style.color = "var(--text-muted)"; 
-          btnSeleccion.style.borderColor = "var(--glass-border)"; 
-          btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">close</span> Cancelar`; 
-        }
-        
-        if (btnEliminar) btnEliminar.style.display = "flex"; 
-        if (btnEditar) btnEditar.style.display = "flex"; 
-        
-        actualizarBotonEliminar();
+    if (btnEliminar) {
+      btnEliminar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar (${turnosSeleccionados.length})`;
+      if (turnosSeleccionados.length > 0) {
+        btnEliminar.style.opacity = "1";
+        btnEliminar.style.pointerEvents = "auto";
       } else {
-        if (btnOrden) btnOrden.style.display = "flex"; 
-        
-        if (btnSeleccion) {
-          btnSeleccion.style.color = "var(--text-muted)"; 
-          btnSeleccion.style.borderColor = "var(--glass-border)"; 
-          btnSeleccion.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">checklist</span> Selección Múltiple`; 
-        }
-        
-        if (btnAsignar) btnAsignar.style.display = "flex"; 
-        if (btnEliminar) btnEliminar.style.display = "none";
-        if (btnEditar) btnEditar.style.display = "none"; 
-      }
-      
-      renderizarTimeline(turnosActuales);
-    }
-
-    // 2. ACTUALIZACIÓN DE LOS BOTONES
-    function actualizarBotonEliminar() {
-      const btnEliminar = document.getElementById("btn-eliminar-masivo");
-      const btnEditar = document.getElementById("btn-editar-masivo"); 
-      
-      if (btnEliminar) { 
-        btnEliminar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar (${turnosSeleccionados.length})`;
-        if (turnosSeleccionados.length > 0) { 
-          btnEliminar.style.opacity = "1"; 
-          btnEliminar.style.pointerEvents = "auto"; 
-        } else { 
-          btnEliminar.style.opacity = "0.5"; 
-          btnEliminar.style.pointerEvents = "none"; 
-        }
-      }
-      
-      if (btnEditar) {
-        btnEditar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Asignar (${turnosSeleccionados.length})`;
-        if (turnosSeleccionados.length > 0) { 
-          btnEditar.style.display = "flex"; 
-          btnEditar.style.opacity = "1"; 
-          btnEditar.style.pointerEvents = "auto";
-        } else { 
-          btnEditar.style.display = "flex"; 
-          btnEditar.style.opacity = "0.5"; 
-          btnEditar.style.pointerEvents = "none";
-        }
+        btnEliminar.style.opacity = "0.5";
+        btnEliminar.style.pointerEvents = "none";
       }
     }
 
-    // 3. MODAL DE ASIGNACIÓN MASIVA
-    function abrirModalEdicionMasiva() {
-      if (turnosSeleccionados.length === 0) return;
-      
-      Swal.fire({
-        title: `Asignación Masiva (${turnosSeleccionados.length} cols.)`,
-        customClass: { popup: 'swal-dark-popup' },
-        background: 'transparent',
-        html: `
+    if (btnEditar) {
+      btnEditar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Asignar (${turnosSeleccionados.length})`;
+      if (turnosSeleccionados.length > 0) {
+        btnEditar.style.display = "flex";
+        btnEditar.style.opacity = "1";
+        btnEditar.style.pointerEvents = "auto";
+      } else {
+        btnEditar.style.display = "flex";
+        btnEditar.style.opacity = "0.5";
+        btnEditar.style.pointerEvents = "none";
+      }
+    }
+  }
+
+  function abrirModalEdicionMasiva() {
+    if (turnosSeleccionados.length === 0) return;
+
+    Swal.fire({
+      title: `Asignación Masiva (${turnosSeleccionados.length} cols.)`,
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+      html: `
           <div style="text-align:left; color:var(--text-main);">
             <label style="font-size:12px; font-weight:700;">NUEVO ESTADO O TURNO</label>
             <select id="masivo-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('masivo')">
@@ -764,77 +1463,82 @@ function pegarTurnosDia() {
               </div>
             </div>
           </div>`,
-        showCancelButton: true,
-        confirmButtonText: 'Aplicar a Todos',
-        preConfirm: () => {
-          const tipo = document.getElementById('masivo-tipo').value;
-          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
-          return { 
-            entrada: document.getElementById('masivo-entrada').value, 
-            salida: document.getElementById('masivo-salida').value, 
-            breakIn: document.getElementById('masivo-break-in').value, 
-            breakOut: document.getElementById('masivo-break-out').value 
-          };
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          mostrarModalSincronizando('Actualizando Turnos...');
-          google.script.run
-            .withSuccessHandler(function() { 
-              toggleModoSeleccion(); 
-              cargarHorarios();      
-              completarBarraYMostrarExito('¡Actualizados!', 'Los turnos seleccionados fueron modificados.'); 
-            })
-            .withFailureHandler(manejarErrorServidor)
-            .actualizarTurnosMasivoBackend(turnosSeleccionados, result.value);
-        }
-      });
-    }
-
-    function toggleSeleccionTurno(id) {
-      const idStr = String(id); const index = turnosSeleccionados.indexOf(idStr);
-      if (index === -1) turnosSeleccionados.push(idStr); else turnosSeleccionados.splice(index, 1); actualizarBotonEliminar();
-    }
-
-// 2. ACTUALIZACIÓN DE LOS BOTONES
-    function actualizarBotonEliminar() {
-      const btnEliminar = document.getElementById("btn-eliminar-masivo");
-      const btnEditar = document.getElementById("btn-editar-masivo"); 
-      
-      if (btnEliminar) { 
-        btnEliminar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar (${turnosSeleccionados.length})`;
-        if (turnosSeleccionados.length > 0) { 
-          btnEliminar.style.opacity = "1"; 
-          btnEliminar.style.pointerEvents = "auto"; 
-        } else { 
-          btnEliminar.style.opacity = "0.5"; 
-          btnEliminar.style.pointerEvents = "none"; 
-        }
+      showCancelButton: true,
+      confirmButtonText: "Aplicar a Todos",
+      preConfirm: () => {
+        const tipo = document.getElementById("masivo-tipo").value;
+        if (tipo !== "Normal")
+          return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
+        return {
+          entrada: document.getElementById("masivo-entrada").value,
+          salida: document.getElementById("masivo-salida").value,
+          breakIn: document.getElementById("masivo-break-in").value,
+          breakOut: document.getElementById("masivo-break-out").value,
+        };
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mostrarModalSincronizando("Actualizando Turnos...");
+        google.script.run
+          .withSuccessHandler(function () {
+            toggleModoSeleccion();
+            cargarHorarios();
+            completarBarraYMostrarExito(
+              "¡Actualizados!",
+              "Los turnos seleccionados fueron modificados.",
+            );
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .actualizarTurnosMasivoBackend(turnosSeleccionados, result.value);
       }
-      
-      if (btnEditar) {
-        btnEditar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Asignar (${turnosSeleccionados.length})`;
-        if (turnosSeleccionados.length > 0) { 
-          btnEditar.style.display = "flex"; 
-          btnEditar.style.opacity = "1"; 
-          btnEditar.style.pointerEvents = "auto";
-        } else { 
-          btnEditar.style.display = "flex"; 
-          btnEditar.style.opacity = "0.5"; 
-          btnEditar.style.pointerEvents = "none";
-        }
+    });
+  }
+
+  function toggleSeleccionTurno(id) {
+    const idStr = String(id);
+    const index = turnosSeleccionados.indexOf(idStr);
+    if (index === -1) turnosSeleccionados.push(idStr);
+    else turnosSeleccionados.splice(index, 1);
+    actualizarBotonEliminar();
+  }
+
+  function actualizarBotonEliminar() {
+    const btnEliminar = document.getElementById("btn-eliminar-masivo");
+    const btnEditar = document.getElementById("btn-editar-masivo");
+
+    if (btnEliminar) {
+      btnEliminar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar (${turnosSeleccionados.length})`;
+      if (turnosSeleccionados.length > 0) {
+        btnEliminar.style.opacity = "1";
+        btnEliminar.style.pointerEvents = "auto";
+      } else {
+        btnEliminar.style.opacity = "0.5";
+        btnEliminar.style.pointerEvents = "none";
       }
     }
 
-    // 3. MODAL DE ASIGNACIÓN MASIVA
-    function abrirModalEdicionMasiva() {
-      if (turnosSeleccionados.length === 0) return;
-      
-      Swal.fire({
-        title: `Asignación Masiva (${turnosSeleccionados.length} cols.)`,
-        customClass: { popup: 'swal-dark-popup' },
-        background: 'transparent',
-        html: `
+    if (btnEditar) {
+      btnEditar.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">edit_calendar</span> Asignar (${turnosSeleccionados.length})`;
+      if (turnosSeleccionados.length > 0) {
+        btnEditar.style.display = "flex";
+        btnEditar.style.opacity = "1";
+        btnEditar.style.pointerEvents = "auto";
+      } else {
+        btnEditar.style.display = "flex";
+        btnEditar.style.opacity = "0.5";
+        btnEditar.style.pointerEvents = "none";
+      }
+    }
+  }
+
+  function abrirModalEdicionMasiva() {
+    if (turnosSeleccionados.length === 0) return;
+
+    Swal.fire({
+      title: `Asignación Masiva (${turnosSeleccionados.length} cols.)`,
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+      html: `
           <div style="text-align:left; color:var(--text-main);">
             <label style="font-size:12px; font-weight:700;">NUEVO ESTADO O TURNO</label>
             <select id="masivo-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('masivo')">
@@ -868,63 +1572,102 @@ function pegarTurnosDia() {
               </div>
             </div>
           </div>`,
-        showCancelButton: true,
-        confirmButtonText: 'Aplicar a Todos',
-        preConfirm: () => {
-          const tipo = document.getElementById('masivo-tipo').value;
-          if (tipo !== "Normal") return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
-          return { 
-            entrada: document.getElementById('masivo-entrada').value, 
-            salida: document.getElementById('masivo-salida').value, 
-            breakIn: document.getElementById('masivo-break-in').value, 
-            breakOut: document.getElementById('masivo-break-out').value 
-          };
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          mostrarModalSincronizando('Actualizando Turnos...');
-          google.script.run
-            .withSuccessHandler(function() { 
-              toggleModoSeleccion(); 
-              cargarHorarios();      
-              completarBarraYMostrarExito('¡Actualizados!', 'Los turnos seleccionados fueron modificados.'); 
-            })
-            .withFailureHandler(manejarErrorServidor)
-            .actualizarTurnosMasivoBackend(turnosSeleccionados, result.value);
-        }
-      });
-    }
+      showCancelButton: true,
+      confirmButtonText: "Aplicar a Todos",
+      preConfirm: () => {
+        const tipo = document.getElementById("masivo-tipo").value;
+        if (tipo !== "Normal")
+          return { entrada: tipo, salida: "", breakIn: "", breakOut: "" };
+        return {
+          entrada: document.getElementById("masivo-entrada").value,
+          salida: document.getElementById("masivo-salida").value,
+          breakIn: document.getElementById("masivo-break-in").value,
+          breakOut: document.getElementById("masivo-break-out").value,
+        };
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mostrarModalSincronizando("Actualizando Turnos...");
+        google.script.run
+          .withSuccessHandler(function () {
+            toggleModoSeleccion();
+            cargarHorarios();
+            completarBarraYMostrarExito(
+              "¡Actualizados!",
+              "Los turnos seleccionados fueron modificados.",
+            );
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .actualizarTurnosMasivoBackend(turnosSeleccionados, result.value);
+      }
+    });
+  }
 
-    function ejecutarEliminacionMasiva() {
-      if (turnosSeleccionados.length === 0) return;
-      Swal.fire({ title: '¿Eliminar turnos?', text: `Se borrarán ${turnosSeleccionados.length} registros.`, icon: 'warning', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, showCancelButton: true, confirmButtonText: 'Sí, borrar todo', cancelButtonText: 'Cancelar' }).then((result) => {
-        if (result.isConfirmed) {
-          mostrarModalSincronizando('Eliminando...');
-          google.script.run.withSuccessHandler(function() { turnosActuales = turnosActuales.filter(t => !turnosSeleccionados.includes(String(t.id))); toggleModoSeleccion(); analizarCobertura(); completarBarraYMostrarExito('¡Eliminados!', 'Se ha limpiado la base de datos.'); }).withFailureHandler(manejarErrorServidor).eliminarTurnosMasivo(turnosSeleccionados); 
-        }
-      });
-    }
+  function ejecutarEliminacionMasiva() {
+    if (turnosSeleccionados.length === 0) return;
+    Swal.fire({
+      title: "¿Eliminar turnos?",
+      text: `Se borrarán ${turnosSeleccionados.length} registros.`,
+      icon: "warning",
+      background: "transparent",
+      customClass: { popup: "swal-dark-popup" },
+      showCancelButton: true,
+      confirmButtonText: "Sí, borrar todo",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        mostrarModalSincronizando("Eliminando...");
+        google.script.run
+          .withSuccessHandler(function () {
+            turnosActuales = turnosActuales.filter(
+              (t) => !turnosSeleccionados.includes(String(t.id)),
+            );
+            toggleModoSeleccion();
+            analizarCobertura();
+            completarBarraYMostrarExito(
+              "¡Eliminados!",
+              "Se ha limpiado la base de datos.",
+            );
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .eliminarTurnosMasivo(turnosSeleccionados);
+      }
+    });
+  }
 
-    let historialActual = [];
-    let calculoModoAlmuerzo = 'sin';
+  let historialActual = [];
+  let calculoModoAlmuerzo = "sin";
 
-    function verPerfilColaborador(nombre) {
-      if (modoOrden || modoSeleccion) return; 
-      Swal.fire({ title: 'Cargando historial...', background: 'transparent', customClass: { popup: 'swal-dark-popup' }, didOpen: () => Swal.showLoading() });
-      google.script.run.withSuccessHandler(function(historial) { historialActual = historial; dibujarModalPerfil(nombre); }).withFailureHandler(manejarErrorServidor).getHorariosPorColaborador(nombre);
-    }
+  function verPerfilColaborador(nombre) {
+    if (modoOrden || modoSeleccion) return;
+    Swal.fire({
+      title: "Cargando historial...",
+      background: "transparent",
+      customClass: { popup: "swal-dark-popup" },
+      didOpen: () => Swal.showLoading(),
+    });
+    google.script.run
+      .withSuccessHandler(function (historial) {
+        historialActual = historial;
+        dibujarModalPerfil(nombre);
+      })
+      .withFailureHandler(manejarErrorServidor)
+      .getHorariosPorColaborador(nombre);
+  }
 
-    function dibujarModalPerfil(nombre) {
-      let turnoHoy = turnosActuales.find(t => t.nombre === nombre); 
-      let fotoUrl = getAvatarUrl(nombre, turnoHoy ? turnoHoy.foto : null); 
-      let fechaMain = document.getElementById('fechaFiltro').value; 
-      let mesActual = fechaMain.substring(0, 7); 
-      
-      calculoModoAlmuerzo = 'sin'; // Resetear modo por defecto a sin almuerzo
-      
-      Swal.fire({
-        title: '', customClass: { popup: 'swal-dark-popup' }, background: 'transparent',
-        html: `
+  function dibujarModalPerfil(nombre) {
+    let turnoHoy = turnosActuales.find((t) => t.nombre === nombre);
+    let fotoUrl = getAvatarUrl(nombre, turnoHoy ? turnoHoy.foto : null);
+    let fechaMain = document.getElementById("fechaFiltro").value;
+    let mesActual = fechaMain.substring(0, 7);
+
+    calculoModoAlmuerzo = "sin";
+
+    Swal.fire({
+      title: "",
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+      html: `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; width: 100%; box-sizing: border-box;">
             <div style="display:flex; align-items:center; gap:15px; text-align: left;">
               <img src="${fotoUrl}" style="width:52px; height:52px; border-radius:50%; border: 2px solid var(--glass-border); flex-shrink: 0; transition: transform 0.3s; cursor:pointer;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
@@ -944,10 +1687,8 @@ function pegarTurnosDia() {
             </div>
           </div>
           
-          <!-- CONTENEDOR NUEVO: TARJETAS DE ESTADÍSTICAS -->
           <div id="stats-perfil" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom: 15px;"></div>
 
-          <!-- FILTROS DEL HISTORIAL -->
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap: wrap;">
             <button class="btn-filtro-perfil active" data-filtro="todos" onclick="filtrarHistorialPerfil('todos', this)" style="font-size:10px; padding:4px 10px; border-radius:20px; border:1px solid var(--glass-border); background:var(--accent-glow); color:var(--accent-primary); cursor:pointer; font-weight:bold; transition:0.2s;">Todos</button>
             <button class="btn-filtro-perfil" data-filtro="turnos" onclick="filtrarHistorialPerfil('turnos', this)" style="font-size:10px; padding:4px 10px; border-radius:20px; border:1px solid var(--glass-border); background:transparent; color:var(--text-muted); cursor:pointer; font-weight:bold; transition:0.2s;">Solo Turnos</button>
@@ -963,130 +1704,154 @@ function pegarTurnosDia() {
               <tbody id="tbody-perfil"></tbody>
             </table>
           </div>`,
-        showConfirmButton: true, confirmButtonText: 'Cerrar Panel', width: '750px',
-        didOpen: () => { renderizarFilasPerfil(mesActual); }
-      });
-    }
+      showConfirmButton: true,
+      confirmButtonText: "Cerrar Panel",
+      width: "750px",
+      didOpen: () => {
+        renderizarFilasPerfil(mesActual);
+      },
+    });
+  }
 
-    function renderizarFilasPerfil(mesAnio) {
-      const tbody = document.getElementById('tbody-perfil'); 
-      const statsDiv = document.getElementById('stats-perfil'); 
-      if (!tbody || !statsDiv) return;
-      
-      let historialFiltrado = historialActual.filter(t => t.fecha && t.fecha.startsWith(mesAnio)); 
-      const diasTexto = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]; 
-      let trs = "";
+  function renderizarFilasPerfil(mesAnio) {
+    const tbody = document.getElementById("tbody-perfil");
+    const statsDiv = document.getElementById("stats-perfil");
+    if (!tbody || !statsDiv) return;
 
-      // Variables para semanas dentro de cada quincena (7 días calendario por semana)
-      // Q1-S1: días 1-7, Q1-S2: días 8-14, Q1-Resto: día 15
-      // Q2-S1: días 16-22, Q2-S2: días 23-29, Q2-Resto: días 30-fin de mes
-      let minQ1S1 = 0, minQ1S2 = 0, minQ1Resto = 0;
-      let minQ2S1 = 0, minQ2S2 = 0, minQ2Resto = 0;
+    let historialFiltrado = historialActual.filter(
+      (t) => t.fecha && t.fecha.startsWith(mesAnio),
+    );
+    const diasTexto = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    let trs = "";
 
-      // 0. CALCULAR EL ÚLTIMO DÍA DEL MES DINÁMICAMENTE
-      let partesMes = mesAnio.split('-');
-      let anioSelect = parseInt(partesMes[0], 10);
-      let mesSelect = parseInt(partesMes[1], 10);
-      // Al pasar 0 como día, JS retrocede al último día del mes anterior (que es el mes actual que queremos)
-      let ultimoDiaMes = new Date(anioSelect, mesSelect, 0).getDate(); 
+    let minQ1S1 = 0,
+      minQ1S2 = 0,
+      minQ1Resto = 0;
+    let minQ2S1 = 0,
+      minQ2S2 = 0,
+      minQ2Resto = 0;
 
-      const aMinutos = (hora) => { 
-        if(!hora || !hora.includes(':')) return 0; 
-        let [h, m] = hora.split(':').map(Number); 
-        return (h * 60) + m; 
-      };
+    let partesMes = mesAnio.split("-");
+    let anioSelect = parseInt(partesMes[0], 10);
+    let mesSelect = parseInt(partesMes[1], 10);
 
-      // 3. PROCESAR TABLA Y QUINCENAS CON SEMANAS
-      historialFiltrado.forEach((t) => {
-        let indexReal = historialActual.indexOf(t); 
-        let partes = t.fecha.split('-'); 
-        let objFecha = new Date(partes[0], partes[1] - 1, partes[2]); 
-        let diaSemanaTexto = diasTexto[objFecha.getDay()];
-        
-        // EXTRACCIÓN SEGURA DEL DÍA
-        let diaDelMes = parseInt(partes[2], 10);
-        
-        let descAlmuerzo = (t.breakIn && t.breakOut) ? `${t.breakIn} - ${t.breakOut}` : '<span style="color:var(--text-muted); font-style:italic;">Sin almuerzo</span>';
-        
-        let iconoNotaHtml = (t.nota && t.nota.trim() !== "") ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help; vertical-align:middle;" title="Nota: ${t.nota}">edit_note</span>` : '';
-        let iconoTardeHtml = "";
-        if (t.llegadaReal && t.llegadaReal.trim() !== "" && t.entrada && t.entrada.includes(':') && t.llegadaReal.includes(':')) {
-            let [hE, mE] = t.entrada.split(':').map(Number);
-            let [hR, mR] = t.llegadaReal.split(':').map(Number);
-            let diff = (hR * 60 + mR) - (hE * 60 + mE);
-            if (diff > 7) {
-                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--danger); cursor:help; vertical-align:middle;" title="Llegada tardía: ${t.llegadaReal}">history_toggle_off</span>`;
-            } else if (diff > 0) {
-                iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help; vertical-align:middle;" title="Llegada en gracia: ${t.llegadaReal}">history_toggle_off</span>`;
-            }
+    let ultimoDiaMes = new Date(anioSelect, mesSelect, 0).getDate();
+
+    const aMinutos = (hora) => {
+      if (!hora || !hora.includes(":")) return 0;
+      let [h, m] = hora.split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    historialFiltrado.forEach((t) => {
+      let indexReal = historialActual.indexOf(t);
+      let partes = t.fecha.split("-");
+      let objFecha = new Date(partes[0], partes[1] - 1, partes[2]);
+      let diaSemanaTexto = diasTexto[objFecha.getDay()];
+
+      let diaDelMes = parseInt(partes[2], 10);
+
+      let descAlmuerzo =
+        t.breakIn && t.breakOut
+          ? `${t.breakIn} - ${t.breakOut}`
+          : '<span style="color:var(--text-muted); font-style:italic;">Sin almuerzo</span>';
+
+      let iconoNotaHtml =
+        t.nota && t.nota.trim() !== ""
+          ? `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help; vertical-align:middle;" title="Nota: ${t.nota}">edit_note</span>`
+          : "";
+      let iconoTardeHtml = "";
+      if (
+        t.llegadaReal &&
+        t.llegadaReal.trim() !== "" &&
+        t.entrada &&
+        t.entrada.includes(":") &&
+        t.llegadaReal.includes(":")
+      ) {
+        let [hE, mE] = t.entrada.split(":").map(Number);
+        let [hR, mR] = t.llegadaReal.split(":").map(Number);
+        let diff = hR * 60 + mR - (hE * 60 + mE);
+        if (diff > 7) {
+          iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--danger); cursor:help; vertical-align:middle;" title="Llegada tardía: ${t.llegadaReal}">history_toggle_off</span>`;
+        } else if (diff > 0) {
+          iconoTardeHtml = `<span class="material-symbols-outlined" style="font-size:15px; margin-left:4px; color:var(--warning); cursor:help; vertical-align:middle;" title="Llegada en gracia: ${t.llegadaReal}">history_toggle_off</span>`;
         }
-        let turnoLabel = EXCEPCIONES.includes(t.entrada) ? `<span style="color:var(--warning); font-weight:bold; vertical-align:middle;">${t.entrada}</span>` : `<span style="vertical-align:middle;">${t.entrada} a ${t.salida}</span>`;
-        turnoLabel += iconoNotaHtml + iconoTardeHtml;
-        
-        if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
-          let minEntrada = aMinutos(t.entrada);
-          let minSalida = aMinutos(t.salida);
-          if(minSalida < minEntrada) minSalida += 24 * 60; 
+      }
+      let turnoLabel = EXCEPCIONES.includes(t.entrada)
+        ? `<span style="color:var(--warning); font-weight:bold; vertical-align:middle;">${t.entrada}</span>`
+        : `<span style="vertical-align:middle;">${t.entrada} a ${t.salida}</span>`;
+      turnoLabel += iconoNotaHtml + iconoTardeHtml;
 
-          let minBreak = 0;
-          if (t.breakIn && t.breakOut) {
-            let mBi = aMinutos(t.breakIn);
-            let mBo = aMinutos(t.breakOut);
-            if(mBo < mBi) mBo += 24 * 60;
-            minBreak = mBo - mBi;
-          }
-          
-          let minNetosTurno = calculoModoAlmuerzo === 'sin' 
-            ? (minSalida - minEntrada - minBreak) 
-            : (minSalida - minEntrada);
+      if (!EXCEPCIONES.includes(t.entrada) && t.entrada && t.salida) {
+        let minEntrada = aMinutos(t.entrada);
+        let minSalida = aMinutos(t.salida);
+        if (minSalida < minEntrada) minSalida += 24 * 60;
 
-          // LÓGICA DE SEMANAS DENTRO DE QUINCENAS (7 DÍAS CALENDARIO POR SEMANA + RESTANTE)
-          if (diaDelMes >= 1 && diaDelMes <= 7) {
-            minQ1S1 += minNetosTurno;
-          } else if (diaDelMes >= 8 && diaDelMes <= 14) {
-            minQ1S2 += minNetosTurno;
-          } else if (diaDelMes === 15) {
-            minQ1Resto += minNetosTurno;
-          } else if (diaDelMes >= 16 && diaDelMes <= 22) {
-            minQ2S1 += minNetosTurno;
-          } else if (diaDelMes >= 23 && diaDelMes <= 29) {
-            minQ2S2 += minNetosTurno;
-          } else if (diaDelMes >= 30 && diaDelMes <= ultimoDiaMes) {
-            minQ2Resto += minNetosTurno;
-          }
+        let minBreak = 0;
+        if (t.breakIn && t.breakOut) {
+          let mBi = aMinutos(t.breakIn);
+          let mBo = aMinutos(t.breakOut);
+          if (mBo < mBi) mBo += 24 * 60;
+          minBreak = mBo - mBi;
         }
 
-        trs += `<tr><td style="white-space: nowrap; color: var(--text-muted); text-align:left;">${t.fecha} <span style="color:var(--accent-primary); font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td style="text-align:left;">${turnoLabel}</td><td style="text-align:left;">${descAlmuerzo}</td><td style="width:40px; text-align:right;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
-      });
-      
-      if (trs === "") {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; color:var(--text-muted);">No hay registros guardados para este mes.</td></tr>`;
-        statsDiv.innerHTML = ""; 
-      } else {
-        tbody.innerHTML = trs;
+        let minNetosTurno =
+          calculoModoAlmuerzo === "sin"
+            ? minSalida - minEntrada - minBreak
+            : minSalida - minEntrada;
 
-        // Totales por quincena
-        let totalMinutosQ1 = minQ1S1 + minQ1S2 + minQ1Resto;
-        let totalMinutosQ2 = minQ2S1 + minQ2S2 + minQ2Resto;
+        if (diaDelMes >= 1 && diaDelMes <= 7) {
+          minQ1S1 += minNetosTurno;
+        } else if (diaDelMes >= 8 && diaDelMes <= 14) {
+          minQ1S2 += minNetosTurno;
+        } else if (diaDelMes === 15) {
+          minQ1Resto += minNetosTurno;
+        } else if (diaDelMes >= 16 && diaDelMes <= 22) {
+          minQ2S1 += minNetosTurno;
+        } else if (diaDelMes >= 23 && diaDelMes <= 29) {
+          minQ2S2 += minNetosTurno;
+        } else if (diaDelMes >= 30 && diaDelMes <= ultimoDiaMes) {
+          minQ2Resto += minNetosTurno;
+        }
+      }
 
-        // Formatear horas y minutos para cada bloque
-        let hQ1S1 = Math.floor(minQ1S1 / 60), mQ1S1 = minQ1S1 % 60;
-        let hQ1S2 = Math.floor(minQ1S2 / 60), mQ1S2 = minQ1S2 % 60;
-        let hQ1Resto = Math.floor(minQ1Resto / 60), mQ1Resto = minQ1Resto % 60;
-        
-        let hQ2S1 = Math.floor(minQ2S1 / 60), mQ2S1 = minQ2S1 % 60;
-        let hQ2S2 = Math.floor(minQ2S2 / 60), mQ2S2 = minQ2S2 % 60;
-        let hQ2Resto = Math.floor(minQ2Resto / 60), mQ2Resto = minQ2Resto % 60;
+      trs += `<tr><td style="white-space: nowrap; color: var(--text-muted); text-align:left;">${t.fecha} <span style="color:var(--accent-primary); font-weight:600; margin-left:6px; font-size:11px;">(${diaSemanaTexto})</span></td><td style="text-align:left;">${turnoLabel}</td><td style="text-align:left;">${descAlmuerzo}</td><td style="width:40px; text-align:right;"><button class="btn-edit-micro" onclick="editarTurnoHistorial(${indexReal})"><span class="material-symbols-outlined" style="font-size:14px;">edit</span></button></td></tr>`;
+    });
 
-        let horasQ1 = Math.floor(totalMinutosQ1 / 60), minsQ1 = totalMinutosQ1 % 60;
-        let horasQ2 = Math.floor(totalMinutosQ2 / 60), minsQ2 = totalMinutosQ2 % 60;
+    if (trs === "") {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; color:var(--text-muted);">No hay registros guardados para este mes.</td></tr>`;
+      statsDiv.innerHTML = "";
+    } else {
+      tbody.innerHTML = trs;
 
-        // Función auxiliar para mostrar horas
-        const fmtHM = (h, m) => `${h}h${m > 0 ? ' ' + m + 'm' : ''}`;
+      let totalMinutosQ1 = minQ1S1 + minQ1S2 + minQ1Resto;
+      let totalMinutosQ2 = minQ2S1 + minQ2S2 + minQ2Resto;
 
-        let labelQ2Resto = ultimoDiaMes >= 30 ? `Resto (30 - ${ultimoDiaMes})` : 'Resto (N/A)';
+      let hQ1S1 = Math.floor(minQ1S1 / 60),
+        mQ1S1 = minQ1S1 % 60;
+      let hQ1S2 = Math.floor(minQ1S2 / 60),
+        mQ1S2 = minQ1S2 % 60;
+      let hQ1Resto = Math.floor(minQ1Resto / 60),
+        mQ1Resto = minQ1Resto % 60;
 
-        statsDiv.innerHTML = `
+      let hQ2S1 = Math.floor(minQ2S1 / 60),
+        mQ2S1 = minQ2S1 % 60;
+      let hQ2S2 = Math.floor(minQ2S2 / 60),
+        mQ2S2 = minQ2S2 % 60;
+      let hQ2Resto = Math.floor(minQ2Resto / 60),
+        mQ2Resto = minQ2Resto % 60;
+
+      let horasQ1 = Math.floor(totalMinutosQ1 / 60),
+        minsQ1 = totalMinutosQ1 % 60;
+      let horasQ2 = Math.floor(totalMinutosQ2 / 60),
+        minsQ2 = totalMinutosQ2 % 60;
+
+      const fmtHM = (h, m) => `${h}h${m > 0 ? " " + m + "m" : ""}`;
+
+      let labelQ2Resto =
+        ultimoDiaMes >= 30 ? `Resto (30 - ${ultimoDiaMes})` : "Resto (N/A)";
+
+      statsDiv.innerHTML = `
           <div style="grid-column: 1 / -1; display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
               <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (1 - 7)</div>
@@ -1124,93 +1889,99 @@ function pegarTurnosDia() {
             </div>
           </div>
         `;
-      }
+    }
+  }
+
+  function toggleModoAlmuerzoSimple() {
+    const nuevoModo = calculoModoAlmuerzo === "sin" ? "con" : "sin";
+    calculoModoAlmuerzo = nuevoModo;
+
+    const link = document.getElementById("link-almuerzo-toggle");
+    if (link) {
+      link.innerText =
+        nuevoModo === "sin" ? "Cálculo: Sin almuerzo" : "Cálculo: Con almuerzo";
     }
 
-    function toggleModoAlmuerzoSimple() {
-      const nuevoModo = calculoModoAlmuerzo === 'sin' ? 'con' : 'sin';
-      calculoModoAlmuerzo = nuevoModo;
-      
-      const link = document.getElementById('link-almuerzo-toggle');
-      if (link) {
-        link.innerText = nuevoModo === 'sin' ? 'Cálculo: Sin almuerzo' : 'Cálculo: Con almuerzo';
-      }
-      
-      const filtroMes = document.getElementById('filtro-mes-perfil');
-      if (filtroMes) {
-        renderizarFilasPerfil(filtroMes.value);
-      }
+    const filtroMes = document.getElementById("filtro-mes-perfil");
+    if (filtroMes) {
+      renderizarFilasPerfil(filtroMes.value);
     }
+  }
 
-    // FILTROS DEL HISTORIAL DE PERFIL
-    function filtrarHistorialPerfil(tipo, btnElement) {
-      // Actualizar estilos de botones
-      document.querySelectorAll('.btn-filtro-perfil').forEach(btn => {
-        btn.style.background = 'transparent';
-        btn.style.color = 'var(--text-muted)';
-      });
-      btnElement.style.background = 'var(--accent-glow)';
-      btnElement.style.color = 'var(--accent-primary)';
+  function filtrarHistorialPerfil(tipo, btnElement) {
+    document.querySelectorAll(".btn-filtro-perfil").forEach((btn) => {
+      btn.style.background = "transparent";
+      btn.style.color = "var(--text-muted)";
+    });
+    btnElement.style.background = "var(--accent-glow)";
+    btnElement.style.color = "var(--accent-primary)";
 
-      const filas = document.querySelectorAll('#tbody-perfil tr');
-      filas.forEach(fila => {
-        const celdaAsignacion = fila.querySelectorAll('td')[1];
-        if (!celdaAsignacion) return;
-        const texto = celdaAsignacion.textContent.trim();
-        
-        let mostrar = true;
-        if (tipo === 'turnos') {
-          // Solo mostrar turnos regulares (que contienen "a" como separador de hora)
-          mostrar = texto.includes(' a ') && !EXCEPCIONES.some(e => texto.includes(e));
-        } else if (tipo === 'excepciones') {
-          mostrar = EXCEPCIONES.some(e => texto.includes(e));
-        } else if (tipo === 'tardanzas') {
-          // Buscar filas que tengan el icono de tardanza
-          const iconoTarde = fila.querySelector('[title*="Llegada tardía"], [title*="Llegada en gracia"]');
-          mostrar = !!iconoTarde;
-        }
-        
-        fila.style.display = mostrar ? '' : 'none';
-      });
+    const filas = document.querySelectorAll("#tbody-perfil tr");
+    filas.forEach((fila) => {
+      const celdaAsignacion = fila.querySelectorAll("td")[1];
+      if (!celdaAsignacion) return;
+      const texto = celdaAsignacion.textContent.trim();
 
-      // Limpiar búsqueda de texto
-      const inputBuscar = document.getElementById('buscar-historial-perfil');
-      if (inputBuscar) inputBuscar.value = '';
-    }
+      let mostrar = true;
+      if (tipo === "turnos") {
+        mostrar =
+          texto.includes(" a ") && !EXCEPCIONES.some((e) => texto.includes(e));
+      } else if (tipo === "excepciones") {
+        mostrar = EXCEPCIONES.some((e) => texto.includes(e));
+      } else if (tipo === "tardanzas") {
+        const iconoTarde = fila.querySelector(
+          '[title*="Llegada tardía"], [title*="Llegada en gracia"]',
+        );
+        mostrar = !!iconoTarde;
+      }
 
-    function buscarEnHistorialPerfil(texto) {
-      const filas = document.querySelectorAll('#tbody-perfil tr');
-      const buscar = texto.toLowerCase();
-      filas.forEach(fila => {
-        const contenido = fila.textContent.toLowerCase();
-        fila.style.display = contenido.includes(buscar) ? '' : 'none';
-      });
+      fila.style.display = mostrar ? "" : "none";
+    });
 
-      // Reset filter buttons
-      document.querySelectorAll('.btn-filtro-perfil').forEach(btn => {
-        btn.style.background = 'transparent';
-        btn.style.color = 'var(--text-muted)';
-      });
-      if (!texto) {
-        const btnTodos = document.querySelector('.btn-filtro-perfil[data-filtro="todos"]');
-        if (btnTodos) {
-          btnTodos.style.background = 'var(--accent-glow)';
-          btnTodos.style.color = 'var(--accent-primary)';
-        }
+    const inputBuscar = document.getElementById("buscar-historial-perfil");
+    if (inputBuscar) inputBuscar.value = "";
+  }
+
+  function buscarEnHistorialPerfil(texto) {
+    const filas = document.querySelectorAll("#tbody-perfil tr");
+    const buscar = texto.toLowerCase();
+    filas.forEach((fila) => {
+      const contenido = fila.textContent.toLowerCase();
+      fila.style.display = contenido.includes(buscar) ? "" : "none";
+    });
+
+    document.querySelectorAll(".btn-filtro-perfil").forEach((btn) => {
+      btn.style.background = "transparent";
+      btn.style.color = "var(--text-muted)";
+    });
+    if (!texto) {
+      const btnTodos = document.querySelector(
+        '.btn-filtro-perfil[data-filtro="todos"]',
+      );
+      if (btnTodos) {
+        btnTodos.style.background = "var(--accent-glow)";
+        btnTodos.style.color = "var(--accent-primary)";
       }
     }
+  }
 
-    function editarTurnoHistorial(index) {
-      const turno = historialActual[index]; if (!turno) return;
-      let tieneAlmuerzo = (turno.breakIn && turno.breakOut) ? 'checked' : ''; let opacidadInicial = tieneAlmuerzo ? '1' : '0.4'; let desactivadoInicial = tieneAlmuerzo ? '' : 'disabled';
-      let esExcepcion = EXCEPCIONES.includes(turno.entrada); let displayTiempos = esExcepcion ? 'none' : 'block'; let displayBotonIA = esExcepcion ? 'none' : 'flex'; 
-      let nombreEscapado = turno.nombre.replace(/'/g, "\\'"); let prefix = 'edit-history';
+  function editarTurnoHistorial(index) {
+    const turno = historialActual[index];
+    if (!turno) return;
+    let tieneAlmuerzo = turno.breakIn && turno.breakOut ? "checked" : "";
+    let opacidadInicial = tieneAlmuerzo ? "1" : "0.4";
+    let desactivadoInicial = tieneAlmuerzo ? "" : "disabled";
+    let esExcepcion = EXCEPCIONES.includes(turno.entrada);
+    let displayTiempos = esExcepcion ? "none" : "block";
+    let displayBotonIA = esExcepcion ? "none" : "flex";
+    let nombreEscapado = turno.nombre.replace(/'/g, "\\'");
+    let prefix = "edit-history";
 
-      Swal.fire({
-        title: `Editar Registro: ${escaparHTML(turno.nombre)}`,
-        customClass: { popup: 'swal-dark-popup' },
-        background: 'transparent',
-        html: `<div style="text-align:left; color:var(--text-main);">
+    Swal.fire({
+      title: `Editar Registro: ${escaparHTML(turno.nombre)}`,
+      customClass: { popup: "swal-dark-popup" },
+      background: "transparent",
+      html: `<div style="text-align:left; color:var(--text-main);">
               <div
                 style="margin-bottom: 15px; font-size: 13px; color: var(--text-main); background: var(--glass-bg); padding: 8px 10px; border-radius: 6px; border: 1px solid var(--glass-border);">
                 <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; color:var(--accent-primary); margin-right:4px;">calendar_today</span>
@@ -1219,24 +1990,24 @@ function pegarTurnosDia() {
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                 <label style="font-size:12px; font-weight:700;">TIPO DE ASIGNACIÓN</label><button id="btn-ia-${prefix}" class="btn-edit-micro" style="padding: 2px 8px; font-size:10px; display: ${displayBotonIA};" onclick="ejecutarPrediccionIA('${nombreEscapado}', '${prefix}')"><span class="material-symbols-outlined" style="font-size:12px; margin-right:4px;">auto_awesome</span> Sugerir con IA</button>
               </div>
-              <select id="${prefix}-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('${prefix}'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-${prefix}').click();"><option value="Normal" ${!esExcepcion ? 'selected' : ''}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === 'Licencia' ? 'selected' : ''}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === 'Vacaciones' ? 'selected' : ''}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === 'Libre Cumpleaños' ? 'selected' : ''}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === 'Clases' ? 'selected' : ''}>Clases (C)</option><option value="Ausencia" ${turno.entrada === 'Ausencia' ? 'selected' : ''}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === 'Feriado' ? 'selected' : ''}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === 'Dia Libre' ? 'selected' : ''}>Dia Libre (DL)</option></select>
+              <select id="${prefix}-tipo" class="input-filtro" style="width:100%; margin-bottom:15px;" onchange="toggleTipoTurno('${prefix}'); if(this.value === 'Normal' && ${esExcepcion}) document.getElementById('btn-ia-${prefix}').click();"><option value="Normal" ${!esExcepcion ? "selected" : ""}>Horario Laboral Regular</option><option value="Licencia" ${turno.entrada === "Licencia" ? "selected" : ""}>Licencia (L)</option><option value="Vacaciones" ${turno.entrada === "Vacaciones" ? "selected" : ""}>Vacaciones (V)</option><option value="Libre Cumpleaños" ${turno.entrada === "Libre Cumpleaños" ? "selected" : ""}>Libre Cumpleaños (LC)</option><option value="Clases" ${turno.entrada === "Clases" ? "selected" : ""}>Clases (C)</option><option value="Ausencia" ${turno.entrada === "Ausencia" ? "selected" : ""}>Ausencia (A)</option><option value="Feriado" ${turno.entrada === "Feriado" ? "selected" : ""}>Feriado (F)</option><option value="Dia Libre" ${turno.entrada === "Dia Libre" ? "selected" : ""}>Dia Libre (DL)</option></select>
               <div id="${prefix}-ia-status"
                 style="font-size:11px; color:var(--text-muted); font-style:italic; margin-bottom:15px; display:none; align-items:center; gap:4px; min-height:16px;">
               </div>
               <div id="${prefix}-contenedor-tiempos" style="display: ${displayTiempos};">
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                  <div><label style="font-size:12px; font-weight:700;">ENTRADA</label><input type="time" id="${prefix}-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : '07:30'}">
+                  <div><label style="font-size:12px; font-weight:700;">ENTRADA</label><input type="time" id="${prefix}-entrada" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.entrada : "07:30"}">
                   </div>
-                  <div><label style="font-size:12px; font-weight:700;">SALIDA</label><input type="time" id="${prefix}-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : '19:00'}">
+                  <div><label style="font-size:12px; font-weight:700;">SALIDA</label><input type="time" id="${prefix}-salida" class="input-filtro" style="width:100%; box-sizing:border-box;" value="${!esExcepcion ? turno.salida : "19:00"}">
                   </div>
-                  <div><label style="font-size:12px; font-weight:700; color:var(--warning);" title="Hora real en la que el colaborador marcó su llegada">LLEGADA REAL</label><input type="time" id="${prefix}-llegada-real" class="input-filtro" style="width:100%; box-sizing:border-box; border-color:var(--warning);" value="${turno.llegadaReal || ''}">
+                  <div><label style="font-size:12px; font-weight:700; color:var(--warning);" title="Hora real en la que el colaborador marcó su llegada">LLEGADA REAL</label><input type="time" id="${prefix}-llegada-real" class="input-filtro" style="width:100%; box-sizing:border-box; border-color:var(--warning);" value="${turno.llegadaReal || ""}">
                   </div>
                 </div>
                 <div style="margin-top:20px; display:flex; align-items:center; gap:8px;">
                   <input type="checkbox" id="${prefix}-aplica-break" style="accent-color:var(--accent-primary); width:16px; height:16px; cursor:pointer;" ${tieneAlmuerzo} onchange="toggleBreakFields('${prefix}', ${index})"><label for="${prefix}-aplica-break" style="font-size:12px; font-weight:700; cursor:pointer; color:var(--accent-primary); user-select:none;">¿APLICAR ALMUERZO?</label>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
-                  <input type="time" id="${prefix}-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ''}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('${prefix}')"><input type="time" id="${prefix}-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ''}" ${desactivadoInicial}>
+                  <input type="time" id="${prefix}-break-in" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakIn || ""}" ${desactivadoInicial} onchange="autoCompletarAlmuerzo('${prefix}')"><input type="time" id="${prefix}-break-out" class="input-filtro" style="width:100%; box-sizing:border-box; transition: 0.3s; opacity: ${opacidadInicial};" value="${turno.breakOut || ""}" ${desactivadoInicial}>
                 </div>
               </div>
 
@@ -1244,301 +2015,419 @@ function pegarTurnosDia() {
                 <label style="font-size:12px; font-weight:700;">
                   NOTAS / OBSERVACIONES
                 </label>
-                <!-- Se quitan los espacios para que no se guarde con saltos de línea -->
-                <textarea id="${prefix}-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ''}</textarea>
+                <textarea id="${prefix}-nota" class="input-filtro" style="width:100%; box-sizing:border-box; resize:vertical; min-height:60px; margin-top:5px; font-family:inherit;" placeholder="Añade una nota...">${turno.nota || ""}</textarea>
               </div>
             </div>`,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar Cambios',
-        cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            const tipo = document.getElementById(`${prefix}-tipo`).value;
-            const notaValue = document.getElementById(`${prefix}-nota`).value;
+      showCancelButton: true,
+      confirmButtonText: "Guardar Cambios",
+      cancelButtonText: "Cancelar",
+      preConfirm: () => {
+        const tipo = document.getElementById(`${prefix}-tipo`).value;
+        const notaValue = document.getElementById(`${prefix}-nota`).value;
 
-            // Si es una excepción (Vacaciones, Ausencia, etc.)
-            if (tipo !== "Normal") {
-              return { 
-                entrada: tipo, 
-                salida: "",
-                breakIn: "",
-                breakOut: "",
-                nota: notaValue,
-                llegadaReal: ""
-              };
-            }
-            
-            // Si es turno normal
-            const aplica = document.getElementById(`${prefix}-aplica-break`).checked;
-            return { 
-              entrada: document.getElementById(`${prefix}-entrada`).value,
-              salida: document.getElementById(`${prefix}-salida`).value,
-              breakIn: aplica ? document.getElementById(`${prefix}-break-in`).value : "",
-              breakOut: aplica ? document.getElementById(`${prefix}-break-out`).value : "",
-              nota: notaValue,
-              llegadaReal: document.getElementById(`${prefix}-llegada-real`).value
-            };
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const turnoAct = { 
-            id: turno.id, 
-            entrada: result.value.entrada, 
-            salida: result.value.salida, 
-            breakIn: result.value.breakIn, 
-            breakOut: result.value.breakOut,
-            nota: result.value.nota,
-            llegadaReal: result.value.llegadaReal
+        if (tipo !== "Normal") {
+          return {
+            entrada: tipo,
+            salida: "",
+            breakIn: "",
+            breakOut: "",
+            nota: notaValue,
+            llegadaReal: "",
           };
-          mostrarModalSincronizando('Guardando en Historial...');
-          google.script.run.withSuccessHandler(function() {
-            // Actualizamos la memoria local
-            historialActual[index].entrada = turnoAct.entrada; 
-            historialActual[index].salida = turnoAct.salida; 
-            historialActual[index].breakIn = turnoAct.breakIn; 
+        }
+
+        const aplica = document.getElementById(
+          `${prefix}-aplica-break`,
+        ).checked;
+        return {
+          entrada: document.getElementById(`${prefix}-entrada`).value,
+          salida: document.getElementById(`${prefix}-salida`).value,
+          breakIn: aplica
+            ? document.getElementById(`${prefix}-break-in`).value
+            : "",
+          breakOut: aplica
+            ? document.getElementById(`${prefix}-break-out`).value
+            : "",
+          nota: notaValue,
+          llegadaReal: document.getElementById(`${prefix}-llegada-real`).value,
+        };
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const turnoAct = {
+          id: turno.id,
+          entrada: result.value.entrada,
+          salida: result.value.salida,
+          breakIn: result.value.breakIn,
+          breakOut: result.value.breakOut,
+          nota: result.value.nota,
+          llegadaReal: result.value.llegadaReal,
+        };
+        mostrarModalSincronizando("Guardando en Historial...");
+        google.script.run
+          .withSuccessHandler(function () {
+            historialActual[index].entrada = turnoAct.entrada;
+            historialActual[index].salida = turnoAct.salida;
+            historialActual[index].breakIn = turnoAct.breakIn;
             historialActual[index].breakOut = turnoAct.breakOut;
-            historialActual[index].nota = turnoAct.nota; // <--- Actualizamos la nota localmente
+            historialActual[index].nota = turnoAct.nota;
+
             historialActual[index].llegadaReal = turnoAct.llegadaReal;
 
-            if (turno.fecha === document.getElementById('fechaFiltro').value) cargarHorarios();
-            const bar = document.getElementById('loading-bar'); if (bar) { if (bar.dataset.intervalId) clearInterval(parseInt(bar.dataset.intervalId)); bar.style.width = '100%'; bar.style.background = 'var(--success)'; }
-            setTimeout(() => { dibujarModalPerfil(turno.nombre); }, 350);
-          }).withFailureHandler(manejarErrorServidor).actualizarTurnoExistente(turnoAct);
-        } else { 
-          dibujarModalPerfil(turno.nombre); 
-        }
-      });
-    }
-
-    // =========================================================
-    // 🕹️ INICIALIZADOR DEL PANEL MÓVIL
-    // =========================================================
-    document.addEventListener("DOMContentLoaded", () => {
-      // Cerrar panel al hacer clic fuera
-      document.addEventListener("click", (e) => {
-        const container = document.getElementById("assistive-container");
-        const panel = document.getElementById("panel-comando-flotante");
-        if (container && panel && panel.style.display !== "none") {
-          if (!container.contains(e.target)) {
-            panel.style.display = "none";
-            container.classList.remove("open");
-          }
-        }
-      });
-    });
-
-  // =========================================================
-    // 🕹️ MOTOR ASISTIVO DE DESPLIEGUE
-    // =========================================================
-
-    function toggleAssistiveMenu(e) {
-      const panel = document.getElementById("panel-comando-flotante");
-      const container = document.getElementById("assistive-container");
-      if (!panel || !container) return;
-
-      if (panel.style.display === "none") {
-        panel.style.display = "flex";
-        container.classList.add("open");
-      } else {
-        panel.style.display = "none";
-        container.classList.remove("open");
-      }
-    }
-
-    // =========================================================
-    // ⌨️ MOTOR DE ATAJOS DE TECLADO (HOTKEYS)
-    // =========================================================
-    function parseHotkeyEvent(e) {
-      let keys = [];
-      if (e.ctrlKey) keys.push('Ctrl');
-      if (e.altKey) keys.push('Alt');
-      if (e.shiftKey) keys.push('Shift');
-      
-      let keyName = e.key;
-      if (keyName === ' ') keyName = 'Space';
-      if (keyName.length === 1) keyName = keyName.toUpperCase();
-      
-      keys.push(keyName);
-      return keys.join('+');
-    }
-
-    function initHotkeys() {
-      const defaultHotkeys = {
-        asignarTurno: 'Alt+N',
-        iaSugerencia: 'Ctrl+I',
-        reordenar: 'Alt+R',
-        seleccion: 'Ctrl+M',
-        diaAnterior: 'Ctrl+ArrowLeft',
-        diaSiguiente: 'Ctrl+ArrowRight',
-        copiar: 'Ctrl+C',
-        pegar: 'Ctrl+V',
-        limpiar: 'Ctrl+Backspace',
-        menuFlotante: 'Ctrl+Space'
-      };
-      
-      let configured = { ...defaultHotkeys };
-      try {
-        const saved = localStorage.getItem('appHotkeys');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          Object.keys(defaultHotkeys).forEach(k => {
-            if (parsed[k]) configured[k] = parsed[k];
-          });
-        }
-      } catch(e) {}
-      
-      document.addEventListener('keydown', (e) => {
-        // Ignorar si el usuario está escribiendo en un input, textarea o select (a menos que sea necesario)
-        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
-        if (['input', 'textarea', 'select'].includes(activeTag) && !['Ctrl+Backspace'].includes(parseHotkeyEvent(e))) {
-           // Allow copying/pasting text normally inside inputs
-           if (parseHotkeyEvent(e) === 'Ctrl+C' || parseHotkeyEvent(e) === 'Ctrl+V' || parseHotkeyEvent(e) === 'Ctrl+A') return;
-        }
-
-        const combo = parseHotkeyEvent(e);
-        
-        switch (combo) {
-          case configured.asignarTurno: e.preventDefault(); abrirModalNuevoHorario(); break;
-          case configured.iaSugerencia: e.preventDefault(); typeof triggerSugerenciaMasiva === 'function' && triggerSugerenciaMasiva(); break;
-          case configured.reordenar: e.preventDefault(); toggleModoOrden(); break;
-          case configured.seleccion: e.preventDefault(); toggleModoSeleccion(); break;
-          case configured.diaAnterior: e.preventDefault(); cambiarDia(-1); break;
-          case configured.diaSiguiente: e.preventDefault(); cambiarDia(1); break;
-          case configured.copiar: e.preventDefault(); copiarTurnosDia(); break;
-          case configured.pegar: e.preventDefault(); pegarTurnosDia(); break;
-          case configured.limpiar: e.preventDefault(); typeof confirmarLimpiezaDia === 'function' && confirmarLimpiezaDia(); break;
-          case configured.menuFlotante: e.preventDefault(); toggleAssistiveMenu(); break;
-        }
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', initHotkeys);
-
-    function evaluarBeneficiosVisual() {
-      const fechaSel = document.getElementById('fechaFiltro').value;
-      if (!fechaSel) return;
-      
-      mostrarModalSincronizando('Evaluando historial de beneficios y cobertura...');
-      
-      google.script.run
-        .withSuccessHandler(function(empleadosBeneficios) {
-          Swal.close();
-          let encontrados = 0;
-          
-          const aMinutos = (hora) => { if(!hora) return 0; let [h, m] = hora.split(':').map(Number); return (h * 60) + m; };
-          const aHoraTexto = (mins) => { return `${Math.floor(mins / 60).toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`; };
-          
-          // Función simuladora de cobertura
-          const simularCobertura = (skipIndex, recortarInicioMins, recortarFinMins) => {
-            const partes = fechaSel.split('-'); const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]); const diaSemana = objetoFecha.getDay(); 
-            for(let m = 7.5 * 60; m < 19 * 60; m += 30) {
-              let activos = 0;
-              for(let i=0; i<turnosActuales.length; i++) {
-                let t = turnosActuales[i];
-                if(!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) continue;
-                let inM = aMinutos(t.entrada); let outM = aMinutos(t.salida);
-                
-                // Si es el turno recortado, aplicar el recorte
-                if(i === skipIndex) {
-                  if(recortarInicioMins !== null && m >= inM && m < recortarInicioMins) continue;
-                  if(recortarFinMins !== null && m >= recortarFinMins && m < outM) continue;
-                }
-                
-                let bIn = t.breakIn ? aMinutos(t.breakIn) : -1; let bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
-                if ((m >= inM && m < outM) && !(bIn !== -1 && m >= bIn && m < bOut)) activos++;
-              }
-              
-              // Reglas de cobertura (copiadas de analizarCobertura)
-              if (diaSemana === 0) { if (m >= 10 * 60 && m < 18 * 60) { if (m < 12 * 60 || m >= 16 * 60) { if (activos < 3) return false; } else { if (activos < 2) return false; } } }
-              else if (diaSemana === 6) { if (m >= 8 * 60 && m < 18 * 60) { if (m === 8 * 60) { if (activos < 2) return false; } else if (m >= 8.5 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60) { if (activos < 6) return false; } else if (m >= 17 * 60 && m < 18 * 60) { if (activos < 4) return false; } } }
-              else { if (m === 7.5 * 60 && activos === 0) return false; else if (m >= 8 * 60 && m < 9 * 60) { if (activos < 3) return false; } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6) return false; else if (m >= 17 * 60 && m < 18 * 60 && activos < 4) return false; else if (m >= 18 * 60 && m < 19 * 60 && activos < 3) return false; }
+            if (turno.fecha === document.getElementById("fechaFiltro").value)
+              cargarHorarios();
+            const bar = document.getElementById("loading-bar");
+            if (bar) {
+              if (bar.dataset.intervalId)
+                clearInterval(parseInt(bar.dataset.intervalId));
+              bar.style.width = "100%";
+              bar.style.background = "var(--success)";
             }
-            return true; // Pasa todas las pruebas de cobertura
-          };
+            setTimeout(() => {
+              dibujarModalPerfil(turno.nombre);
+            }, 350);
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .actualizarTurnoExistente(turnoAct);
+      } else {
+        dibujarModalPerfil(turno.nombre);
+      }
+    });
+  }
 
-          // Limpiar overlays anteriores
-          document.querySelectorAll('.benefit-overlay').forEach(e => e.remove());
+  document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("click", (e) => {
+      const container = document.getElementById("assistive-container");
+      const panel = document.getElementById("panel-comando-flotante");
+      if (container && panel && panel.style.display !== "none") {
+        if (!container.contains(e.target)) {
+          panel.style.display = "none";
+          container.classList.remove("open");
+        }
+      }
+    });
+  });
 
-          const tracks = document.querySelectorAll('.shift-track');
-          
-          turnosActuales.forEach((t, index) => {
-            if(!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada)) return;
-            let emp = empleadosBeneficios[t.nombre];
-            if(emp && emp.elegible) {
-              encontrados++;
-              let inM = aMinutos(t.entrada); let outM = aMinutos(t.salida);
-              let possibleLateIn = inM + 60; // 1 hora tarde
-              let possibleEarlyOut = outM - 60; // 1 hora temprano
-              
-              let trackDiv = tracks[index];
-              if(!trackDiv) return;
-              trackDiv.style.position = 'relative';
+  function toggleAssistiveMenu(e) {
+    const panel = document.getElementById("panel-comando-flotante");
+    const container = document.getElementById("assistive-container");
+    if (!panel || !container) return;
 
-              // Simular entrada tarde (Recortamos desde inM hasta possibleLateIn)
-              if(simularCobertura(index, possibleLateIn, null)) {
-                let left = ((inM / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100;
-                let width = (1 / TOTAL_HORAS_GRID) * 100;
-                trackDiv.innerHTML += `<div class="benefit-overlay benefit-in" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed var(--success); background:rgba(166, 227, 161, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Llegar tarde (Hasta ${aHoraTexto(possibleLateIn)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Llegar ${aHoraTexto(possibleLateIn)}', '${aHoraTexto(possibleLateIn)}', null)">
+    if (panel.style.display === "none") {
+      panel.style.display = "flex";
+      container.classList.add("open");
+    } else {
+      panel.style.display = "none";
+      container.classList.remove("open");
+    }
+  }
+
+  function parseHotkeyEvent(e) {
+    let keys = [];
+    if (e.ctrlKey) keys.push("Ctrl");
+    if (e.altKey) keys.push("Alt");
+    if (e.shiftKey) keys.push("Shift");
+
+    let keyName = e.key;
+    if (keyName === " ") keyName = "Space";
+    if (keyName.length === 1) keyName = keyName.toUpperCase();
+
+    keys.push(keyName);
+    return keys.join("+");
+  }
+
+  function initHotkeys() {
+    const defaultHotkeys = {
+      asignarTurno: "Alt+N",
+      iaSugerencia: "Ctrl+I",
+      reordenar: "Alt+R",
+      seleccion: "Ctrl+M",
+      diaAnterior: "Ctrl+ArrowLeft",
+      diaSiguiente: "Ctrl+ArrowRight",
+      copiar: "Ctrl+C",
+      pegar: "Ctrl+V",
+      limpiar: "Ctrl+Backspace",
+      menuFlotante: "Ctrl+Space",
+    };
+
+    let configured = { ...defaultHotkeys };
+    try {
+      const saved = localStorage.getItem("appHotkeys");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.keys(defaultHotkeys).forEach((k) => {
+          if (parsed[k]) configured[k] = parsed[k];
+        });
+      }
+    } catch (e) {}
+
+    document.addEventListener("keydown", (e) => {
+      const activeTag = document.activeElement
+        ? document.activeElement.tagName.toLowerCase()
+        : "";
+      if (
+        ["input", "textarea", "select"].includes(activeTag) &&
+        !["Ctrl+Backspace"].includes(parseHotkeyEvent(e))
+      ) {
+        if (
+          parseHotkeyEvent(e) === "Ctrl+C" ||
+          parseHotkeyEvent(e) === "Ctrl+V" ||
+          parseHotkeyEvent(e) === "Ctrl+A"
+        )
+          return;
+      }
+
+      const combo = parseHotkeyEvent(e);
+
+      switch (combo) {
+        case configured.asignarTurno:
+          e.preventDefault();
+          abrirModalNuevoHorario();
+          break;
+        case configured.iaSugerencia:
+          e.preventDefault();
+          typeof triggerSugerenciaMasiva === "function" &&
+            triggerSugerenciaMasiva();
+          break;
+        case configured.reordenar:
+          e.preventDefault();
+          toggleModoOrden();
+          break;
+        case configured.seleccion:
+          e.preventDefault();
+          toggleModoSeleccion();
+          break;
+        case configured.diaAnterior:
+          e.preventDefault();
+          cambiarDia(-1);
+          break;
+        case configured.diaSiguiente:
+          e.preventDefault();
+          cambiarDia(1);
+          break;
+        case configured.copiar:
+          e.preventDefault();
+          copiarTurnosDia();
+          break;
+        case configured.pegar:
+          e.preventDefault();
+          pegarTurnosDia();
+          break;
+        case configured.limpiar:
+          e.preventDefault();
+          typeof confirmarLimpiezaDia === "function" && confirmarLimpiezaDia();
+          break;
+        case configured.menuFlotante:
+          e.preventDefault();
+          toggleAssistiveMenu();
+          break;
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", initHotkeys);
+
+  function evaluarBeneficiosVisual() {
+    const fechaSel = document.getElementById("fechaFiltro").value;
+    if (!fechaSel) return;
+
+    mostrarModalSincronizando(
+      "Evaluando historial de beneficios y cobertura...",
+    );
+
+    google.script.run
+      .withSuccessHandler(function (empleadosBeneficios) {
+        Swal.close();
+        let encontrados = 0;
+
+        const aMinutos = (hora) => {
+          if (!hora) return 0;
+          let [h, m] = hora.split(":").map(Number);
+          return h * 60 + m;
+        };
+        const aHoraTexto = (mins) => {
+          return `${Math.floor(mins / 60)
+            .toString()
+            .padStart(2, "0")}:${(mins % 60).toString().padStart(2, "0")}`;
+        };
+
+        const simularCobertura = (
+          skipIndex,
+          recortarInicioMins,
+          recortarFinMins,
+        ) => {
+          const partes = fechaSel.split("-");
+          const objetoFecha = new Date(partes[0], partes[1] - 1, partes[2]);
+          const diaSemana = objetoFecha.getDay();
+          for (let m = 7.5 * 60; m < 19 * 60; m += 30) {
+            let activos = 0;
+            for (let i = 0; i < turnosActuales.length; i++) {
+              let t = turnosActuales[i];
+              if (!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada))
+                continue;
+              let inM = aMinutos(t.entrada);
+              let outM = aMinutos(t.salida);
+
+              if (i === skipIndex) {
+                if (
+                  recortarInicioMins !== null &&
+                  m >= inM &&
+                  m < recortarInicioMins
+                )
+                  continue;
+                if (
+                  recortarFinMins !== null &&
+                  m >= recortarFinMins &&
+                  m < outM
+                )
+                  continue;
+              }
+
+              let bIn = t.breakIn ? aMinutos(t.breakIn) : -1;
+              let bOut = t.breakOut ? aMinutos(t.breakOut) : -1;
+              if (m >= inM && m < outM && !(bIn !== -1 && m >= bIn && m < bOut))
+                activos++;
+            }
+
+            if (diaSemana === 0) {
+              if (m >= 10 * 60 && m < 18 * 60) {
+                if (m < 12 * 60 || m >= 16 * 60) {
+                  if (activos < 3) return false;
+                } else {
+                  if (activos < 2) return false;
+                }
+              }
+            } else if (diaSemana === 6) {
+              if (m >= 8 * 60 && m < 18 * 60) {
+                if (m === 8 * 60) {
+                  if (activos < 2) return false;
+                } else if (m >= 8.5 * 60 && m < 9 * 60) {
+                  if (activos < 3) return false;
+                } else if (m >= 9 * 60 && m < 17 * 60) {
+                  if (activos < 6) return false;
+                } else if (m >= 17 * 60 && m < 18 * 60) {
+                  if (activos < 4) return false;
+                }
+              }
+            } else {
+              if (m === 7.5 * 60 && activos === 0) return false;
+              else if (m >= 8 * 60 && m < 9 * 60) {
+                if (activos < 3) return false;
+              } else if (m >= 9 * 60 && m < 17 * 60 && activos < 6)
+                return false;
+              else if (m >= 17 * 60 && m < 18 * 60 && activos < 4) return false;
+              else if (m >= 18 * 60 && m < 19 * 60 && activos < 3) return false;
+            }
+          }
+          return true;
+        };
+
+        document
+          .querySelectorAll(".benefit-overlay")
+          .forEach((e) => e.remove());
+
+        const tracks = document.querySelectorAll(".shift-track");
+
+        turnosActuales.forEach((t, index) => {
+          if (!t.entrada || !t.salida || EXCEPCIONES.includes(t.entrada))
+            return;
+          let emp = empleadosBeneficios[t.nombre];
+          if (emp && emp.elegible) {
+            encontrados++;
+            let inM = aMinutos(t.entrada);
+            let outM = aMinutos(t.salida);
+            let possibleLateIn = inM + 60;
+
+            let possibleEarlyOut = outM - 60;
+
+            let trackDiv = tracks[index];
+            if (!trackDiv) return;
+            trackDiv.style.position = "relative";
+
+            if (simularCobertura(index, possibleLateIn, null)) {
+              let left =
+                ((inM / 60 - HORA_INICIO_GRID) / TOTAL_HORAS_GRID) * 100;
+              let width = (1 / TOTAL_HORAS_GRID) * 100;
+              trackDiv.innerHTML += `<div class="benefit-overlay benefit-in" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed var(--success); background:rgba(166, 227, 161, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Llegar tarde (Hasta ${aHoraTexto(possibleLateIn)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Llegar ${aHoraTexto(possibleLateIn)}', '${aHoraTexto(possibleLateIn)}', null)">
                   <span class="material-symbols-outlined" style="font-size:14px; color:var(--success);">schedule</span>
                 </div>`;
-              }
-              
-              // Simular salida temprano (Recortamos desde possibleEarlyOut hasta outM)
-              if(simularCobertura(index, null, possibleEarlyOut)) {
-                let left = ((possibleEarlyOut / 60) - HORA_INICIO_GRID) / TOTAL_HORAS_GRID * 100;
-                let width = (1 / TOTAL_HORAS_GRID) * 100;
-                trackDiv.innerHTML += `<div class="benefit-overlay benefit-out" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed var(--success); background:rgba(166, 227, 161, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Salir temprano (Desde ${aHoraTexto(possibleEarlyOut)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Salir ${aHoraTexto(possibleEarlyOut)}', null, '${aHoraTexto(possibleEarlyOut)}')">
+            }
+
+            if (simularCobertura(index, null, possibleEarlyOut)) {
+              let left =
+                ((possibleEarlyOut / 60 - HORA_INICIO_GRID) /
+                  TOTAL_HORAS_GRID) *
+                100;
+              let width = (1 / TOTAL_HORAS_GRID) * 100;
+              trackDiv.innerHTML += `<div class="benefit-overlay benefit-out" style="position:absolute; left:${left}%; width:${width}%; height:100%; border:2px dashed var(--success); background:rgba(166, 227, 161, 0.2); z-index:10; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="Salir temprano (Desde ${aHoraTexto(possibleEarlyOut)})" onclick="event.stopPropagation(); aplicarBeneficio(${index}, 'Salir ${aHoraTexto(possibleEarlyOut)}', null, '${aHoraTexto(possibleEarlyOut)}')">
                   <span class="material-symbols-outlined" style="font-size:14px; color:var(--success);">directions_run</span>
                 </div>`;
-              }
-            } else if (emp && !emp.elegible) {
-              let trackDiv = tracks[index];
-              if(trackDiv) {
-                turnosActuales[index].rechazoBeneficio = emp.motivos ? emp.motivos.join(' | ') : 'No cumple los requisitos';
-                trackDiv.style.position = 'relative';
-                trackDiv.innerHTML += `<div class="benefit-overlay" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:10; border-radius:4px; display:flex; align-items:center; gap:2px; padding:2px 6px; font-size:9px; font-weight:bold; color:var(--danger); background:rgba(239,68,68,0.15); border:1px solid var(--danger); backdrop-filter:blur(4px); white-space:nowrap;">
+            }
+          } else if (emp && !emp.elegible) {
+            let trackDiv = tracks[index];
+            if (trackDiv) {
+              turnosActuales[index].rechazoBeneficio = emp.motivos
+                ? emp.motivos.join(" | ")
+                : "No cumple los requisitos";
+              trackDiv.style.position = "relative";
+              trackDiv.innerHTML += `<div class="benefit-overlay" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:10; border-radius:4px; display:flex; align-items:center; gap:2px; padding:2px 6px; font-size:9px; font-weight:bold; color:var(--danger); background:rgba(239,68,68,0.15); border:1px solid var(--danger); backdrop-filter:blur(4px); white-space:nowrap;">
                   <span class="material-symbols-outlined" style="font-size:11px;">cancel</span> Sin beneficio
                 </div>`;
-              }
             }
-          });
-          
-          if(encontrados === 0) {
-            Swal.fire({title:'Sin Beneficios', text:'Ningún colaborador en este día cumple las reglas de la quincena (Sábado completo y puntualidad).', icon:'info', background:'transparent', customClass:{popup:'swal-dark-popup'}});
-          } else {
-             completarBarraYMostrarExito('Análisis Terminado', 'Se han marcado en verde los horarios donde la operación permite flexibilidad.');
           }
-        })
-        .withFailureHandler(manejarErrorServidor)
-        .obtenerEstadoBeneficios(fechaSel);
-    }
-    
-    function aplicarBeneficio(index, descripcion, nuevaEntrada, nuevaSalida) {
-      let t = turnosActuales[index];
-      Swal.fire({
-        title: 'Aplicar Beneficio',
-        text: `¿Estás seguro de que deseas permitir a ${t.nombre} ${descripcion}?`,
-        icon: 'question',
-        background: 'transparent',
-        customClass: { popup: 'swal-dark-popup' },
-        showCancelButton: true,
-        confirmButtonText: 'Sí, aplicar',
-        cancelButtonText: 'Cancelar'
-      }).then((r) => {
-        if(r.isConfirmed) {
-          if(nuevaEntrada) t.entrada = nuevaEntrada;
-          if(nuevaSalida) t.salida = nuevaSalida;
-          t.nota = (t.nota ? t.nota + " | " : "") + "Beneficio de flexibilidad aplicado.";
-          
-          mostrarModalSincronizando('Actualizando...');
-          google.script.run
-            .withSuccessHandler(function() {
-              renderizarTimeline(turnosActuales);
-              analizarCobertura();
-              completarBarraYMostrarExito('¡Beneficio Aplicado!', 'El horario fue actualizado correctamente.');
-            })
-            .withFailureHandler(manejarErrorServidor)
-            .actualizarTurnoExistente(t);
+        });
+
+        if (encontrados === 0) {
+          Swal.fire({
+            title: "Sin Beneficios",
+            text: "Ningún colaborador en este día cumple las reglas de la quincena (Sábado completo y puntualidad).",
+            icon: "info",
+            background: "transparent",
+            customClass: { popup: "swal-dark-popup" },
+          });
+        } else {
+          completarBarraYMostrarExito(
+            "Análisis Terminado",
+            "Se han marcado en verde los horarios donde la operación permite flexibilidad.",
+          );
         }
-      });
-    }
-  </script>
+      })
+      .withFailureHandler(manejarErrorServidor)
+      .obtenerEstadoBeneficios(fechaSel);
+  }
+
+  function aplicarBeneficio(index, descripcion, nuevaEntrada, nuevaSalida) {
+    let t = turnosActuales[index];
+    Swal.fire({
+      title: "Aplicar Beneficio",
+      text: `¿Estás seguro de que deseas permitir a ${t.nombre} ${descripcion}?`,
+      icon: "question",
+      background: "transparent",
+      customClass: { popup: "swal-dark-popup" },
+      showCancelButton: true,
+      confirmButtonText: "Sí, aplicar",
+      cancelButtonText: "Cancelar",
+    }).then((r) => {
+      if (r.isConfirmed) {
+        if (nuevaEntrada) t.entrada = nuevaEntrada;
+        if (nuevaSalida) t.salida = nuevaSalida;
+        t.nota =
+          (t.nota ? t.nota + " | " : "") +
+          "Beneficio de flexibilidad aplicado.";
+
+        mostrarModalSincronizando("Actualizando...");
+        google.script.run
+          .withSuccessHandler(function () {
+            renderizarTimeline(turnosActuales);
+            analizarCobertura();
+            completarBarraYMostrarExito(
+              "¡Beneficio Aplicado!",
+              "El horario fue actualizado correctamente.",
+            );
+          })
+          .withFailureHandler(manejarErrorServidor)
+          .actualizarTurnoExistente(t);
+      }
+    });
+  }
+</script>

@@ -1,358 +1,476 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <base target="_top">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  <?!= include('Global_CSS'); ?>
-  
-  <style>
-    body {
-      background: var(--bg-main);
-      color: var(--text-main);
-      overflow-x: hidden;
-    }
-    .settings-container {
-      max-width: 750px;
-      margin: 100px auto 60px auto;
-      padding: 40px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      box-shadow: 0 10px 40px var(--shadow-color);
-      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    
-    .settings-header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--glass-border);
-    }
-    
-    .settings-header .icon-container {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: var(--accent-glow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent-primary);
-    }
-    
-    .settings-header h2 {
-      margin: 0;
-      color: var(--text-main);
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-    
-    .settings-header p {
-      margin: 4px 0 0 0;
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-    
-    .settings-group {
-      margin-bottom: 40px;
-    }
-    
-    .settings-group h3 {
-      font-size: 11px;
-      color: var(--accent-primary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .hotkey-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 20px;
-      background: var(--mantle);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      margin-bottom: 12px;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    
-    .hotkey-row:hover {
-      background: var(--glass-bg-hover);
-      border-color: var(--accent-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px var(--shadow-color);
-    }
-    
-    .hotkey-label {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--text-main);
-      font-weight: 500;
-      font-size: 13px;
-    }
-    
-    .hotkey-label .material-symbols-outlined {
-      color: var(--text-muted);
-      font-size: 18px;
-      transition: 0.3s;
-    }
-    
-    .hotkey-row:hover .hotkey-label .material-symbols-outlined {
-      color: var(--accent-primary);
-    }
-    
-    .hotkey-input-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .hotkey-input {
-      background: var(--input-bg);
-      border: 1px solid var(--glass-border);
-      color: var(--accent-primary);
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-family: inherit;
-      font-weight: 600;
-      font-size: 12px;
-      width: 150px;
-      text-align: center;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s ease;
-      letter-spacing: 0.5px;
-    }
-    
-    .hotkey-input:hover {
-      background: var(--input-bg);
-      border-color: var(--accent-primary);
-    }
-    
-    .hotkey-input:focus {
-      border-color: var(--accent-primary);
-      outline: none;
-      box-shadow: 0 0 0 3px var(--accent-glow);
-      color: var(--text-main);
-    }
-    
-    .hotkey-input.recording {
-      background: var(--accent-primary);
-      color: var(--btn-text-on-accent);
-      font-weight: 700;
-      border-color: var(--accent-primary);
-      animation: pulseRecord 1.5s infinite;
-    }
-    
-    @keyframes pulseRecord {
-      0% { box-shadow: 0 0 0 0 var(--accent-glow); }
-      70% { box-shadow: 0 0 0 8px transparent; }
-      100% { box-shadow: 0 0 0 0 transparent; }
-    }
-    
-    .reset-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-    
-    .reset-btn:hover {
-      color: var(--danger);
-      background: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.2);
-    }
-    
-    .btn-neon {
-      background: var(--accent-glow);
-      color: var(--accent-primary);
-      border: 1px solid var(--accent-glow);
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      box-shadow: none;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn-neon::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%; width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transform: skewX(-20deg);
-      transition: 0s;
-    }
-    .btn-neon:hover {
-      background: var(--accent-glow);
-      border-color: var(--accent-primary);
-      transform: translateY(-1px);
-    }
-    .btn-neon:hover::after {
-      left: 150%;
-      transition: 0.6s ease-in-out;
-    }
-    .btn-primary-neon {
-      background: var(--accent-primary) !important;
-      color: var(--bg-main) !important;
-      border-color: var(--accent-primary) !important;
-    }
-    .btn-primary-neon:hover {
-      transform: translateY(-2px);
-    }
-    
-    .save-bar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 15px;
-      margin-top: 40px;
-      padding-top: 25px;
-      border-top: 1px solid var(--glass-border);
-    }
-    
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--success);
-      color: #111;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s ease;
-      z-index: 1000;
-      pointer-events: none;
-    }
-    
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  </style>
-</head>
-<body>
-  <?!= include('Global_Navbar', paginaActiva); ?>
-  
-  <div class="settings-container">
-    <div class="settings-header">
-      <div class="icon-container">
-        <span class="material-symbols-outlined" style="font-size: 28px;">keyboard_command_key</span>
+  <head>
+    <base target="_top" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <?!= include('Global_CSS'); ?>
+
+    <style>
+      body {
+        background: var(--bg-main);
+        color: var(--text-main);
+        overflow-x: hidden;
+      }
+      .settings-container {
+        max-width: 750px;
+        margin: 100px auto 60px auto;
+        padding: 40px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 10px 40px var(--shadow-color);
+        animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .settings-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--glass-border);
+      }
+
+      .settings-header .icon-container {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--accent-glow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-primary);
+      }
+
+      .settings-header h2 {
+        margin: 0;
+        color: var(--text-main);
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+
+      .settings-header p {
+        margin: 4px 0 0 0;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .settings-group {
+        margin-bottom: 40px;
+      }
+
+      .settings-group h3 {
+        font-size: 11px;
+        color: var(--accent-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .hotkey-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background: var(--mantle);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .hotkey-row:hover {
+        background: var(--glass-bg-hover);
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px var(--shadow-color);
+      }
+
+      .hotkey-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-main);
+        font-weight: 500;
+        font-size: 13px;
+      }
+
+      .hotkey-label .material-symbols-outlined {
+        color: var(--text-muted);
+        font-size: 18px;
+        transition: 0.3s;
+      }
+
+      .hotkey-row:hover .hotkey-label .material-symbols-outlined {
+        color: var(--accent-primary);
+      }
+
+      .hotkey-input-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .hotkey-input {
+        background: var(--input-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--accent-primary);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 12px;
+        width: 150px;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+        letter-spacing: 0.5px;
+      }
+
+      .hotkey-input:hover {
+        background: var(--input-bg);
+        border-color: var(--accent-primary);
+      }
+
+      .hotkey-input:focus {
+        border-color: var(--accent-primary);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--accent-glow);
+        color: var(--text-main);
+      }
+
+      .hotkey-input.recording {
+        background: var(--accent-primary);
+        color: var(--btn-text-on-accent);
+        font-weight: 700;
+        border-color: var(--accent-primary);
+        animation: pulseRecord 1.5s infinite;
+      }
+
+      @keyframes pulseRecord {
+        0% {
+          box-shadow: 0 0 0 0 var(--accent-glow);
+        }
+        70% {
+          box-shadow: 0 0 0 8px transparent;
+        }
+        100% {
+          box-shadow: 0 0 0 0 transparent;
+        }
+      }
+
+      .reset-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .reset-btn:hover {
+        color: var(--danger);
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.2);
+      }
+
+      .btn-neon {
+        background: var(--accent-glow);
+        color: var(--accent-primary);
+        border: 1px solid var(--accent-glow);
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        box-shadow: none;
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-neon::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.25),
+          transparent
+        );
+        transform: skewX(-20deg);
+        transition: 0s;
+      }
+      .btn-neon:hover {
+        background: var(--accent-glow);
+        border-color: var(--accent-primary);
+        transform: translateY(-1px);
+      }
+      .btn-neon:hover::after {
+        left: 150%;
+        transition: 0.6s ease-in-out;
+      }
+      .btn-primary-neon {
+        background: var(--accent-primary) !important;
+        color: var(--bg-main) !important;
+        border-color: var(--accent-primary) !important;
+      }
+      .btn-primary-neon:hover {
+        transform: translateY(-2px);
+      }
+
+      .save-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
+        margin-top: 40px;
+        padding-top: 25px;
+        border-top: 1px solid var(--glass-border);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--success);
+        color: #111;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+  </head>
+  <body>
+    <?!= include('Global_Navbar', paginaActiva); ?>
+
+    <div class="settings-container">
+      <div class="settings-header">
+        <div class="icon-container">
+          <span class="material-symbols-outlined" style="font-size: 28px"
+            >keyboard_command_key</span
+          >
+        </div>
+        <div>
+          <h2>Ajustes y Atajos de Teclado</h2>
+          <p>Personaliza las teclas rápidas para navegar.</p>
+        </div>
       </div>
-      <div>
-        <h2>Ajustes y Atajos de Teclado</h2>
-        <p>Personaliza las teclas rápidas para navegar.</p>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <h3><span class="material-symbols-outlined" style="font-size:16px;">palette</span> Apariencia</h3>
-      <div class="hotkey-row">
-        <div class="hotkey-label">
-          <span class="material-symbols-outlined">dark_mode</span>
-          <div>
-            <div>Tema de la Aplicación</div>
-            <div style="font-size:11px; color:var(--text-muted); font-weight:400; margin-top:2px;">Alterna entre el tema oscuro y claro</div>
+
+      <div class="settings-group">
+        <h3>
+          <span class="material-symbols-outlined" style="font-size: 16px"
+            >palette</span
+          >
+          Apariencia
+        </h3>
+        <div class="hotkey-row">
+          <div class="hotkey-label">
+            <span class="material-symbols-outlined">dark_mode</span>
+            <div>
+              <div>Tema de la Aplicación</div>
+              <div
+                style="
+                  font-size: 11px;
+                  color: var(--text-muted);
+                  font-weight: 400;
+                  margin-top: 2px;
+                "
+              >
+                Alterna entre el tema oscuro y claro
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <span
+              id="theme-label"
+              style="
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-muted);
+              "
+              >Oscuro</span
+            >
+            <div
+              id="theme-toggle"
+              class="theme-toggle-track"
+              onclick="toggleAppTheme()"
+            ></div>
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <span id="theme-label" style="font-size:12px; font-weight:600; color:var(--text-muted);">Oscuro</span>
-          <div id="theme-toggle" class="theme-toggle-track" onclick="toggleAppTheme()"></div>
-        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>
+          <span class="material-symbols-outlined" style="font-size: 16px"
+            >edit_calendar</span
+          >
+          Horarios y Planificación
+        </h3>
+        <div id="hotkeys-container"></div>
+      </div>
+
+      <div class="save-bar">
+        <button
+          class="btn-neon"
+          style="
+            background: var(--glass-bg-hover);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 10px 20px;
+          "
+          onclick="resetAllDefaults()"
+        >
+          <span
+            class="material-symbols-outlined"
+            style="font-size: 18px; margin-right: 6px; vertical-align: middle"
+            >restart_alt</span
+          >
+          Restaurar Valores
+        </button>
+        <button
+          class="btn-neon btn-primary-neon"
+          style="padding: 10px 24px; font-weight: 700"
+          onclick="saveHotkeys()"
+        >
+          <span
+            class="material-symbols-outlined"
+            style="font-size: 18px; margin-right: 6px; vertical-align: middle"
+            >save</span
+          >
+          Guardar Cambios
+        </button>
       </div>
     </div>
 
-    <div class="settings-group">
-      <h3><span class="material-symbols-outlined" style="font-size:16px;">edit_calendar</span> Horarios y Planificación</h3>
-      <div id="hotkeys-container">
-        <!-- Hotkeys rendered here -->
-      </div>
+    <div id="toast" class="toast">
+      <span
+        class="material-symbols-outlined"
+        style="vertical-align: middle; margin-right: 6px"
+        >check_circle</span
+      >
+      Ajustes guardados correctamente
     </div>
-    
-    <div class="save-bar">
-      <button class="btn-neon" style="background: var(--glass-bg-hover); border: 1px solid var(--glass-border); color: var(--text-main); padding: 10px 20px;" onclick="resetAllDefaults()">
-        <span class="material-symbols-outlined" style="font-size:18px; margin-right:6px; vertical-align:middle;">restart_alt</span> Restaurar Valores
-      </button>
-      <button class="btn-neon btn-primary-neon" style="padding: 10px 24px; font-weight: 700;" onclick="saveHotkeys()">
-        <span class="material-symbols-outlined" style="font-size:18px; margin-right:6px; vertical-align:middle;">save</span> Guardar Cambios
-      </button>
-    </div>
-  </div>
-  
-  <div id="toast" class="toast"><span class="material-symbols-outlined" style="vertical-align:middle; margin-right:6px;">check_circle</span> Ajustes guardados correctamente</div>
 
-  <?!= include('Global_JS'); ?>
-  
-  <script>
-    const defaultHotkeys = {
-      asignarTurno: { label: 'Asignar Nuevo Turno', icon: 'add_circle', keys: 'Alt+N' },
-      iaSugerencia: { label: 'Sugerencia de IA (Masiva)', icon: 'auto_awesome', keys: 'Ctrl+I' },
-      reordenar: { label: 'Reordenar Lista', icon: 'swap_vert', keys: 'Alt+R' },
-      seleccion: { label: 'Seleccionar Múltiple', icon: 'checklist', keys: 'Ctrl+M' },
-      diaAnterior: { label: 'Día Anterior', icon: 'chevron_left', keys: 'Ctrl+ArrowLeft' },
-      diaSiguiente: { label: 'Día Siguiente', icon: 'chevron_right', keys: 'Ctrl+ArrowRight' },
-      copiar: { label: 'Copiar Turnos del Día', icon: 'content_copy', keys: 'Ctrl+C' },
-      pegar: { label: 'Pegar Turnos del Día', icon: 'content_paste', keys: 'Ctrl+V' },
-      limpiar: { label: 'Limpiar Día', icon: 'delete_sweep', keys: 'Ctrl+Backspace' },
-      menuFlotante: { label: 'Mostrar/Ocultar Menú Flotante', icon: 'widgets', keys: 'Ctrl+Space' }
-    };
-    
-    let currentHotkeys = {};
-    let recordingId = null;
-    
-    function initSettings() {
-      const saved = localStorage.getItem('appHotkeys');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          currentHotkeys = { ...defaultHotkeys };
-          Object.keys(currentHotkeys).forEach(k => {
-            if (parsed[k]) currentHotkeys[k].keys = parsed[k];
-          });
-        } catch(e) {
+    <?!= include('Global_JS'); ?>
+
+    <script>
+      const defaultHotkeys = {
+        asignarTurno: {
+          label: "Asignar Nuevo Turno",
+          icon: "add_circle",
+          keys: "Alt+N",
+        },
+        iaSugerencia: {
+          label: "Sugerencia de IA (Masiva)",
+          icon: "auto_awesome",
+          keys: "Ctrl+I",
+        },
+        reordenar: {
+          label: "Reordenar Lista",
+          icon: "swap_vert",
+          keys: "Alt+R",
+        },
+        seleccion: {
+          label: "Seleccionar Múltiple",
+          icon: "checklist",
+          keys: "Ctrl+M",
+        },
+        diaAnterior: {
+          label: "Día Anterior",
+          icon: "chevron_left",
+          keys: "Ctrl+ArrowLeft",
+        },
+        diaSiguiente: {
+          label: "Día Siguiente",
+          icon: "chevron_right",
+          keys: "Ctrl+ArrowRight",
+        },
+        copiar: {
+          label: "Copiar Turnos del Día",
+          icon: "content_copy",
+          keys: "Ctrl+C",
+        },
+        pegar: {
+          label: "Pegar Turnos del Día",
+          icon: "content_paste",
+          keys: "Ctrl+V",
+        },
+        limpiar: {
+          label: "Limpiar Día",
+          icon: "delete_sweep",
+          keys: "Ctrl+Backspace",
+        },
+        menuFlotante: {
+          label: "Mostrar/Ocultar Menú Flotante",
+          icon: "widgets",
+          keys: "Ctrl+Space",
+        },
+      };
+
+      let currentHotkeys = {};
+      let recordingId = null;
+
+      function initSettings() {
+        const saved = localStorage.getItem("appHotkeys");
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            currentHotkeys = { ...defaultHotkeys };
+            Object.keys(currentHotkeys).forEach((k) => {
+              if (parsed[k]) currentHotkeys[k].keys = parsed[k];
+            });
+          } catch (e) {
+            currentHotkeys = JSON.parse(JSON.stringify(defaultHotkeys));
+          }
+        } else {
           currentHotkeys = JSON.parse(JSON.stringify(defaultHotkeys));
         }
-      } else {
-        currentHotkeys = JSON.parse(JSON.stringify(defaultHotkeys));
+        renderHotkeys();
       }
-      renderHotkeys();
-    }
-    
-    function renderHotkeys() {
-      const container = document.getElementById('hotkeys-container');
-      container.innerHTML = '';
-      
-      Object.keys(currentHotkeys).forEach(key => {
-        const item = currentHotkeys[key];
-        const row = document.createElement('div');
-        row.className = 'hotkey-row';
-        row.innerHTML = `
-          <div class="hotkey-label"><span class="material-symbols-outlined">${item.icon || 'keyboard'}</span> ${item.label}</div>
+
+      function renderHotkeys() {
+        const container = document.getElementById("hotkeys-container");
+        container.innerHTML = "";
+
+        Object.keys(currentHotkeys).forEach((key) => {
+          const item = currentHotkeys[key];
+          const row = document.createElement("div");
+          row.className = "hotkey-row";
+          row.innerHTML = `
+          <div class="hotkey-label"><span class="material-symbols-outlined">${item.icon || "keyboard"}</span> ${item.label}</div>
           <div class="hotkey-input-container">
             <input type="text" id="hk-${key}" class="hotkey-input" value="${item.keys}" readonly onclick="startRecording('${key}')" onblur="stopRecording()">
             <button class="reset-btn" onclick="resetSingle('${key}')" title="Restaurar por defecto">
@@ -360,107 +478,106 @@
             </button>
           </div>
         `;
-        container.appendChild(row);
-      });
-    }
-    
-    function startRecording(key) {
-      if (recordingId) stopRecording();
-      recordingId = key;
-      const input = document.getElementById(`hk-${key}`);
-      input.classList.add('recording');
-      input.value = 'Presiona teclas...';
-      
-      document.addEventListener('keydown', handleKeyRecording);
-    }
-    
-    function stopRecording() {
-      if (!recordingId) return;
-      const input = document.getElementById(`hk-${recordingId}`);
-      if (input) {
-        input.classList.remove('recording');
-        input.value = currentHotkeys[recordingId].keys;
+          container.appendChild(row);
+        });
       }
-      document.removeEventListener('keydown', handleKeyRecording);
-      recordingId = null;
-    }
-    
-    function handleKeyRecording(e) {
-      e.preventDefault();
-      
-      // Ignore bare modifiers
-      if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
-      
-      let keys = [];
-      if (e.ctrlKey) keys.push('Ctrl');
-      if (e.altKey) keys.push('Alt');
-      if (e.shiftKey) keys.push('Shift');
-      
-      let keyName = e.key;
-      if (keyName === ' ') keyName = 'Space';
-      if (keyName.length === 1) keyName = keyName.toUpperCase();
-      
-      keys.push(keyName);
-      
-      const combination = keys.join('+');
-      currentHotkeys[recordingId].keys = combination;
-      
-      const input = document.getElementById(`hk-${recordingId}`);
-      input.value = combination;
-      
-      stopRecording();
-    }
-    
-    function resetSingle(key) {
-      currentHotkeys[key].keys = defaultHotkeys[key].keys;
-      renderHotkeys();
-    }
-    
-    function resetAllDefaults() {
-      currentHotkeys = JSON.parse(JSON.stringify(defaultHotkeys));
-      renderHotkeys();
-    }
-    
-    function saveHotkeys() {
-      const toSave = {};
-      Object.keys(currentHotkeys).forEach(k => {
-        toSave[k] = currentHotkeys[k].keys;
-      });
-      localStorage.setItem('appHotkeys', JSON.stringify(toSave));
-      
-      const toast = document.getElementById('toast');
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-    
-    // ===== THEME TOGGLE =====
-    function toggleAppTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('appTheme', next);
-      updateThemeUI(next);
-    }
 
-    function updateThemeUI(theme) {
-      const toggle = document.getElementById('theme-toggle');
-      const label = document.getElementById('theme-label');
-      if (toggle && label) {
-        if (theme === 'light') {
-          toggle.classList.add('active');
-          label.textContent = 'Claro';
-        } else {
-          toggle.classList.remove('active');
-          label.textContent = 'Oscuro';
+      function startRecording(key) {
+        if (recordingId) stopRecording();
+        recordingId = key;
+        const input = document.getElementById(`hk-${key}`);
+        input.classList.add("recording");
+        input.value = "Presiona teclas...";
+
+        document.addEventListener("keydown", handleKeyRecording);
+      }
+
+      function stopRecording() {
+        if (!recordingId) return;
+        const input = document.getElementById(`hk-${recordingId}`);
+        if (input) {
+          input.classList.remove("recording");
+          input.value = currentHotkeys[recordingId].keys;
+        }
+        document.removeEventListener("keydown", handleKeyRecording);
+        recordingId = null;
+      }
+
+      function handleKeyRecording(e) {
+        e.preventDefault();
+
+        if (["Control", "Shift", "Alt", "Meta"].includes(e.key)) return;
+
+        let keys = [];
+        if (e.ctrlKey) keys.push("Ctrl");
+        if (e.altKey) keys.push("Alt");
+        if (e.shiftKey) keys.push("Shift");
+
+        let keyName = e.key;
+        if (keyName === " ") keyName = "Space";
+        if (keyName.length === 1) keyName = keyName.toUpperCase();
+
+        keys.push(keyName);
+
+        const combination = keys.join("+");
+        currentHotkeys[recordingId].keys = combination;
+
+        const input = document.getElementById(`hk-${recordingId}`);
+        input.value = combination;
+
+        stopRecording();
+      }
+
+      function resetSingle(key) {
+        currentHotkeys[key].keys = defaultHotkeys[key].keys;
+        renderHotkeys();
+      }
+
+      function resetAllDefaults() {
+        currentHotkeys = JSON.parse(JSON.stringify(defaultHotkeys));
+        renderHotkeys();
+      }
+
+      function saveHotkeys() {
+        const toSave = {};
+        Object.keys(currentHotkeys).forEach((k) => {
+          toSave[k] = currentHotkeys[k].keys;
+        });
+        localStorage.setItem("appHotkeys", JSON.stringify(toSave));
+
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      function toggleAppTheme() {
+        const current =
+          document.documentElement.getAttribute("data-theme") || "dark";
+        const next = current === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("appTheme", next);
+        updateThemeUI(next);
+      }
+
+      function updateThemeUI(theme) {
+        const toggle = document.getElementById("theme-toggle");
+        const label = document.getElementById("theme-label");
+        if (toggle && label) {
+          if (theme === "light") {
+            toggle.classList.add("active");
+            label.textContent = "Claro";
+          } else {
+            toggle.classList.remove("active");
+            label.textContent = "Oscuro";
+          }
         }
       }
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      initSettings();
-      const currentTheme = localStorage.getItem('appTheme') || 'dark';
-      updateThemeUI(currentTheme);
-    });
-  </script>
-</body>
+      document.addEventListener("DOMContentLoaded", function () {
+        initSettings();
+        const currentTheme = localStorage.getItem("appTheme") || "dark";
+        updateThemeUI(currentTheme);
+      });
+    </script>
+  </body>
 </html>
