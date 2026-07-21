@@ -933,18 +933,14 @@ function pegarTurnosDia() {
                 <div style="color:var(--accent-primary); font-size:22px; font-weight:bold; letter-spacing:0.5px; line-height:1.1;">${escaparHTML(nombre)}</div>
               </div>
             </div>
-            <div style="text-align:right; display: flex; gap: 15px; align-items: center;">
-              <div style="display:flex; flex-direction: column; align-items: flex-end;">
-                <label style="font-size:10px; color:var(--text-muted); font-weight:bold; margin-bottom:4px; letter-spacing: 0.5px;">CÁLCULO DE HORAS</label>
-                <div style="display:flex; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2px;">
-                  <button id="btn-almuerzo-sin" onclick="cambiarModoAlmuerzo('sin')" style="background: var(--accent-glow); color: var(--accent-primary); border: none; border-radius: 18px; padding: 3px 10px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;">Sin Almuerzo</button>
-                  <button id="btn-almuerzo-con" onclick="cambiarModoAlmuerzo('con')" style="background: transparent; color: var(--text-muted); border: none; border-radius: 18px; padding: 3px 10px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;">Con Almuerzo</button>
-                </div>
-              </div>
+            <div style="text-align:right; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
               <div style="display:flex; flex-direction: column; align-items: flex-end;">
                 <label style="font-size:10px; color:var(--text-muted); font-weight:bold; margin-bottom:4px; letter-spacing: 0.5px;">FILTRAR POR MES</label>
                 <input type="month" id="filtro-mes-perfil" class="input-date-seamless" style="cursor:pointer; font-size: 13px; background: transparent; border: none; outline: none; border-bottom: 1px solid var(--glass-border); border-radius: 0; padding: 4px 2px; width: 135px; color: var(--text-main); text-align: right;" value="${mesActual}" onchange="renderizarFilasPerfil(this.value)">
               </div>
+              <span id="link-almuerzo-toggle" onclick="toggleModoAlmuerzoSimple()" style="font-size: 9px; color: var(--text-muted); cursor: pointer; user-select: none; border-bottom: 1px dotted var(--text-muted); padding-bottom: 1px; margin-top: 2px;" onmouseover="this.style.color='var(--accent-primary)'; this.style.borderColor='var(--accent-primary)';" onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--text-muted)';">
+                Cálculo: Sin almuerzo
+              </span>
             </div>
           </div>
           
@@ -1111,23 +1107,15 @@ function pegarTurnosDia() {
       }
     }
 
-    function cambiarModoAlmuerzo(modo) {
-      calculoModoAlmuerzo = modo;
-      const btnSin = document.getElementById('btn-almuerzo-sin');
-      const btnCon = document.getElementById('btn-almuerzo-con');
-      if (btnSin && btnCon) {
-        if (modo === 'sin') {
-          btnSin.style.background = 'var(--accent-glow)';
-          btnSin.style.color = 'var(--accent-primary)';
-          btnCon.style.background = 'transparent';
-          btnCon.style.color = 'var(--text-muted)';
-        } else {
-          btnCon.style.background = 'var(--accent-glow)';
-          btnCon.style.color = 'var(--accent-primary)';
-          btnSin.style.background = 'transparent';
-          btnSin.style.color = 'var(--text-muted)';
-        }
+    function toggleModoAlmuerzoSimple() {
+      const nuevoModo = calculoModoAlmuerzo === 'sin' ? 'con' : 'sin';
+      calculoModoAlmuerzo = nuevoModo;
+      
+      const link = document.getElementById('link-almuerzo-toggle');
+      if (link) {
+        link.innerText = nuevoModo === 'sin' ? 'Cálculo: Sin almuerzo' : 'Cálculo: Con almuerzo';
       }
+      
       const filtroMes = document.getElementById('filtro-mes-perfil');
       if (filtroMes) {
         renderizarFilasPerfil(filtroMes.value);
