@@ -120,10 +120,10 @@
       <div id="diagnosticoTrack"></div>
       <div id="contenedorRows"></div>
         <!-- LEYENDA, FECHA Y BUSCADOR (BARRA INFERIOR) -->
-      <div class="legend" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border);">
+      <div class="legend">
         
         <!-- LADO IZQUIERDO: Viñetas de colores -->
-        <div style="display: flex; gap: 20px; align-items: center;">
+        <div class="legend-section-left" style="display: flex; gap: 20px; align-items: center;">
           <div class="legend-item">
             <div class="dot" style="background: var(--accent-primary);"></div> Horario Laboral
           </div>
@@ -133,7 +133,7 @@
         </div>
 
         <!-- CENTRO: Navegador de Fechas + Buscador Integrado -->
-        <div style="display: flex; align-items: center; gap: 20px;">
+        <div class="legend-section-center" style="display: flex; align-items: center; gap: 20px;">
           
           <!-- Selector de Fecha -->
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -150,14 +150,14 @@
           </div>
 
           <!-- Divisor vertical sutil entre herramientas -->
-          <div style="width: 1px; height: 20px; background: rgba(255, 255, 255, 0.1);"></div>
+          <div class="legend-divider" style="width: 1px; height: 20px; background: rgba(255, 255, 255, 0.1);"></div>
 
           <!-- Buscador de Colaboradores -->
           <input type="text" id="buscarColaborador" class="input-filtro" placeholder="Buscar colaborador..." oninput="filtrarTimeline()" style="width: 220px; padding: 8px 12px;">
         </div>
 
         <!-- LADO DERECHO: Texto de ayuda -->
-        <div class="legend-item" style="color:var(--text-muted);">
+        <div class="legend-section-right legend-item" style="color:var(--text-muted);">
           <i>💡 Haz clic en cualquier barra para editar</i>
         </div>
 
