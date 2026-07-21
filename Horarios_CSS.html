@@ -1176,7 +1176,7 @@
         gap: 10px;
       }
 
-      /* Scrollable Timeline Grid for preservation of proportions */
+      /* Timeline Grid for Tablets (641px to 900px) */
       .timeline-container {
         padding: 15px 10px;
         overflow-x: auto;
@@ -1230,10 +1230,59 @@
       }
     }
 
-    /* Mobile Phones (<= 480px) */
-    @media (max-width: 480px) {
+    /* =========================================================
+       📱 MOBILE PHONE CARD VIEW (<= 640px) — NO HORIZONTAL SCROLL
+       ========================================================= */
+    @media (max-width: 640px) {
       .content-container {
-        padding: 65px 10px 15px 10px;
+        padding: 65px 8px 15px 8px;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .timeline-container {
+        padding: 12px 10px;
+        overflow-x: hidden !important; /* No horizontal scrollbar on mobile phones */
+        box-sizing: border-box;
+      }
+
+      .timeline-header-grid {
+        display: none !important; /* Hide time scale header (07:00-20:00) on phone cards */
+      }
+
+      .timeline-row,
+      .diagnostico-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 12px 10px !important;
+        border-radius: 12px !important;
+      }
+
+      .colaborador-info {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        position: static !important;
+        padding: 0 !important;
+      }
+
+      .shift-track {
+        width: 100% !important;
+        height: 32px !important;
+        box-sizing: border-box !important;
+      }
+
+      .block-laboral,
+      .block-descanso,
+      .block-excepcion {
+        height: 26px !important;
+        font-size: 10px !important;
       }
 
       .btn-neon,
