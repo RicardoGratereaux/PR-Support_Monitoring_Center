@@ -978,8 +978,10 @@ function pegarTurnosDia() {
       let trs = "";
 
       // Variables para semanas dentro de cada quincena
-      // Q1-S1: días 1-7, Q1-S2: días 8-15, Q2-S1: días 16-22, Q2-S2: días 23-fin de mes
-      let minQ1S1 = 0, minQ1S2 = 0, minQ2S1 = 0, minQ2S2 = 0;
+      // Q1-S1: días 1-6, Q1-S2: días 7-12, Q1-Resto: días 13-15
+      // Q2-S1: días 16-21, Q2-S2: días 22-27, Q2-Resto: días 28-fin de mes
+      let minQ1S1 = 0, minQ1S2 = 0, minQ1Resto = 0;
+      let minQ2S1 = 0, minQ2S2 = 0, minQ2Resto = 0;
 
       // 0. CALCULAR EL ÚLTIMO DÍA DEL MES DINÁMICAMENTE
       let partesMes = mesAnio.split('-');
@@ -1038,15 +1040,19 @@ function pegarTurnosDia() {
             ? (minSalida - minEntrada - minBreak) 
             : (minSalida - minEntrada);
 
-          // LÓGICA DE SEMANAS DENTRO DE QUINCENAS
-          if (diaDelMes >= 1 && diaDelMes <= 7) {
+          // LÓGICA DE SEMANAS DENTRO DE QUINCENAS (BLOQUES DE 6 DÍAS + RESTANTE)
+          if (diaDelMes >= 1 && diaDelMes <= 6) {
             minQ1S1 += minNetosTurno;
-          } else if (diaDelMes >= 8 && diaDelMes <= 15) {
+          } else if (diaDelMes >= 7 && diaDelMes <= 12) {
             minQ1S2 += minNetosTurno;
-          } else if (diaDelMes >= 16 && diaDelMes <= 22) {
+          } else if (diaDelMes >= 13 && diaDelMes <= 15) {
+            minQ1Resto += minNetosTurno;
+          } else if (diaDelMes >= 16 && diaDelMes <= 21) {
             minQ2S1 += minNetosTurno;
-          } else if (diaDelMes >= 23 && diaDelMes <= ultimoDiaMes) {
+          } else if (diaDelMes >= 22 && diaDelMes <= 27) {
             minQ2S2 += minNetosTurno;
+          } else if (diaDelMes >= 28 && diaDelMes <= ultimoDiaMes) {
+            minQ2Resto += minNetosTurno;
           }
         }
 
@@ -1060,14 +1066,18 @@ function pegarTurnosDia() {
         tbody.innerHTML = trs;
 
         // Totales por quincena
-        let totalMinutosQ1 = minQ1S1 + minQ1S2;
-        let totalMinutosQ2 = minQ2S1 + minQ2S2;
+        let totalMinutosQ1 = minQ1S1 + minQ1S2 + minQ1Resto;
+        let totalMinutosQ2 = minQ2S1 + minQ2S2 + minQ2Resto;
 
         // Formatear horas y minutos para cada bloque
         let hQ1S1 = Math.floor(minQ1S1 / 60), mQ1S1 = minQ1S1 % 60;
         let hQ1S2 = Math.floor(minQ1S2 / 60), mQ1S2 = minQ1S2 % 60;
+        let hQ1Resto = Math.floor(minQ1Resto / 60), mQ1Resto = minQ1Resto % 60;
+        
         let hQ2S1 = Math.floor(minQ2S1 / 60), mQ2S1 = minQ2S1 % 60;
         let hQ2S2 = Math.floor(minQ2S2 / 60), mQ2S2 = minQ2S2 % 60;
+        let hQ2Resto = Math.floor(minQ2Resto / 60), mQ2Resto = minQ2Resto % 60;
+
         let horasQ1 = Math.floor(totalMinutosQ1 / 60), minsQ1 = totalMinutosQ1 % 60;
         let horasQ2 = Math.floor(totalMinutosQ2 / 60), minsQ2 = totalMinutosQ2 % 60;
 
@@ -1075,28 +1085,36 @@ function pegarTurnosDia() {
         const fmtHM = (h, m) => `${h}h${m > 0 ? ' ' + m + 'm' : ''}`;
 
         statsDiv.innerHTML = `
-          <div style="grid-column: 1 / -1; display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
+          <div style="grid-column: 1 / -1; display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (1 - 7)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (1 - 6)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ1S1, mQ1S1)}</div>
             </div>
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (8 - 15)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (7 - 12)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ1S2, mQ1S2)}</div>
+            </div>
+            <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Resto (13 - 15)</div>
+              <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ1Resto, mQ1Resto)}</div>
             </div>
             <div style="text-align: center;">
               <div style="font-size: 9px; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Total Q1</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--accent-primary);">${fmtHM(horasQ1, minsQ1)}</div>
             </div>
           </div>
-          <div style="grid-column: 1 / -1; display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
+          <div style="grid-column: 1 / -1; display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 12px 10px; border-radius: 8px;">
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (16 - 22)</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 1 (16 - 21)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ2S1, mQ2S1)}</div>
             </div>
             <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
-              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (23 - ${ultimoDiaMes})</div>
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Sem 2 (22 - 27)</div>
               <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ2S2, mQ2S2)}</div>
+            </div>
+            <div style="text-align: center; border-right: 1px solid var(--glass-border); padding-right: 8px;">
+              <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Resto (28 - ${ultimoDiaMes})</div>
+              <div style="font-size: 16px; font-weight: bold; color: var(--text-main);">${fmtHM(hQ2Resto, mQ2Resto)}</div>
             </div>
             <div style="text-align: center;">
               <div style="font-size: 9px; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 4px; font-weight:bold;">Total Q2</div>
