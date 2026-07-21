@@ -1,8 +1,8 @@
 const EASY_CLOCKING_CONFIG = {
   API_URL: "https://api.easyclocking.com/v1",
 
-  API_KEY: "AQUI_IRÁ_TU_API_KEY_CUANDO_LA_TENGAS",
-  COMPANY_ID: "AQUI_IRÁ_TU_COMPANY_ID"
+  API_KEY: "API_KEY",
+  COMPANY_ID: "COMPANY_ID"
 };
 
 function doPost(e) {
@@ -41,7 +41,7 @@ function doPost(e) {
 }
 
 function sincronizarEasyClocking() {
-  if (EASY_CLOCKING_CONFIG.API_KEY === "AQUI_IRÁ_TU_API_KEY_CUANDO_LA_TENGAS") {
+  if (EASY_CLOCKING_CONFIG.API_KEY === "API_KEY") {
     Logger.log("API Key no configurada aún.");
     return;
   }
