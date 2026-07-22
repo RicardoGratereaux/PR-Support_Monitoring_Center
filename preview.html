@@ -904,6 +904,138 @@
   }
 </style>
 
+  <script>
+  const TIENDAS = {
+    farmacias: [
+      "FR-01 LITHEDA",
+      "FR-02 SENORIAL",
+      "FR-03 CAIMITO",
+      "FR-04 GURABO",
+      "FR-05 BARRIO OBRERO",
+      "FR-08 HUMACAO",
+      "FR-09 LAS PIEDRAS",
+      "FR-11 CATANO",
+      "FR-12 SANTURCE",
+      "FR-13 NARANJITO",
+      "FR-14 AIBONITO",
+      "FR-15 SALINAS",
+      "FR-16 SANTA ISABEL",
+      "FR-17 TRUJILLO ALTO",
+      "FR-18 GUAYNABO",
+      "FR-19 CAROLINA",
+      "FR-20 VIEQUES",
+      "FR-21 CAYEY",
+      "FR-23 JUNCOS",
+      "FR-24 BARRANQUITAS",
+    ],
+    chinatown: [
+      "CT-01 ARECIBO",
+      "CT-02 SALINAS",
+      "CT-03 TRUJILLO ALTO",
+      "CT-04 HUMACAO",
+      "CT-05 AGUADA",
+      "CT-06 BAYAMON",
+      "CT-07 CAROLINA",
+      "CT-08 FAJARDO",
+      "CT-09 GUAYAMA",
+      "CT-10 SANTURCE",
+      "CT-12 RIO GRANDE",
+      "CT-13 BARRANQUITAS",
+      "CT-14 PONCE",
+      "CT-15 COAMO",
+      "CT-16 LEVITTOWN",
+      "CT-17 VEGA ALTA",
+      "CT-18 BARRIO OBRERO",
+    ],
+    exchange: [
+      "QTD-01 CAROLINA",
+      "QTD-02 SAN JUAN",
+      "QTD-03 GURABO",
+      "QTD-04 JUANA DIAZ",
+      "QTD-05 AGUADILLA",
+      "QTD-06 VEGA BAJA",
+      "QTD-07 ARECIBO",
+      "QTD-08 CEIBA",
+      "QTD-09 MAYAGUEZ",
+      "QTD-10 CAYEY",
+    ],
+  };
+  const PUESTOS = {
+    RD01: ["FR-05", "FR-16", "FR-21", "QTD-06"],
+    RD02: ["FR-04", "FR24", "CT-18"],
+    RD03: ["FR-02", "FR-19", "CT-09"],
+    RD04: ["FR-01", "FR-08", "FR-23"],
+    RD05: ["FR-03", "FR-15", "FR-18", "FR-20", "CT-01"],
+    RD06: ["CT-02", "CT-14", "CT-15", "QTD-02"],
+    RD07: ["CT-05", "CT-07", "FR-09", "FR-14"],
+    RD08: ["CT-08", "CT-16", "CT-17", "QTD-09"],
+    RD09: ["CT-12", "QTD-01", "QTD-03", "AC-A", "AC-B"],
+    RD10: ["CT-03", "CT-06", "QTD-08"],
+    RD11: ["CT-04", "CT-10", "FR-17", "QTD-04"],
+    RD12: ["FR-11", "FR-13", "FR-21", "QTD-07"],
+    RD13: ["FR-12", "CT-13", "QTD-05", "QTD-10"],
+  };
+
+  function cargarTiendas(empresaId, tiendaId, posicionId) {
+    const empresa = document.getElementById(empresaId).value;
+    const selectTienda = document.getElementById(tiendaId);
+    selectTienda.innerHTML = '<option value="">Seleccione una tienda</option>';
+    if (posicionId) document.getElementById(posicionId).value = "";
+    if (!empresa) return;
+
+    TIENDAS[empresa].forEach((t) => {
+      let opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      selectTienda.appendChild(opt);
+    });
+  }
+
+  function actualizarPosicion(tiendaId, posicionId) {
+    const tiendaValue = document.getElementById(tiendaId).value;
+    const posicionInput = document.getElementById(posicionId);
+    if (!posicionInput) return;
+    if (!tiendaValue) {
+      posicionInput.value = "";
+      return;
+    }
+
+    const codigoLimpio = tiendaValue
+      .split(" ")[0]
+      .toUpperCase()
+      .replace("-", "");
+    let puestoFinal = "Personal de Turno";
+
+    for (const [puesto, lista] of Object.entries(PUESTOS)) {
+      if (
+        lista.some((t) => t.toUpperCase().replace("-", "") === codigoLimpio)
+      ) {
+        puestoFinal = puesto;
+        break;
+      }
+    }
+    posicionInput.value = puestoFinal;
+  }
+
+  function generarIniciales(nombreId, inicialesId) {
+    const nombre = document.getElementById(nombreId).value.trim();
+    const campoIniciales = document.getElementById(inicialesId);
+    if (!campoIniciales) return;
+    if (!nombre) {
+      campoIniciales.value = "";
+      return;
+    }
+
+    const iniciales = nombre
+      .split(/\s+/)
+      .map((palabra) => palabra.charAt(0).toUpperCase())
+      .join("")
+      .substring(0, 4);
+
+    campoIniciales.value = iniciales;
+  }
+</script>
+
 
   <style>
     body {
@@ -1046,6 +1178,161 @@
       width: 100%;
       height: 100%;
       background: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%, #090d16 100%);
+    }
+
+    /* HUB MENU OVERLAY (Pantalla Inicial de Selección de Tienda) */
+    .hub-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 15, 25, 0.92);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    .hub-modal-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .hub-card {
+      background: #0f172a;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 20px;
+      width: 640px;
+      max-width: 92vw;
+      padding: 30px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      position: relative;
+    }
+
+    .hub-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .hub-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .hub-subtitle {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+
+    .cadena-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .cadena-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .cadena-card:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+    }
+
+    .cadena-card.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.3), rgba(3, 105, 161, 0.5));
+      border-color: #38bdf8;
+      box-shadow: 0 0 16px rgba(2, 132, 199, 0.4);
+    }
+
+    .cadena-icon {
+      font-size: 2rem;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .cadena-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .hub-form-group {
+      margin-bottom: 20px;
+    }
+
+    .hub-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: #1e293b;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
+
+    .hub-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn-hub-main {
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-hub-primary {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn-hub-primary:hover {
+      background: linear-gradient(135deg, #0369a1, #075985);
+      transform: translateY(-1px);
+    }
+
+    .btn-hub-secondary {
+      background: rgba(30, 41, 59, 0.8);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-hub-secondary:hover {
+      background: rgba(16, 185, 129, 0.15);
     }
 
     /* Inspector Sidebar */
@@ -1316,12 +1603,61 @@
 </script>
 
 
+  <!-- HUB INICIAL DE SELECCIÓN DE TIENDA Y MODO -->
+  <div id="hub-modal" class="hub-modal-overlay">
+    <div class="hub-card">
+      <div class="hub-header">
+        <h2 class="hub-title">
+          <span class="material-symbols-outlined" style="color:#38bdf8; font-size:2rem;">domain</span>
+          Centro de Monitoreo 3D
+        </h2>
+        <p class="hub-subtitle">Selecciona la cadena y la tienda de Puerto Rico para diseñar o monitorear su mapa 3D</p>
+      </div>
+
+      <!-- Selección de Cadena -->
+      <div class="cadena-grid">
+        <div class="cadena-card active" onclick="seleccionarCadena('farmacias', this)">
+          <span class="cadena-icon">🏥</span>
+          <span class="cadena-name">Farmacias Rey</span>
+        </div>
+        <div class="cadena-card" onclick="seleccionarCadena('chinatown', this)">
+          <span class="cadena-icon">🛍️</span>
+          <span class="cadena-name">Chinatown & More</span>
+        </div>
+        <div class="cadena-card" onclick="seleccionarCadena('exchange', this)">
+          <span class="cadena-icon">💱</span>
+          <span class="cadena-name">Exchange by Figna</span>
+        </div>
+      </div>
+
+      <!-- Dropdown de Tiendas específicas de la cadena -->
+      <div class="hub-form-group">
+        <label class="form-label" style="font-size:0.85rem; margin-bottom:6px;">Selecciona la Tienda / Sucursal</label>
+        <select id="hub-select-tienda" class="hub-select">
+          <!-- Poblado dinámicamente -->
+        </select>
+      </div>
+
+      <!-- Botones de Acción principales -->
+      <div class="hub-actions">
+        <button class="btn-hub-main btn-hub-primary" onclick="iniciarExperiencia3D('edit')">
+          <span class="material-symbols-outlined">edit</span> Diseñar / Editar Mapa 3D
+        </button>
+        <button class="btn-hub-main btn-hub-secondary" onclick="iniciarExperiencia3D('monitor')">
+          <span class="material-symbols-outlined">videocam</span> Modo Monitoreo Vivo
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="mapa3d-wrapper">
     <!-- Toolbar Superior -->
     <div class="mapa3d-toolbar">
       <div class="toolbar-title">
-        <span class="material-symbols-outlined" style="color: #38bdf8;">domain</span>
-        Diseñador & Centro Monitoreo 3D
+        <button class="btn-tool" onclick="abrirHubSeleccion()" style="margin-right:6px;" title="Cambiar Tienda">
+          <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
+        </button>
+        <span id="label-tienda-activa" style="color:#38bdf8;">Farmacias Rey - FR-01 LITHEDA</span>
       </div>
 
       <!-- Herramientas Gizmo -->
@@ -1393,8 +1729,8 @@
 
       <!-- Guardar y Limpiar -->
       <div class="toolbar-group">
-        <button class="btn-tool" onclick="capturarPantalla3D()" title="Capturar Foto PNG del Mapa">
-          <span class="material-symbols-outlined" style="font-size:15px;">photo_camera</span> Foto PNG
+        <button class="btn-tool" onclick="capturarPantalla3D()" title="Capturar Foto PNG">
+          <span class="material-symbols-outlined" style="font-size:15px;">photo_camera</span> Foto
         </button>
         <button class="btn-tool" onclick="guardarPlanoGAS()" style="color:#fff; background:#0284c7;">
           <span class="material-symbols-outlined" style="font-size:15px;">save</span> Guardar
@@ -1411,7 +1747,8 @@
 
       <!-- HUD Informativo -->
       <div class="hud-overlay">
-        <div>Total Elementos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
+        <div>Tienda: <strong id="hud-store-name" style="color:#38bdf8;">FR-01 LITHEDA</strong></div>
+        <div>Total Objetos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
         <div>Cámaras CCTV: <strong id="hud-count-cam" style="color:#10b981;">0</strong></div>
         <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
       </div>
@@ -1495,13 +1832,57 @@
     let objects = [];
     let selectedObject = null;
     let raycaster, mouse;
+    let cadenaSeleccionada = 'farmacias';
+    let tiendaActivaId = 'FR-01 LITHEDA';
+
+    // Datos de Tiendas con Fallback seguro desde Global_Datos.html
+    const TIENDAS_DATA = (typeof TIENDAS !== 'undefined') ? TIENDAS : {
+      farmacias: ["FR-01 LITHEDA", "FR-02 SENORIAL", "FR-03 CAIMITO", "FR-04 GURABO", "FR-05 BARRIO OBRERO", "FR-08 HUMACAO", "FR-18 GUAYNABO"],
+      chinatown: ["CT-01 ARECIBO", "CT-02 SALINAS", "CT-03 TRUJILLO ALTO", "CT-04 HUMACAO", "CT-06 BAYAMON", "CT-14 PONCE"],
+      exchange: ["QTD-01 CAROLINA", "QTD-02 SAN JUAN", "QTD-03 GURABO", "QTD-07 ARECIBO", "QTD-09 MAYAGUEZ"]
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
+      poblarSelectTiendas('farmacias');
       initThreeJS();
       crearPisoTienda();
       setupEventListeners();
-      cargarPreset('farmacia');
     });
+
+    function seleccionarCadena(cadena, element) {
+      cadenaSeleccionada = cadena;
+      document.querySelectorAll('.cadena-card').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      poblarSelectTiendas(cadena);
+    }
+
+    function poblarSelectTiendas(cadena) {
+      const select = document.getElementById('hub-select-tienda');
+      select.innerHTML = '';
+      const lista = TIENDAS_DATA[cadena] || [];
+      lista.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+    }
+
+    function abrirHubSeleccion() {
+      document.getElementById('hub-modal').classList.remove('hidden');
+    }
+
+    function iniciarExperiencia3D(modo) {
+      const select = document.getElementById('hub-select-tienda');
+      tiendaActivaId = select.value || 'FR-01 LITHEDA';
+
+      document.getElementById('label-tienda-activa').innerText = tiendaActivaId;
+      document.getElementById('hud-store-name').innerText = tiendaActivaId;
+      document.getElementById('hub-modal').classList.add('hidden');
+
+      setMode(modo);
+      cargarPlanoGAS(); // Carga automática del mapa guardado de esa tienda!
+    }
 
     function initThreeJS() {
       const container = document.getElementById('webgl-container');
@@ -1581,21 +1962,18 @@
     function crearMallaCamaraCCTV() {
       const group = new THREE.Group();
 
-      // 1. Base / Placa de Montaje a Pared o Techo
       const baseGeo = new THREE.CylinderGeometry(0.25, 0.3, 0.1, 16);
       const baseMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3 });
       const baseMesh = new THREE.Mesh(baseGeo, baseMat);
       baseMesh.rotation.x = Math.PI / 2;
       group.add(baseMesh);
 
-      // 2. Brazo Articulado / Soporte de Ángulo
       const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 12);
       const armMesh = new THREE.Mesh(armGeo, baseMat);
       armMesh.rotation.x = Math.PI / 4;
       armMesh.position.set(0, -0.18, 0.2);
       group.add(armMesh);
 
-      // 3. Cuerpo Cilíndrico de Cámara CCTV
       const bodyGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.85, 16);
       const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.2 });
       const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
@@ -1603,7 +1981,6 @@
       bodyMesh.position.set(0, -0.32, 0.55);
       group.add(bodyMesh);
 
-      // 4. Visera Parasol Superior
       const shieldGeo = new THREE.CylinderGeometry(0.33, 0.33, 0.75, 16, 1, false, 0, Math.PI);
       const shieldMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.5 });
       const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
@@ -1612,7 +1989,6 @@
       shieldMesh.position.set(0, -0.28, 0.58);
       group.add(shieldMesh);
 
-      // 5. Lente Frontal Oscura
       const lensGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 16);
       const lensMat = new THREE.MeshStandardMaterial({ color: 0x020617, roughness: 0.1 });
       const lensMesh = new THREE.Mesh(lensGeo, lensMat);
@@ -1620,7 +1996,6 @@
       lensMesh.position.set(0, -0.32, 0.98);
       group.add(lensMesh);
 
-      // 6. LED Verde de Estado Activo
       const ledGeo = new THREE.SphereGeometry(0.04, 8, 8);
       const ledMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
       const ledMesh = new THREE.Mesh(ledGeo, ledMat);
@@ -1630,7 +2005,6 @@
       return group;
     }
 
-    // Agregar Estructuras de Tienda
     function addStructure(type) {
       if (currentMode !== 'edit') return;
 
@@ -1665,7 +2039,6 @@
         bodyMesh.castShadow = true;
         group.add(bodyMesh);
 
-        // Pantalla POS registradora
         const posGeo = new THREE.BoxGeometry(0.5, 0.4, 0.1);
         const posMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
         const posMesh = new THREE.Mesh(posGeo, posMat);
@@ -1730,7 +2103,6 @@
         mesh.castShadow = true;
         data.name = 'Columna ' + (objects.length + 1);
       } else if (type === 'camera') {
-        // CÁMARA CCTV REALISTA
         const group = crearMallaCamaraCCTV();
 
         const fov = 60, dist = 8;
@@ -1902,7 +2274,7 @@
 
     function abrirModalCamara(data) {
       document.getElementById('modal-cam-title').innerText = data.name;
-      document.getElementById('modal-cam-details').innerText = `FOV: ${data.fov || 60}° | Alcance: ${data.dist || 8}m`;
+      document.getElementById('modal-cam-details').innerText = `Ubicación: ${tiendaActivaId} | FOV: ${data.fov || 60}° | Alcance: ${data.dist || 8}m`;
       document.getElementById('modal-cam-img').src = data.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop&q=80';
       document.getElementById('camera-modal').classList.add('show');
     }
@@ -1942,7 +2314,7 @@
       renderer.render(scene, camera);
       const dataURL = renderer.domElement.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = 'mapa_3d_tienda_' + Date.now() + '.png';
+      link.download = 'mapa_3d_' + tiendaActivaId.replace(/\s+/g, '_') + '_' + Date.now() + '.png';
       link.href = dataURL;
       link.click();
     }
@@ -1959,14 +2331,51 @@
         imageUrl: o.userData.imageUrl
       }));
 
+      const claveStorage = 'MAPA_3D_' + tiendaActivaId;
+
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler((res) => alert(res.message))
-          .guardarMapaTienda('tienda_main', JSON.stringify(serializado));
+          .guardarMapaTienda(tiendaActivaId, JSON.stringify(serializado));
       } else {
-        localStorage.setItem('MAPA_3D_DEMO', JSON.stringify(serializado));
-        alert('Plano 3D guardado exitosamente.');
+        localStorage.setItem(claveStorage, JSON.stringify(serializado));
+        alert('Plano 3D guardado exitosamente para la tienda: ' + tiendaActivaId);
       }
+    }
+
+    function cargarPlanoGAS() {
+      const claveStorage = 'MAPA_3D_' + tiendaActivaId;
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res.data) rebuildSceneFromData(res.data);
+            else cargarPreset('farmacia');
+          })
+          .cargarMapaTienda(tiendaActivaId);
+      } else {
+        const local = localStorage.getItem(claveStorage);
+        if (local) rebuildSceneFromData(JSON.parse(local));
+        else cargarPreset('farmacia');
+      }
+    }
+
+    function rebuildSceneFromData(data) {
+      limpiarEscena();
+      data.forEach(item => {
+        addStructure(item.type);
+        const last = objects[objects.length - 1];
+        last.userData.name = item.name;
+        last.position.set(...item.pos);
+        if (item.rot) last.rotation.set(...item.rot);
+        if (item.scale) last.scale.set(...item.scale);
+        if (item.type === 'camera') {
+          last.userData.fov = item.fov;
+          last.userData.dist = item.dist;
+          last.userData.imageUrl = item.imageUrl;
+        }
+      });
+      deseleccionarObjeto();
+      actualizarHUD();
     }
   </script>
 </body>
