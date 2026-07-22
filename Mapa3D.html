@@ -16,7 +16,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
   <?!= include('Global_CSS'); ?>
 
@@ -30,12 +29,11 @@
       overflow-x: hidden;
     }
 
-    /* Corrección de altura y posición para no ocultarse detrás de .top-bar (50px) */
     .mapa3d-wrapper {
       display: flex;
       flex-direction: column;
       height: calc(100vh - 50px);
-      margin-top: 50px; /* Margen superior exacto de la barra global */
+      margin-top: 50px;
       position: relative;
     }
 
@@ -48,7 +46,7 @@
       backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 50;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -76,11 +74,11 @@
       background: rgba(30, 41, 59, 0.8);
       color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 5px 10px;
+      padding: 5px 9px;
       border-radius: 6px;
       cursor: pointer;
       font-family: inherit;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 500;
       display: flex;
       align-items: center;
@@ -230,12 +228,6 @@
       box-sizing: border-box;
     }
 
-    .form-input:focus {
-      outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 6px rgba(56, 189, 248, 0.3);
-    }
-
     .coord-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -261,7 +253,6 @@
       object-fit: cover;
     }
 
-    /* Modal de Monitoreo */
     .camera-modal-overlay {
       position: fixed;
       top: 0;
@@ -320,7 +311,6 @@
       margin-top: 8px;
     }
 
-    /* HUD flotante en pantalla 3D */
     .hud-overlay {
       position: absolute;
       bottom: 16px;
@@ -343,23 +333,23 @@
   <?!= include('Global_Navbar'); ?>
 
   <div class="mapa3d-wrapper">
-    <!-- Toolbar Superior (Completamente visible debajo del Navbar) -->
+    <!-- Toolbar Superior -->
     <div class="mapa3d-toolbar">
       <div class="toolbar-title">
         <span class="material-symbols-outlined" style="color: #38bdf8;">domain</span>
         Diseñador & Centro Monitoreo 3D
       </div>
 
-      <!-- Herramientas de Gizmo 3D -->
+      <!-- Herramientas Gizmo -->
       <div class="toolbar-group" id="gizmo-mode-group">
-        <button id="gizmo-translate" class="btn-gizmo-mode active" onclick="setGizmoMode('translate')" title="Mover Objeto (T)">
-          <span class="material-symbols-outlined" style="font-size:16px;">open_with</span> Mover
+        <button id="gizmo-translate" class="btn-gizmo-mode active" onclick="setGizmoMode('translate')" title="Mover (T)">
+          <span class="material-symbols-outlined" style="font-size:15px;">open_with</span> Mover
         </button>
-        <button id="gizmo-rotate" class="btn-gizmo-mode" onclick="setGizmoMode('rotate')" title="Rotar Objeto (R)">
-          <span class="material-symbols-outlined" style="font-size:16px;">sync</span> Rotar
+        <button id="gizmo-rotate" class="btn-gizmo-mode" onclick="setGizmoMode('rotate')" title="Rotar (R)">
+          <span class="material-symbols-outlined" style="font-size:15px;">sync</span> Rotar
         </button>
-        <button id="gizmo-scale" class="btn-gizmo-mode" onclick="setGizmoMode('scale')" title="Escalar Objeto (S)">
-          <span class="material-symbols-outlined" style="font-size:16px;">aspect_ratio</span> Escalar
+        <button id="gizmo-scale" class="btn-gizmo-mode" onclick="setGizmoMode('scale')" title="Escalar (S)">
+          <span class="material-symbols-outlined" style="font-size:15px;">aspect_ratio</span> Escalar
         </button>
       </div>
 
@@ -373,45 +363,54 @@
         </button>
       </div>
 
-      <!-- Herramientas de Creación de Objetos -->
+      <!-- Elementos de Creación de Tienda -->
       <div class="toolbar-group" id="editor-tools">
         <button class="btn-tool" onclick="addStructure('gondola_doble')">
-          <span class="material-symbols-outlined" style="font-size:15px;">table_restaurant</span> + Góndola
+          <span class="material-symbols-outlined" style="font-size:15px;">table_restaurant</span> Góndola Doble
+        </button>
+        <button class="btn-tool" onclick="addStructure('gondola_pared')">
+          <span class="material-symbols-outlined" style="font-size:15px;">shelves</span> Estante Pared
         </button>
         <button class="btn-tool" onclick="addStructure('mostrador')">
-          <span class="material-symbols-outlined" style="font-size:15px;">point_of_sale</span> + Caja
+          <span class="material-symbols-outlined" style="font-size:15px;">point_of_sale</span> Caja POS
         </button>
         <button class="btn-tool" onclick="addStructure('nevera')">
-          <span class="material-symbols-outlined" style="font-size:15px;">kitchen</span> + Nevera
+          <span class="material-symbols-outlined" style="font-size:15px;">kitchen</span> Nevera
+        </button>
+        <button class="btn-tool" onclick="addStructure('isla_promo')">
+          <span class="material-symbols-outlined" style="font-size:15px;">view_in_ar</span> Isla Promo
+        </button>
+        <button class="btn-tool" onclick="addStructure('puerta_entrada')">
+          <span class="material-symbols-outlined" style="font-size:15px;">sensor_door</span> Entradas
+        </button>
+        <button class="btn-tool" onclick="addStructure('antena_antirrobo')">
+          <span class="material-symbols-outlined" style="font-size:15px;">shield_with_house</span> Antirrobo
         </button>
         <button class="btn-tool" onclick="addStructure('wall')">
-          <span class="material-symbols-outlined" style="font-size:15px;">door_sliding</span> + Pared
+          <span class="material-symbols-outlined" style="font-size:15px;">door_sliding</span> Pared
         </button>
         <button class="btn-tool" onclick="addStructure('column')">
-          <span class="material-symbols-outlined" style="font-size:15px;">view_column</span> + Columna
+          <span class="material-symbols-outlined" style="font-size:15px;">view_column</span> Columna
         </button>
         <button class="btn-tool" onclick="addStructure('camera')" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
-          <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> + Cámara
+          <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Cámara CCTV
         </button>
       </div>
 
-      <!-- Plantillas Rápidas (Presets) -->
+      <!-- Presets -->
       <div class="toolbar-group">
-        <button class="btn-tool" onclick="cargarPreset('farmacia')" title="Plantilla Farmacia/Supermercado">
+        <button class="btn-tool" onclick="cargarPreset('farmacia')" title="Plantilla Farmacia">
           <span class="material-symbols-outlined" style="font-size:15px;">local_pharmacy</span> Farmacia
         </button>
-        <button class="btn-tool" onclick="cargarPreset('express')" title="Plantilla Tienda Express">
+        <button class="btn-tool" onclick="cargarPreset('express')" title="Plantilla Express">
           <span class="material-symbols-outlined" style="font-size:15px;">storefront</span> Express
         </button>
       </div>
 
-      <!-- Acciones y Exportación -->
+      <!-- Guardar y Limpiar -->
       <div class="toolbar-group">
-        <button class="btn-tool" onclick="alternarPatrulla3D()" id="btn-patrulla" style="color:#f59e0b;">
-          <span class="material-symbols-outlined" style="font-size:15px;">local_police</span> Patrulla 3D
-        </button>
         <button class="btn-tool" onclick="capturarPantalla3D()" title="Capturar Foto PNG del Mapa">
-          <span class="material-symbols-outlined" style="font-size:15px;">photo_camera</span> Captura
+          <span class="material-symbols-outlined" style="font-size:15px;">photo_camera</span> Foto PNG
         </button>
         <button class="btn-tool" onclick="guardarPlanoGAS()" style="color:#fff; background:#0284c7;">
           <span class="material-symbols-outlined" style="font-size:15px;">save</span> Guardar
@@ -428,12 +427,12 @@
 
       <!-- HUD Informativo -->
       <div class="hud-overlay">
-        <div>Total Objetos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
-        <div>Cámaras Activas: <strong id="hud-count-cam" style="color:#10b981;">0</strong></div>
-        <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición</strong></div>
+        <div>Total Elementos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
+        <div>Cámaras CCTV: <strong id="hud-count-cam" style="color:#10b981;">0</strong></div>
+        <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
       </div>
 
-      <!-- Inspector Panel -->
+      <!-- Inspector Sidebar -->
       <div id="inspector-panel" class="inspector-panel hidden">
         <div class="panel-header">
           <div class="panel-title" id="inspector-title">
@@ -498,7 +497,7 @@
         <span class="material-symbols-outlined">close</span>
       </button>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-        <h3 id="modal-cam-title" style="margin:0; font-size:1.2rem; color:#fff;">Cámara Monitoreo</h3>
+        <h3 id="modal-cam-title" style="margin:0; font-size:1.2rem; color:#fff;">Cámara CCTV Monitoreo</h3>
         <span style="background:rgba(16,185,129,0.2); color:#10b981; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">● EN VIVO</span>
       </div>
       <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:10px;" id="modal-cam-details">FOV: 60° | Alcance: 8m</div>
@@ -512,7 +511,6 @@
     let objects = [];
     let selectedObject = null;
     let raycaster, mouse;
-    let patrullando = false, patrullaTween = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       initThreeJS();
@@ -589,13 +587,66 @@
       scene.add(floor);
     }
 
-    function animate(time) {
+    function animate() {
       requestAnimationFrame(animate);
-      if (typeof TWEEN !== 'undefined') TWEEN.update(time);
       controls.update();
       renderer.render(scene, camera);
     }
 
+    // Crear Malla 3D Realista de Cámara CCTV Bullet con Brazo, Parasol y Lente
+    function crearMallaCamaraCCTV() {
+      const group = new THREE.Group();
+
+      // 1. Base / Placa de Montaje a Pared o Techo
+      const baseGeo = new THREE.CylinderGeometry(0.25, 0.3, 0.1, 16);
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3 });
+      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+      baseMesh.rotation.x = Math.PI / 2;
+      group.add(baseMesh);
+
+      // 2. Brazo Articulado / Soporte de Ángulo
+      const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 12);
+      const armMesh = new THREE.Mesh(armGeo, baseMat);
+      armMesh.rotation.x = Math.PI / 4;
+      armMesh.position.set(0, -0.18, 0.2);
+      group.add(armMesh);
+
+      // 3. Cuerpo Cilíndrico de Cámara CCTV
+      const bodyGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.85, 16);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.2 });
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.rotation.x = Math.PI / 2;
+      bodyMesh.position.set(0, -0.32, 0.55);
+      group.add(bodyMesh);
+
+      // 4. Visera Parasol Superior
+      const shieldGeo = new THREE.CylinderGeometry(0.33, 0.33, 0.75, 16, 1, false, 0, Math.PI);
+      const shieldMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.5 });
+      const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+      shieldMesh.rotation.x = Math.PI / 2;
+      shieldMesh.rotation.z = Math.PI;
+      shieldMesh.position.set(0, -0.28, 0.58);
+      group.add(shieldMesh);
+
+      // 5. Lente Frontal Oscura
+      const lensGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 16);
+      const lensMat = new THREE.MeshStandardMaterial({ color: 0x020617, roughness: 0.1 });
+      const lensMesh = new THREE.Mesh(lensGeo, lensMat);
+      lensMesh.rotation.x = Math.PI / 2;
+      lensMesh.position.set(0, -0.32, 0.98);
+      group.add(lensMesh);
+
+      // 6. LED Verde de Estado Activo
+      const ledGeo = new THREE.SphereGeometry(0.04, 8, 8);
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+      const ledMesh = new THREE.Mesh(ledGeo, ledMat);
+      ledMesh.position.set(0.16, -0.16, 0.98);
+      group.add(ledMesh);
+
+      return group;
+    }
+
+    // Agregar Estructuras de Tienda
     function addStructure(type) {
       if (currentMode !== 'edit') return;
 
@@ -610,14 +661,35 @@
         bodyMesh.castShadow = true;
         group.add(bodyMesh);
         mesh = group;
-        data.name = 'Góndola ' + (objects.length + 1);
+        data.name = 'Góndola Doble ' + (objects.length + 1);
+      } else if (type === 'gondola_pared') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(3.5, 2.8, 0.6);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.4;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+        mesh = group;
+        data.name = 'Estante Pared ' + (objects.length + 1);
       } else if (type === 'mostrador') {
-        const geo = new THREE.BoxGeometry(3, 1.2, 1.2);
-        const mat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3 });
-        mesh = new THREE.Mesh(geo, mat);
-        mesh.position.y = 0.6;
-        mesh.castShadow = true;
-        data.name = 'Caja Registradora ' + (objects.length + 1);
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(3, 1.2, 1.2);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 0.6;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+
+        // Pantalla POS registradora
+        const posGeo = new THREE.BoxGeometry(0.5, 0.4, 0.1);
+        const posMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+        const posMesh = new THREE.Mesh(posGeo, posMat);
+        posMesh.position.set(0.8, 1.4, 0);
+        group.add(posMesh);
+
+        mesh = group;
+        data.name = 'Caja POS ' + (objects.length + 1);
       } else if (type === 'nevera') {
         const group = new THREE.Group();
         const bodyGeo = new THREE.BoxGeometry(2, 3, 1.2);
@@ -634,6 +706,31 @@
 
         mesh = group;
         data.name = 'Nevera Exhibidora ' + (objects.length + 1);
+      } else if (type === 'isla_promo') {
+        const geo = new THREE.CylinderGeometry(1.5, 1.8, 1, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xec4899, roughness: 0.3 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.5;
+        mesh.castShadow = true;
+        data.name = 'Isla Promocional ' + (objects.length + 1);
+      } else if (type === 'puerta_entrada') {
+        const group = new THREE.Group();
+        const doorGeo = new THREE.BoxGeometry(3.5, 3.2, 0.15);
+        const doorMat = new THREE.MeshPhysicalMaterial({ color: 0x94e2d5, transparent: true, opacity: 0.4 });
+        const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+        doorMesh.position.y = 1.6;
+        group.add(doorMesh);
+        mesh = group;
+        data.name = 'Puerta Cristal ' + (objects.length + 1);
+      } else if (type === 'antena_antirrobo') {
+        const group = new THREE.Group();
+        const p1Geo = new THREE.BoxGeometry(0.15, 2.2, 0.4);
+        const p1Mat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7 });
+        const p1Mesh = new THREE.Mesh(p1Geo, p1Mat);
+        p1Mesh.position.y = 1.1;
+        group.add(p1Mesh);
+        mesh = group;
+        data.name = 'Sensor Antirrobo ' + (objects.length + 1);
       } else if (type === 'wall') {
         const geo = new THREE.BoxGeometry(8, 3.5, 0.4);
         const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
@@ -649,31 +746,21 @@
         mesh.castShadow = true;
         data.name = 'Columna ' + (objects.length + 1);
       } else if (type === 'camera') {
-        const group = new THREE.Group();
-        const bodyGeo = new THREE.SphereGeometry(0.45, 16, 16);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.2, metalness: 0.8 });
-        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-        group.add(bodyMesh);
-
-        const lensGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.35, 16);
-        const lensMat = new THREE.MeshStandardMaterial({ color: 0x090d16 });
-        const lensMesh = new THREE.Mesh(lensGeo, lensMat);
-        lensMesh.rotation.x = Math.PI / 2;
-        lensMesh.position.z = 0.35;
-        group.add(lensMesh);
+        // CÁMARA CCTV REALISTA
+        const group = crearMallaCamaraCCTV();
 
         const fov = 60, dist = 8;
         const coneGeo = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
         const coneMat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true, transparent: true, opacity: 0.35 });
         const coneMesh = new THREE.Mesh(coneGeo, coneMat);
         coneMesh.rotation.x = -Math.PI / 2;
-        coneMesh.position.z = dist / 2;
+        coneMesh.position.set(0, -0.32, dist / 2 + 0.98);
         coneMesh.name = 'frustumCone';
         group.add(coneMesh);
 
         group.position.set((Math.random() - 0.5) * 8, 4, (Math.random() - 0.5) * 8);
         mesh = group;
-        data.name = 'Cámara Monitoreo ' + (objects.length + 1);
+        data.name = 'Cámara CCTV ' + (objects.length + 1);
         data.fov = fov;
         data.dist = dist;
         data.imageUrl = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
@@ -797,7 +884,7 @@
         if (coneMesh) {
           coneMesh.geometry.dispose();
           coneMesh.geometry = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
-          coneMesh.position.z = dist / 2;
+          coneMesh.position.set(0, -0.32, dist / 2 + 0.98);
         }
       }
     }
@@ -849,14 +936,12 @@
     function cargarPreset(type) {
       limpiarEscena();
       if (type === 'farmacia') {
-        // Preset Farmacia/Supermercado
         addStructure('gondola_doble'); objects[objects.length - 1].position.set(-6, 0, -4);
         addStructure('gondola_doble'); objects[objects.length - 1].position.set(2, 0, -4);
-        addStructure('gondola_doble'); objects[objects.length - 1].position.set(-6, 0, 4);
-        addStructure('gondola_doble'); objects[objects.length - 1].position.set(2, 0, 4);
+        addStructure('gondola_pared'); objects[objects.length - 1].position.set(-12, 0, -10);
         addStructure('mostrador'); objects[objects.length - 1].position.set(10, 0, 8);
-        addStructure('nevera'); objects[objects.length - 1].position.set(-12, 0, -10);
         addStructure('nevera'); objects[objects.length - 1].position.set(-8, 0, -10);
+        addStructure('antena_antirrobo'); objects[objects.length - 1].position.set(0, 0, 12);
         addStructure('camera'); objects[objects.length - 1].position.set(-14, 5, -12);
         addStructure('camera'); objects[objects.length - 1].position.set(14, 5, 10);
       } else if (type === 'express') {
@@ -867,46 +952,6 @@
       }
       deseleccionarObjeto();
       actualizarHUD();
-    }
-
-    function alternarPatrulla3D() {
-      patrullando = !patrullando;
-      const btn = document.getElementById('btn-patrulla');
-      btn.classList.toggle('active', patrullando);
-
-      if (patrullando) {
-        const cams = objects.filter(o => o.userData.type === 'camera');
-        if (cams.length === 0) {
-          alert('Añade al menos una cámara para iniciar la Patrulla 3D.');
-          patrullando = false;
-          btn.classList.remove('active');
-          return;
-        }
-        iniciarPatrullaCamaras(cams, 0);
-      } else {
-        if (patrullaTween) patrullaTween.stop();
-      }
-    }
-
-    function iniciarPatrullaCamaras(cams, index) {
-      if (!patrullando) return;
-      const camTarget = cams[index % cams.length];
-      const targetPos = {
-        x: camTarget.position.x,
-        y: camTarget.position.y + 1,
-        z: camTarget.position.z + 4
-      };
-
-      patrullaTween = new TWEEN.Tween(camera.position)
-        .to(targetPos, 3500)
-        .easing(TWEEN.Easing.Quadratic.InOut)
-        .onUpdate(() => controls.update())
-        .onComplete(() => {
-          if (patrullando) {
-            setTimeout(() => iniciarPatrullaCamaras(cams, index + 1), 1500);
-          }
-        })
-        .start();
     }
 
     function capturarPantalla3D() {
