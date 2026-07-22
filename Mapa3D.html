@@ -130,7 +130,7 @@
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 6px;
-      min-width: 210px;
+      min-width: 220px;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
       opacity: 0;
       visibility: hidden;
@@ -185,11 +185,6 @@
       transition: all 0.2s ease;
     }
 
-    .btn-action-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(116, 199, 236, 0.5);
-    }
-
     .mode-switch-container {
       display: flex;
       background: var(--glass-bg);
@@ -234,7 +229,7 @@
       background: radial-gradient(circle at center, #1e1e2e 0%, #181825 70%, #11111b 100%);
     }
 
-    /* HUB MENU OVERLAY (LIMPIO SIN ICONOS REPETIDOS) */
+    /* HUB MENU OVERLAY & CONFIGURADOR DE TIENDA */
     .hub-modal-overlay {
       position: fixed;
       top: 0;
@@ -260,15 +255,17 @@
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
-      width: 640px;
+      width: 680px;
       max-width: 92vw;
       padding: 32px;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .hub-header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .hub-title {
@@ -286,14 +283,14 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .cadena-card {
       background: var(--glass-bg-hover);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
-      padding: 20px 14px;
+      padding: 16px 12px;
       text-align: center;
       cursor: pointer;
       transition: all 0.25s ease;
@@ -302,7 +299,6 @@
     .cadena-card:hover {
       background: rgba(116, 199, 236, 0.12);
       border-color: var(--sapphire);
-      transform: translateY(-2px);
     }
 
     .cadena-card.active {
@@ -312,10 +308,20 @@
     }
 
     .cadena-name {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       color: var(--text-main);
-      letter-spacing: -0.2px;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+      background: rgba(24, 24, 37, 0.6);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
     }
 
     .hub-select {
@@ -329,12 +335,7 @@
       font-size: 1rem;
       box-sizing: border-box;
       cursor: pointer;
-      margin-bottom: 24px;
-    }
-
-    .hub-select:focus {
-      outline: none;
-      border-color: var(--sapphire);
+      margin-bottom: 20px;
     }
 
     .hub-actions {
@@ -360,17 +361,12 @@
     .btn-hub-primary {
       background: linear-gradient(135deg, var(--sapphire), var(--blue));
       color: #11111b;
-      box-shadow: 0 4px 16px rgba(116, 199, 236, 0.4);
     }
 
     .btn-hub-secondary {
       background: rgba(49, 50, 68, 0.8);
       color: var(--success);
       border: 1px solid rgba(166, 227, 161, 0.4);
-    }
-
-    .btn-hub-secondary:hover {
-      background: rgba(166, 227, 161, 0.15);
     }
 
     /* Inspector Panel */
@@ -437,89 +433,6 @@
       font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .rot-quick-btn:hover {
-      background: rgba(116, 199, 236, 0.2);
-      color: #fff;
-    }
-
-    .image-preview-box {
-      width: 100%;
-      height: 110px;
-      border-radius: 6px;
-      background: #11111b;
-      border: 1px dashed var(--glass-border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-top: 4px;
-    }
-
-    .image-preview-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .camera-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(17, 17, 27, 0.8);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .camera-modal-overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .camera-modal {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      width: 500px;
-      max-width: 90vw;
-      padding: 18px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-      position: relative;
-    }
-
-    .modal-close-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      color: var(--text-muted);
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .camera-modal-img {
-      width: 100%;
-      height: 250px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid var(--glass-border);
-      margin-top: 8px;
     }
 
     .hud-overlay {
@@ -543,17 +456,18 @@
 <body>
   <?!= include('Global_Navbar'); ?>
 
-  <!-- HUB INICIAL DE SELECCIÓN DE TIENDA (LIMPIO SIN ICONOS DE EMOJIS) -->
+  <!-- HUB INICIAL DE CONFIGURACIÓN Y DIMENSIONADO DE TIENDA -->
   <div id="hub-modal" class="hub-modal-overlay">
     <div class="hub-card">
       <div class="hub-header">
         <h2 class="hub-title">
           <span class="material-symbols-outlined" style="color:var(--sapphire); font-size:2rem;">domain</span>
-          Centro de Monitoreo 3D
+          Configurador de Tiendas 3D
         </h2>
-        <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">Selecciona la tienda de Puerto Rico para diseñar o monitorear en 3D</p>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">Define el local, dimensiones y ambiente de la sucursal antes de comenzar</p>
       </div>
 
+      <!-- Selección de Cadena -->
       <div class="cadena-grid">
         <div class="cadena-card active" onclick="seleccionarCadena('farmacias', this)">
           <span class="cadena-name">Farmacias Rey</span>
@@ -567,6 +481,30 @@
       </div>
 
       <select id="hub-select-tienda" class="hub-select"></select>
+
+      <!-- CONFIGURACIÓN DE DIMENSIONES Y AMBIENTE DE LA TIENDA -->
+      <div style="font-size:0.85rem; font-weight:700; color:var(--sapphire); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <span class="material-symbols-outlined" style="font-size:18px;">aspect_ratio</span> Dimensiones del Local y Estilo
+      </div>
+
+      <div class="config-grid">
+        <div>
+          <label class="form-label">Ancho Tienda (m)</label>
+          <input type="number" id="config-ancho" class="form-input" value="40" min="20" max="100">
+        </div>
+        <div>
+          <label class="form-label">Largo Tienda (m)</label>
+          <input type="number" id="config-largo" class="form-input" value="30" min="15" max="80">
+        </div>
+        <div>
+          <label class="form-label">Estilo de Piso / Iluminación</label>
+          <select id="config-estilo-piso" class="form-input">
+            <option value="ceramica">Cerámica Clara (Retail)</option>
+            <option value="concreto">Concreto Industrial</option>
+            <option value="marmol">Mármol Oscuro Tech</option>
+          </select>
+        </div>
+      </div>
 
       <div class="hub-actions">
         <button class="btn-hub-main btn-hub-primary" onclick="iniciarExperiencia3D('edit')">
@@ -583,14 +521,14 @@
     <!-- TOOLBAR ORGANIZADO -->
     <div class="mapa3d-toolbar">
       <div class="toolbar-title">
-        <button class="btn-tool-dropdown" onclick="abrirHubSeleccion()" title="Cambiar Tienda">
+        <button class="btn-tool-dropdown" onclick="abrirHubSeleccion()" title="Configurar Tienda / Dimensiones">
           <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
         </button>
         <span id="label-tienda-activa" class="store-badge">FR-01 LITHEDA</span>
       </div>
 
       <div class="toolbar-actions-cluster">
-        <!-- Dropdown 1: Gizmos / Manipulación 3D -->
+        <!-- Gizmos -->
         <div class="tool-dropdown">
           <button class="btn-tool-dropdown">
             <span class="material-symbols-outlined" style="font-size:16px; color:var(--sapphire);">open_with</span>
@@ -609,7 +547,7 @@
           </div>
         </div>
 
-        <!-- Dropdown 2: Arquitectura y Exteriores -->
+        <!-- Dropdown 1: Arquitectura y Zonas Preconstruidas -->
         <div class="tool-dropdown" id="editor-tools-arch">
           <button class="btn-tool-dropdown">
             <span class="material-symbols-outlined" style="font-size:16px; color:var(--accent-primary);">domain</span>
@@ -625,16 +563,26 @@
             <button class="dropdown-item" onclick="addStructure('puerta_entrada')">
               <span class="material-symbols-outlined">sensor_door</span> Puerta Cristal
             </button>
+
+            <!-- ZONAS Y CUADROS PREESTABLECIDOS -->
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--sapphire); padding:4px 12px; font-weight:700;">CUADROS PREESTABLECIDOS</div>
+            <button class="dropdown-item" onclick="addZonaPreestablecida('recetario')">
+              <span class="material-symbols-outlined">medical_services</span> Cuadro Área Recetario
+            </button>
+            <button class="dropdown-item" onclick="addZonaPreestablecida('almacen')">
+              <span class="material-symbols-outlined">inventory</span> Cuadro Cuarto Almacén
+            </button>
+            <button class="dropdown-item" onclick="addZonaPreestablecida('oficina_box')">
+              <span class="material-symbols-outlined">meeting_room</span> Cuadro Oficina Admin
+            </button>
             <button class="dropdown-item" onclick="addStructure('parking_area')">
               <span class="material-symbols-outlined">local_parking</span> Área de Parking
-            </button>
-            <button class="dropdown-item" onclick="addStructure('arbol_planta')">
-              <span class="material-symbols-outlined">park</span> Árbol / Planta 3D
             </button>
           </div>
         </div>
 
-        <!-- Dropdown 3: Mobiliario Comercial Ampliado -->
+        <!-- Dropdown 2: Mobiliario Comercial Ampliado -->
         <div class="tool-dropdown" id="editor-tools-mob">
           <button class="btn-tool-dropdown">
             <span class="material-symbols-outlined" style="font-size:16px; color:var(--blue);">storefront</span>
@@ -669,13 +617,10 @@
             <button class="dropdown-item" onclick="addStructure('isla_promo')">
               <span class="material-symbols-outlined">view_in_ar</span> Isla Promocional
             </button>
-            <button class="dropdown-item" onclick="addStructure('tarima_pallet')">
-              <span class="material-symbols-outlined">inventory_2</span> Paleta / Tarima Almacén
-            </button>
+
             <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
-            <div id="prefabs-custom-list">
-              <!-- Elementos Personalizados Guardados -->
-            </div>
+            <div style="font-size:0.72rem; color:var(--accent-primary); padding:4px 12px; font-weight:700;">MIS PREFABS CONJUNTOS</div>
+            <div id="prefabs-custom-list"></div>
           </div>
         </div>
 
@@ -715,7 +660,7 @@
       <div class="hud-overlay">
         <div>Tienda: <strong id="hud-store-name" style="color:var(--sapphire);">FR-01 LITHEDA</strong></div>
         <div>Total Elementos: <strong id="hud-count-obj" style="color:var(--sapphire);">0</strong></div>
-        <div>Cámaras CCTV: <strong id="hud-count-cam" style="color:var(--success);">0</strong></div>
+        <div>Seleccionados: <strong id="hud-count-selected" style="color:var(--accent-primary);">0</strong></div>
         <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
       </div>
 
@@ -729,7 +674,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Nombre del Elemento</label>
+          <label class="form-label">Nombre del Elemento / Conjunto</label>
           <input type="text" id="inp-nombre" class="form-input" oninput="actualizarObjetoDesdeInputs()">
         </div>
 
@@ -777,12 +722,13 @@
           </div>
         </div>
 
+        <!-- GUARDAR CONJUNTO MULTISELECCIONADO COMO PREFAB -->
         <div style="margin-top: 14px; border-top: 1px solid var(--glass-border); padding-top: 10px;">
-          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; margin-bottom:8px; color:var(--accent-primary); border-color:rgba(249,226,175,0.4);" onclick="guardarElementoComoPrefab()">
-            <span class="material-symbols-outlined" style="font-size:16px;">bookmark_add</span> Guardar como Prefab Personalizado
+          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; margin-bottom:8px; color:var(--accent-primary); border-color:rgba(249,226,175,0.4);" onclick="guardarConjuntoComoPrefab()">
+            <span class="material-symbols-outlined" style="font-size:16px;">bookmark_add</span> ⭐ Guardar Conjunto como Prefab
           </button>
           <button class="btn-tool-dropdown" style="width:100%; justify-content:center; color: var(--danger); border-color: rgba(243,139,168,0.4);" onclick="eliminarObjetoSeleccionado()">
-            <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Eliminar
+            <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Eliminar Seleccionado(s)
           </button>
         </div>
       </div>
@@ -808,10 +754,12 @@
     let scene, camera, renderer, controls, transformControls;
     let currentMode = 'edit';
     let objects = [];
+    let selectedObjects = []; // Arreglo para Selección Múltiple!
     let selectedObject = null;
     let raycaster, mouse;
     let cadenaSeleccionada = 'farmacias';
     let tiendaActivaId = 'FR-01 LITHEDA';
+    let floorMesh = null;
 
     const TIENDAS_DATA = (typeof TIENDAS !== 'undefined') ? TIENDAS : {
       farmacias: ["FR-01 LITHEDA", "FR-02 SENORIAL", "FR-03 CAIMITO", "FR-04 GURABO", "FR-05 BARRIO OBRERO", "FR-08 HUMACAO", "FR-18 GUAYNABO"],
@@ -822,7 +770,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       poblarSelectTiendas('farmacias');
       initThreeJS();
-      crearPisoTienda();
+      crearPisoTienda(40, 30, 'ceramica');
       setupEventListeners();
       renderizarMenuPrefabsPersonalizados();
     });
@@ -853,6 +801,12 @@
     function iniciarExperiencia3D(modo) {
       const select = document.getElementById('hub-select-tienda');
       tiendaActivaId = select.value || 'FR-01 LITHEDA';
+
+      const ancho = parseFloat(document.getElementById('config-ancho').value) || 40;
+      const largo = parseFloat(document.getElementById('config-largo').value) || 30;
+      const estilo = document.getElementById('config-estilo-piso').value || 'ceramica';
+
+      crearPisoTienda(ancho, largo, estilo);
 
       document.getElementById('label-tienda-activa').innerText = tiendaActivaId;
       document.getElementById('hud-store-name').innerText = tiendaActivaId;
@@ -922,25 +876,29 @@
       animate();
     }
 
-    function crearPisoTienda() {
-      const floorGeo = new THREE.PlaneGeometry(40, 30);
-      const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e1e2e, roughness: 0.4, metalness: 0.2 });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
-      floor.rotation.x = -Math.PI / 2;
-      floor.receiveShadow = true;
-      scene.add(floor);
+    function crearPisoTienda(ancho = 40, largo = 30, estilo = 'ceramica') {
+      if (floorMesh) scene.remove(floorMesh);
+
+      const floorGeo = new THREE.PlaneGeometry(ancho, largo);
+      let colorPiso = 0x1e1e2e;
+      if (estilo === 'concreto') colorPiso = 0x313244;
+      else if (estilo === 'marmol') colorPiso = 0x181825;
+
+      const floorMat = new THREE.MeshStandardMaterial({ color: colorPiso, roughness: 0.4, metalness: 0.2 });
+      floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.receiveShadow = true;
+      scene.add(floorMesh);
     }
 
     function animate() {
       requestAnimationFrame(animate);
-      if (typeof TWEEN !== 'undefined') TWEEN.update();
       controls.update();
       renderer.render(scene, camera);
     }
 
     function crearMallaCamaraCCTV() {
       const group = new THREE.Group();
-
       const baseGeo = new THREE.CylinderGeometry(0.25, 0.3, 0.1, 16);
       const baseMat = new THREE.MeshStandardMaterial({ color: 0x45475a, metalness: 0.8, roughness: 0.3 });
       const baseMesh = new THREE.Mesh(baseGeo, baseMat);
@@ -982,6 +940,23 @@
       group.add(ledMesh);
 
       return group;
+    }
+
+    // AÑADIR ESTRUCTURAS Y ZONAS PREESTABLECIDAS
+    function addZonaPreestablecida(tipoZona) {
+      if (currentMode !== 'edit') return;
+      if (tipoZona === 'recetario') {
+        addStructure('wall'); objects[objects.length-1].position.set(-8, 1.75, -6); objects[objects.length-1].scale.set(1,1,1);
+        addStructure('mostrador'); objects[objects.length-1].position.set(-6, 0.6, -3);
+        addStructure('gondola_pared'); objects[objects.length-1].position.set(-10, 0, -8);
+      } else if (tipoZona === 'almacen') {
+        addStructure('wall'); objects[objects.length-1].position.set(10, 1.75, -8);
+        addStructure('cajas_carton'); objects[objects.length-1].position.set(8, 0, -10);
+        addStructure('tarima_pallet'); objects[objects.length-1].position.set(11, 0, -10);
+      } else if (tipoZona === 'oficina_box') {
+        addStructure('wall'); objects[objects.length-1].position.set(-10, 1.75, 8);
+        addStructure('escritorio_oficina'); objects[objects.length-1].position.set(-10, 0, 8);
+      }
     }
 
     function addStructure(type) {
@@ -1045,7 +1020,7 @@
       } else if (type === 'mesa_asientos') {
         const group = new THREE.Group();
         const tableGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.9, 16);
-        const tableMat = new THREE.MeshStandardMaterial({ color: 0xffab387, roughness: 0.4 });
+        const tableMat = new THREE.MeshStandardMaterial({ color: 0xfab387, roughness: 0.4 });
         const tableMesh = new THREE.Mesh(tableGeo, tableMat);
         tableMesh.position.y = 0.45;
         group.add(tableMesh);
@@ -1177,7 +1152,7 @@
     function setupEventListeners() {
       const container = document.getElementById('webgl-container');
 
-      container.addEventListener('dblclick', (event) => {
+      container.addEventListener('dblclick', () => {
         if (selectedObject) enfocarObjetoSeleccionado();
       });
 
@@ -1197,7 +1172,18 @@
             rootObj = rootObj.parent;
           }
           if (currentMode === 'edit') {
-            seleccionarObjeto(rootObj);
+            if (event.shiftKey) {
+              // SELECCIÓN MÚLTIPLE CON TECLA SHIFT!
+              if (selectedObjects.includes(rootObj)) {
+                selectedObjects = selectedObjects.filter(o => o !== rootObj);
+              } else {
+                selectedObjects.push(rootObj);
+              }
+              if (selectedObjects.length > 0) seleccionarObjeto(selectedObjects[selectedObjects.length - 1]);
+            } else {
+              selectedObjects = [rootObj];
+              seleccionarObjeto(rootObj);
+            }
           } else if (currentMode === 'monitor') {
             if (rootObj.userData.type === 'camera') {
               abrirModalCamara(rootObj.userData);
@@ -1246,13 +1232,14 @@
 
     function seleccionarObjeto(obj) {
       selectedObject = obj;
+      if (!selectedObjects.includes(obj)) selectedObjects.push(obj);
       transformControls.attach(obj);
 
       const inspector = document.getElementById('inspector-panel');
       const secCam = document.getElementById('section-camera-props');
 
-      document.getElementById('inp-nombre').value = obj.userData.name || '';
-      document.getElementById('inspector-title').innerText = 'Inspector: ' + obj.userData.type.toUpperCase();
+      document.getElementById('inp-nombre').value = selectedObjects.length > 1 ? `Conjunto (${selectedObjects.length} elementos)` : (obj.userData.name || '');
+      document.getElementById('inspector-title').innerText = selectedObjects.length > 1 ? `Inspector: CONJUNTO (${selectedObjects.length})` : 'Inspector: ' + obj.userData.type.toUpperCase();
 
       sincronizarInspectorDesdeObjeto(obj);
 
@@ -1268,6 +1255,7 @@
         secCam.style.display = 'none';
       }
 
+      actualizarHUD();
       inspector.classList.remove('hidden');
     }
 
@@ -1286,7 +1274,9 @@
 
     function deseleccionarObjeto() {
       selectedObject = null;
+      selectedObjects = [];
       transformControls.detach();
+      actualizarHUD();
       document.getElementById('inspector-panel').classList.add('hidden');
     }
 
@@ -1344,24 +1334,29 @@
       }
     }
 
-    // CREADOR DE ELEMENTOS PRECONSTRUIDOS (PREFABS PERSONALIZADOS)
-    function guardarElementoComoPrefab() {
-      if (!selectedObject) return;
-      const nombrePrefab = prompt('Ingresa un nombre para este elemento personalizado (Prefab):', selectedObject.userData.name || 'Mueble Personalizado');
+    // GUARDAR CONJUNTO MULTISELECCIONADO COMO PREFAB PERSONALIZADO
+    function guardarConjuntoComoPrefab() {
+      if (selectedObjects.length === 0) return;
+      const nombrePrefab = prompt(`Ingresa un nombre para este Conjunto (${selectedObjects.length} elementos):`, `Conjunto ${selectedObjects.length} Muebles`);
       if (!nombrePrefab) return;
 
+      // Calcular centro relativo del grupo
+      const center = new THREE.Vector3();
+      selectedObjects.forEach(o => center.add(o.position));
+      center.divideScalar(selectedObjects.length);
+
+      const items = selectedObjects.map(o => ({
+        type: o.userData.type,
+        name: o.userData.name,
+        relPos: [o.position.x - center.x, o.position.y, o.position.z - center.z],
+        rot: [o.rotation.x, o.rotation.y, o.rotation.z]
+      }));
+
       const prefabs = JSON.parse(localStorage.getItem('PREFABS_CUSTOM') || '[]');
-      const nuevoPrefab = {
-        id: 'custom_' + Date.now(),
-        name: nombrePrefab,
-        type: selectedObject.userData.type,
-        rot: [selectedObject.rotation.x, selectedObject.rotation.y, selectedObject.rotation.z],
-        scale: [selectedObject.scale.x, selectedObject.scale.y, selectedObject.scale.z]
-      };
-      prefabs.push(nuevoPrefab);
+      prefabs.push({ id: 'custom_' + Date.now(), name: nombrePrefab, items: items });
       localStorage.setItem('PREFABS_CUSTOM', JSON.stringify(prefabs));
       renderizarMenuPrefabsPersonalizados();
-      alert('Prefab "' + nombrePrefab + '" guardado exitosamente.');
+      alert(`Conjunto "${nombrePrefab}" de ${selectedObjects.length} objetos guardado exitosamente.`);
     }
 
     function renderizarMenuPrefabsPersonalizados() {
@@ -1376,11 +1371,17 @@
           btn.className = 'dropdown-item';
           btn.innerHTML = `<span class="material-symbols-outlined" style="color:var(--accent-primary);">star</span> ${p.name}`;
           btn.onclick = () => {
-            addStructure(p.type);
-            const last = objects[objects.length - 1];
-            last.userData.name = p.name;
-            if (p.rot) last.rotation.set(...p.rot);
-            if (p.scale) last.scale.set(...p.scale);
+            if (p.items) {
+              p.items.forEach(item => {
+                addStructure(item.type);
+                const last = objects[objects.length - 1];
+                last.userData.name = item.name;
+                last.position.set(item.relPos[0], item.relPos[1], item.relPos[2]);
+                if (item.rot) last.rotation.set(...item.rot);
+              });
+            } else if (p.type) {
+              addStructure(p.type);
+            }
           };
           container.appendChild(btn);
         });
@@ -1388,11 +1389,12 @@
     }
 
     function eliminarObjetoSeleccionado() {
-      if (!selectedObject) return;
+      if (selectedObjects.length === 0) return;
       transformControls.detach();
-      scene.remove(selectedObject);
-      objects = objects.filter(o => o !== selectedObject);
-      actualizarHUD();
+      selectedObjects.forEach(obj => {
+        scene.remove(obj);
+        objects = objects.filter(o => o !== obj);
+      });
       deseleccionarObjeto();
     }
 
@@ -1436,6 +1438,7 @@
       const cams = objects.filter(o => o.userData.type === 'camera');
       document.getElementById('hud-count-obj').innerText = objects.length;
       document.getElementById('hud-count-cam').innerText = cams.length;
+      document.getElementById('hud-count-selected').innerText = selectedObjects.length;
     }
 
     function capturarPantalla3D() {
