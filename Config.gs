@@ -33,6 +33,7 @@ const CONFIG = {
     dashboard: "Dashboard",
     horarios: "Horarios",
     gestionsupervisor: "GestionSupervisor",
-    ajustes: "Ajustes"
+    ajustes: "Ajustes",
+    mapa3d: "Mapa3D"
   }
 };

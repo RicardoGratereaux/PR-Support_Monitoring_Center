@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa 3D de Tiendas y Cámaras - Centro de Monitoreo</title>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Three.js y Addons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <?!= include('Global_CSS'); ?>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    .mapa3d-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px);
+      position: relative;
+    }
+
+    .mapa3d-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 10;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-title-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toolbar-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-tool {
+      background: rgba(30, 41, 59, 0.7);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-tool:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    .btn-tool.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
+    }
+
+    .btn-action {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .mode-switch-container {
+      display: flex;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+      padding: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mode-btn {
+      padding: 6px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+
+    .mapa3d-main {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #webgl-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%, #090d16 100%);
+      cursor: grab;
+    }
+
+    #webgl-container:active {
+      cursor: grabbing;
+    }
+
+    /* Inspector Sidebar */
+    .inspector-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 320px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 20;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-height: calc(100% - 40px);
+      overflow-y: auto;
+    }
+
+    .inspector-panel.hidden {
+      transform: translateX(360px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.875rem;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    }
+
+    .image-preview-box {
+      width: 100%;
+      height: 140px;
+      border-radius: 8px;
+      background: #0f172a;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .image-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Modal de Monitoreo de Cámara */
+    .camera-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .camera-modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .camera-modal {
+      background: #0f172a;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      width: 540px;
+      max-width: 90vw;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      position: relative;
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #94a3b8;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #fff;
+    }
+
+    .camera-modal-img {
+      width: 100%;
+      height: 280px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 14px;
+    }
+
+    .camera-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .camera-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+  </style>
+</head>
+<body>
+  <?!= include('Global_Navbar'); ?>
+
+  <div class="mapa3d-wrapper">
+    <!-- Toolbar Superior -->
+    <div class="mapa3d-toolbar">
+      <div class="toolbar-title-section">
+        <div class="toolbar-title">
+          <span class="material-symbols-outlined" style="color: #38bdf8;">view_in_ar</span>
+          Mapa 3D de Tiendas & Monitoreo
+        </div>
+      </div>
+
+      <div class="mode-switch-container">
+        <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
+          <span class="material-symbols-outlined" style="font-size:18px;">edit</span> Editor 3D
+        </button>
+        <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
+          <span class="material-symbols-outlined" style="font-size:18px;">videocam</span> Monitoreo Vivo
+        </button>
+      </div>
+
+      <div class="toolbar-actions" id="editor-tools">
+        <button class="btn-tool" onclick="addStructure('gondola')">
+          <span class="material-symbols-outlined" style="font-size:18px;">table_restaurant</span> + Góndola
+        </button>
+        <button class="btn-tool" onclick="addStructure('wall')">
+          <span class="material-symbols-outlined" style="font-size:18px;">door_sliding</span> + Pared
+        </button>
+        <button class="btn-tool" onclick="addStructure('camera')" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
+          <span class="material-symbols-outlined" style="font-size:18px;">videocam</span> + Cámara
+        </button>
+        <div style="height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+        <button class="btn-action" onclick="guardarPlanoGAS()">
+          <span class="material-symbols-outlined" style="font-size:18px;">save</span> Guardar
+        </button>
+        <button class="btn-action" onclick="cargarPlanoGAS()">
+          <span class="material-symbols-outlined" style="font-size:18px;">download</span> Cargar
+        </button>
+        <button class="btn-action" onclick="limpiarEscena()" style="color: #ef4444;">
+          <span class="material-symbols-outlined" style="font-size:18px;">delete</span> Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenedor WebGL 3D -->
+    <div class="mapa3d-main">
+      <div id="webgl-container"></div>
+
+      <!-- Inspector Panel (Propiedades del Objeto Seleccionado) -->
+      <div id="inspector-panel" class="inspector-panel hidden">
+        <div class="panel-header">
+          <div class="panel-title" id="inspector-title">
+            <span class="material-symbols-outlined">settings_suggest</span> Inspector
+          </div>
+          <button class="btn-action" onclick="deseleccionarObjeto()" style="padding: 4px 8px;">✕</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre / Identificador</label>
+          <input type="text" id="inp-nombre" class="form-input" oninput="actualizarObjetoSeleccionado()">
+        </div>
+
+        <div id="section-camera-props" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Ángulo de Visión (FOV: <span id="val-fov">60</span>°)</label>
+            <input type="range" id="inp-fov" min="20" max="120" value="60" style="width:100%;" oninput="actualizarObjetoSeleccionado()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Alcance del Cono (<span id="val-dist">8</span>m)</label>
+            <input type="range" id="inp-dist" min="3" max="25" value="8" style="width:100%;" oninput="actualizarObjetoSeleccionado()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">URL Imagen de Cobertura / Referencia</label>
+            <input type="text" id="inp-img-url" class="form-input" placeholder="https://ejemplo.com/camara1.jpg" onchange="actualizarObjetoSeleccionado()">
+          </div>
+
+          <div class="image-preview-box">
+            <img id="img-preview" src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80" alt="Captura de cámara">
+          </div>
+        </div>
+
+        <div style="display:flex; gap: 8px; margin-top: 16px;">
+          <button class="btn-action" style="flex:1; justify-content:center; color: #ef4444; border-color: rgba(239,68,68,0.4);" onclick="eliminarObjetoSeleccionado()">
+            <span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Inspección de Cámara (Modo Monitoreo) -->
+  <div id="camera-modal" class="camera-modal-overlay">
+    <div class="camera-modal">
+      <button class="modal-close-btn" onclick="cerrarModalCamara()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <h3 id="modal-cam-title" style="margin:0; font-size:1.25rem; color:#fff;">Cámara Monitoreo 01</h3>
+        <div class="camera-status-badge">
+          <div class="camera-status-dot"></div> EN VIVO
+        </div>
+      </div>
+
+      <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;" id="modal-cam-details">
+        Ubicación: Zona Central | FOV: 60° | Estado: Activo
+      </div>
+
+      <img id="modal-cam-img" class="camera-modal-img" src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop&q=80" alt="Captura Cámara">
+    </div>
+  </div>
+
+  <script>
+    // Variables globales de Three.js
+    let scene, camera, renderer, controls;
+    let currentMode = 'edit'; // 'edit' o 'monitor'
+    let objects = [];
+    let selectedObject = null;
+    let raycaster, mouse;
+
+    // Inicialización al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeJS();
+      crearPisoTienda();
+      setupEventListeners();
+      cargarPlanoDemoInicial();
+    });
+
+    function initThreeJS() {
+      const container = document.getElementById('webgl-container');
+      
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0b0f19);
+      scene.fog = new THREE.FogExp2(0x0b0f19, 0.015);
+
+      camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 18, 22);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+      // Iluminación
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+      dirLight.position.set(15, 25, 15);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      scene.add(dirLight);
+
+      const gridHelper = new THREE.GridHelper(40, 40, 0x38bdf8, 0x1e293b);
+      gridHelper.position.y = 0.01;
+      scene.add(gridHelper);
+
+      raycaster = new THREE.Raycaster();
+      mouse = new THREE.Vector2();
+
+      animate();
+    }
+
+    function crearPisoTienda() {
+      const floorGeo = new THREE.PlaneGeometry(40, 30);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        roughness: 0.4,
+        metalness: 0.2
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      scene.add(floor);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // Agregar Estructuras (Góndolas, Paredes, Cámaras)
+    function addStructure(type) {
+      if (currentMode !== 'edit') return;
+
+      let mesh, data = { id: Date.now(), type: type, name: '', pos: [0, 0, 0] };
+
+      if (type === 'gondola') {
+        const geo = new THREE.BoxGeometry(4, 2, 1.5);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3, metalness: 0.5 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set((Math.random() - 0.5) * 10, 1, (Math.random() - 0.5) * 10);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        data.name = 'Góndola ' + (objects.length + 1);
+      } else if (type === 'wall') {
+        const geo = new THREE.BoxGeometry(8, 3.5, 0.4);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set((Math.random() - 0.5) * 10, 1.75, (Math.random() - 0.5) * 10);
+        mesh.castShadow = true;
+        data.name = 'Pared ' + (objects.length + 1);
+      } else if (type === 'camera') {
+        const group = new THREE.Group();
+        
+        // Cuerpo Cámara
+        const bodyGeo = new THREE.SphereGeometry(0.5, 16, 16);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.2, metalness: 0.8 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        group.add(bodyMesh);
+
+        // Lente
+        const lensGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.4, 16);
+        const lensMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.1 });
+        const lensMesh = new THREE.Mesh(lensGeo, lensMat);
+        lensMesh.rotation.x = Math.PI / 2;
+        lensMesh.position.z = 0.4;
+        group.add(lensMesh);
+
+        // Cono de Visión 3D
+        const fov = 60, dist = 8;
+        const coneGeo = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
+        const coneMat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true, transparent: true, opacity: 0.35 });
+        const coneMesh = new THREE.Mesh(coneGeo, coneMat);
+        coneMesh.rotation.x = -Math.PI / 2;
+        coneMesh.position.z = dist / 2;
+        coneMesh.name = 'frustumCone';
+        group.add(coneMesh);
+
+        group.position.set((Math.random() - 0.5) * 8, 4, (Math.random() - 0.5) * 8);
+        mesh = group;
+        data.name = 'Cámara Monitoreo ' + (objects.length + 1);
+        data.fov = fov;
+        data.dist = dist;
+        data.imageUrl = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
+      }
+
+      mesh.userData = data;
+      scene.add(mesh);
+      objects.push(mesh);
+      seleccionarObjeto(mesh);
+    }
+
+    // Event Listeners e Interacción
+    function setupEventListeners() {
+      const container = document.getElementById('webgl-container');
+
+      container.addEventListener('click', (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(objects, true);
+
+        if (intersects.length > 0) {
+          let rootObj = intersects[0].object;
+          while (rootObj.parent && rootObj.parent !== scene) {
+            rootObj = rootObj.parent;
+          }
+          
+          if (currentMode === 'edit') {
+            seleccionarObjeto(rootObj);
+          } else if (currentMode === 'monitor') {
+            if (rootObj.userData.type === 'camera') {
+              abrirModalCamara(rootObj.userData);
+            }
+          }
+        } else if (currentMode === 'edit') {
+          deseleccionarObjeto();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      });
+    }
+
+    function seleccionarObjeto(obj) {
+      selectedObject = obj;
+      const inspector = document.getElementById('inspector-panel');
+      const secCam = document.getElementById('section-camera-props');
+      
+      document.getElementById('inp-nombre').value = obj.userData.name || '';
+      document.getElementById('inspector-title').innerText = 'Inspector: ' + obj.userData.type.toUpperCase();
+
+      if (obj.userData.type === 'camera') {
+        secCam.style.display = 'block';
+        document.getElementById('inp-fov').value = obj.userData.fov || 60;
+        document.getElementById('val-fov').innerText = obj.userData.fov || 60;
+        document.getElementById('inp-dist').value = obj.userData.dist || 8;
+        document.getElementById('val-dist').innerText = obj.userData.dist || 8;
+        document.getElementById('inp-img-url').value = obj.userData.imageUrl || '';
+        document.getElementById('img-preview').src = obj.userData.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
+      } else {
+        secCam.style.display = 'none';
+      }
+
+      inspector.classList.remove('hidden');
+    }
+
+    function deseleccionarObjeto() {
+      selectedObject = null;
+      document.getElementById('inspector-panel').classList.add('hidden');
+    }
+
+    function actualizarObjetoSeleccionado() {
+      if (!selectedObject) return;
+
+      selectedObject.userData.name = document.getElementById('inp-nombre').value;
+
+      if (selectedObject.userData.type === 'camera') {
+        const fov = parseInt(document.getElementById('inp-fov').value);
+        const dist = parseInt(document.getElementById('inp-dist').value);
+        const imgUrl = document.getElementById('inp-img-url').value;
+
+        document.getElementById('val-fov').innerText = fov;
+        document.getElementById('val-dist').innerText = dist;
+        document.getElementById('img-preview').src = imgUrl;
+
+        selectedObject.userData.fov = fov;
+        selectedObject.userData.dist = dist;
+        selectedObject.userData.imageUrl = imgUrl;
+
+        // Actualizar Cono 3D
+        const coneMesh = selectedObject.getObjectByName('frustumCone');
+        if (coneMesh) {
+          coneMesh.geometry.dispose();
+          coneMesh.geometry = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
+          coneMesh.position.z = dist / 2;
+        }
+      }
+    }
+
+    function eliminarObjetoSeleccionado() {
+      if (!selectedObject) return;
+      scene.remove(selectedObject);
+      objects = objects.filter(o => o !== selectedObject);
+      deseleccionarObjeto();
+    }
+
+    function limpiarEscena() {
+      objects.forEach(obj => scene.remove(obj));
+      objects = [];
+      deseleccionarObjeto();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('btn-mode-edit').classList.toggle('active', mode === 'edit');
+      document.getElementById('btn-mode-monitor').classList.toggle('active', mode === 'monitor');
+      document.getElementById('editor-tools').style.display = mode === 'edit' ? 'flex' : 'none';
+      deseleccionarObjeto();
+    }
+
+    function abrirModalCamara(data) {
+      document.getElementById('modal-cam-title').innerText = data.name;
+      document.getElementById('modal-cam-details').innerText = `FOV: ${data.fov || 60}° | Alcance: ${data.dist || 8}m | Estado: Transmitiendo`;
+      document.getElementById('modal-cam-img').src = data.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop&q=80';
+      document.getElementById('camera-modal').classList.add('show');
+    }
+
+    function cerrarModalCamara() {
+      document.getElementById('camera-modal').classList.remove('show');
+    }
+
+    function cargarPlanoDemoInicial() {
+      addStructure('gondola');
+      addStructure('gondola');
+      addStructure('wall');
+      addStructure('camera');
+      deseleccionarObjeto();
+    }
+
+    function guardarPlanoGAS() {
+      const serializado = objects.map(o => ({
+        type: o.userData.type,
+        name: o.userData.name,
+        pos: [o.position.x, o.position.y, o.position.z],
+        fov: o.userData.fov,
+        dist: o.userData.dist,
+        imageUrl: o.userData.imageUrl
+      }));
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => alert(res.message))
+          .guardarMapaTienda('tienda_main', JSON.stringify(serializado));
+      } else {
+        localStorage.setItem('MAPA_3D_DEMO', JSON.stringify(serializado));
+        alert('Plano 3D guardado localmente.');
+      }
+    }
+
+    function cargarPlanoGAS() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res.data) rebuildSceneFromData(res.data);
+          })
+          .cargarMapaTienda('tienda_main');
+      } else {
+        const local = localStorage.getItem('MAPA_3D_DEMO');
+        if (local) rebuildSceneFromData(JSON.parse(local));
+      }
+    }
+
+    function rebuildSceneFromData(data) {
+      limpiarEscena();
+      data.forEach(item => {
+        addStructure(item.type);
+        const last = objects[objects.length - 1];
+        last.userData.name = item.name;
+        last.position.set(...item.pos);
+        if (item.type === 'camera') {
+          last.userData.fov = item.fov;
+          last.userData.dist = item.dist;
+          last.userData.imageUrl = item.imageUrl;
+        }
+      });
+      deseleccionarObjeto();
+    }
+  </script>
+</body>
+</html>
