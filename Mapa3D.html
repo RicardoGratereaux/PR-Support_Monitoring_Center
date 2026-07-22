@@ -12,10 +12,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-  <!-- Three.js, OrbitControls y TransformControls (Gizmos de Movimiento 3D) -->
+  <!-- Three.js, OrbitControls y TransformControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
   <?!= include('Global_CSS'); ?>
 
@@ -29,10 +30,12 @@
       overflow-x: hidden;
     }
 
+    /* Corrección de altura y posición para no ocultarse detrás de .top-bar (50px) */
     .mapa3d-wrapper {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 50px);
+      margin-top: 50px; /* Margen superior exacto de la barra global */
       position: relative;
     }
 
@@ -40,30 +43,31 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 18px;
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      z-index: 10;
+      padding: 8px 16px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 50;
       gap: 10px;
       flex-wrap: wrap;
     }
 
     .toolbar-title {
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 700;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      letter-spacing: -0.3px;
     }
 
     .toolbar-group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       background: rgba(30, 41, 59, 0.6);
-      padding: 4px;
+      padding: 3px 6px;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
@@ -72,20 +76,21 @@
       background: rgba(30, 41, 59, 0.8);
       color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 6px;
       cursor: pointer;
       font-family: inherit;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .btn-tool:hover {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.2);
       border-color: #38bdf8;
     }
 
@@ -93,17 +98,17 @@
       background: #0284c7;
       color: #fff;
       border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
+      box-shadow: 0 0 8px rgba(2, 132, 199, 0.6);
     }
 
     .btn-gizmo-mode {
       background: transparent;
       border: none;
       color: #94a3b8;
-      padding: 5px 10px;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -119,24 +124,24 @@
       display: flex;
       background: rgba(15, 23, 42, 0.9);
       border-radius: 8px;
-      padding: 3px;
+      padding: 2px;
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .mode-btn {
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 6px;
       border: none;
       background: transparent;
       color: #94a3b8;
       font-family: inherit;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .mode-btn.active {
@@ -162,23 +167,23 @@
     /* Inspector Sidebar */
     .inspector-panel {
       position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 330px;
+      top: 14px;
+      right: 14px;
+      width: 320px;
       background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
       z-index: 20;
       transition: transform 0.3s ease, opacity 0.3s ease;
-      max-height: calc(100% - 32px);
+      max-height: calc(100% - 28px);
       overflow-y: auto;
     }
 
     .inspector-panel.hidden {
-      transform: translateX(370px);
+      transform: translateX(360px);
       opacity: 0;
       pointer-events: none;
     }
@@ -187,41 +192,41 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .panel-title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: #38bdf8;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .form-group {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .form-label {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       color: #94a3b8;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       display: block;
       font-weight: 500;
     }
 
     .form-input {
       width: 100%;
-      padding: 6px 10px;
+      padding: 5px 8px;
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 6px;
       color: #fff;
       font-family: inherit;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       box-sizing: border-box;
     }
 
@@ -234,12 +239,12 @@
     .coord-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
+      gap: 4px;
     }
 
     .image-preview-box {
       width: 100%;
-      height: 120px;
+      height: 110px;
       border-radius: 6px;
       background: #0f172a;
       border: 1px dashed rgba(255, 255, 255, 0.2);
@@ -247,7 +252,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
     .image-preview-box img {
@@ -283,23 +288,23 @@
       background: #0f172a;
       border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 14px;
-      width: 520px;
+      width: 500px;
       max-width: 90vw;
-      padding: 20px;
+      padding: 18px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
       position: relative;
     }
 
     .modal-close-btn {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 12px;
+      right: 12px;
       background: rgba(255, 255, 255, 0.1);
       border: none;
       color: #94a3b8;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -308,11 +313,29 @@
 
     .camera-modal-img {
       width: 100%;
-      height: 260px;
-      border-radius: 10px;
+      height: 250px;
+      border-radius: 8px;
       object-fit: cover;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-top: 10px;
+      margin-top: 8px;
+    }
+
+    /* HUD flotante en pantalla 3D */
+    .hud-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 15;
     }
   </style>
 </head>
@@ -320,68 +343,81 @@
   <?!= include('Global_Navbar'); ?>
 
   <div class="mapa3d-wrapper">
-    <!-- Toolbar Superior -->
+    <!-- Toolbar Superior (Completamente visible debajo del Navbar) -->
     <div class="mapa3d-toolbar">
       <div class="toolbar-title">
-        <span class="material-symbols-outlined" style="color: #38bdf8;">open_with</span>
-        Diseñador 3D de Tienda
+        <span class="material-symbols-outlined" style="color: #38bdf8;">domain</span>
+        Diseñador & Centro Monitoreo 3D
       </div>
 
-      <!-- Selector de Modo de Gizmo (Mover, Rotar, Escalar) -->
+      <!-- Herramientas de Gizmo 3D -->
       <div class="toolbar-group" id="gizmo-mode-group">
-        <button id="gizmo-translate" class="btn-gizmo-mode active" onclick="setGizmoMode('translate')">
-          <span class="material-symbols-outlined" style="font-size:16px;">open_with</span> Mover (T)
+        <button id="gizmo-translate" class="btn-gizmo-mode active" onclick="setGizmoMode('translate')" title="Mover Objeto (T)">
+          <span class="material-symbols-outlined" style="font-size:16px;">open_with</span> Mover
         </button>
-        <button id="gizmo-rotate" class="btn-gizmo-mode" onclick="setGizmoMode('rotate')">
-          <span class="material-symbols-outlined" style="font-size:16px;">sync</span> Rotar (R)
+        <button id="gizmo-rotate" class="btn-gizmo-mode" onclick="setGizmoMode('rotate')" title="Rotar Objeto (R)">
+          <span class="material-symbols-outlined" style="font-size:16px;">sync</span> Rotar
         </button>
-        <button id="gizmo-scale" class="btn-gizmo-mode" onclick="setGizmoMode('scale')">
-          <span class="material-symbols-outlined" style="font-size:16px;">aspect_ratio</span> Escalar (S)
+        <button id="gizmo-scale" class="btn-gizmo-mode" onclick="setGizmoMode('scale')" title="Escalar Objeto (S)">
+          <span class="material-symbols-outlined" style="font-size:16px;">aspect_ratio</span> Escalar
         </button>
       </div>
 
-      <!-- Conmutador Editor vs Monitoreo -->
+      <!-- Selector Editor vs Monitoreo -->
       <div class="mode-switch-container">
         <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
-          <span class="material-symbols-outlined" style="font-size:16px;">edit</span> Editor 3D
+          <span class="material-symbols-outlined" style="font-size:15px;">edit</span> Editor
         </button>
         <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
-          <span class="material-symbols-outlined" style="font-size:16px;">videocam</span> Monitoreo Vivo
+          <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Monitoreo Vivo
         </button>
       </div>
 
-      <!-- Herramientas de Inserción de Objetos -->
+      <!-- Herramientas de Creación de Objetos -->
       <div class="toolbar-group" id="editor-tools">
         <button class="btn-tool" onclick="addStructure('gondola_doble')">
-          <span class="material-symbols-outlined" style="font-size:16px;">table_restaurant</span> Góndola
+          <span class="material-symbols-outlined" style="font-size:15px;">table_restaurant</span> + Góndola
         </button>
         <button class="btn-tool" onclick="addStructure('mostrador')">
-          <span class="material-symbols-outlined" style="font-size:16px;">point_of_sale</span> Mostrador
+          <span class="material-symbols-outlined" style="font-size:15px;">point_of_sale</span> + Caja
         </button>
         <button class="btn-tool" onclick="addStructure('nevera')">
-          <span class="material-symbols-outlined" style="font-size:16px;">kitchen</span> Nevera
+          <span class="material-symbols-outlined" style="font-size:15px;">kitchen</span> + Nevera
         </button>
         <button class="btn-tool" onclick="addStructure('wall')">
-          <span class="material-symbols-outlined" style="font-size:16px;">door_sliding</span> Pared
+          <span class="material-symbols-outlined" style="font-size:15px;">door_sliding</span> + Pared
         </button>
         <button class="btn-tool" onclick="addStructure('column')">
-          <span class="material-symbols-outlined" style="font-size:16px;">view_column</span> Columna
+          <span class="material-symbols-outlined" style="font-size:15px;">view_column</span> + Columna
         </button>
         <button class="btn-tool" onclick="addStructure('camera')" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
-          <span class="material-symbols-outlined" style="font-size:16px;">videocam</span> Cámara 3D
+          <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> + Cámara
         </button>
       </div>
 
-      <!-- Acciones de Guardar / Cargar -->
+      <!-- Plantillas Rápidas (Presets) -->
       <div class="toolbar-group">
-        <button class="btn-tool" onclick="guardarPlanoGAS()" style="color:#fff; background:#0284c7;">
-          <span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar
+        <button class="btn-tool" onclick="cargarPreset('farmacia')" title="Plantilla Farmacia/Supermercado">
+          <span class="material-symbols-outlined" style="font-size:15px;">local_pharmacy</span> Farmacia
         </button>
-        <button class="btn-tool" onclick="cargarPlanoGAS()">
-          <span class="material-symbols-outlined" style="font-size:16px;">download</span> Cargar
+        <button class="btn-tool" onclick="cargarPreset('express')" title="Plantilla Tienda Express">
+          <span class="material-symbols-outlined" style="font-size:15px;">storefront</span> Express
+        </button>
+      </div>
+
+      <!-- Acciones y Exportación -->
+      <div class="toolbar-group">
+        <button class="btn-tool" onclick="alternarPatrulla3D()" id="btn-patrulla" style="color:#f59e0b;">
+          <span class="material-symbols-outlined" style="font-size:15px;">local_police</span> Patrulla 3D
+        </button>
+        <button class="btn-tool" onclick="capturarPantalla3D()" title="Capturar Foto PNG del Mapa">
+          <span class="material-symbols-outlined" style="font-size:15px;">photo_camera</span> Captura
+        </button>
+        <button class="btn-tool" onclick="guardarPlanoGAS()" style="color:#fff; background:#0284c7;">
+          <span class="material-symbols-outlined" style="font-size:15px;">save</span> Guardar
         </button>
         <button class="btn-tool" onclick="limpiarEscena()" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">
-          <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Limpiar
+          <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Limpiar
         </button>
       </div>
     </div>
@@ -390,7 +426,14 @@
     <div class="mapa3d-main">
       <div id="webgl-container"></div>
 
-      <!-- Inspector Sidebar de Propiedades y Transformación -->
+      <!-- HUD Informativo -->
+      <div class="hud-overlay">
+        <div>Total Objetos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
+        <div>Cámaras Activas: <strong id="hud-count-cam" style="color:#10b981;">0</strong></div>
+        <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición</strong></div>
+      </div>
+
+      <!-- Inspector Panel -->
       <div id="inspector-panel" class="inspector-panel hidden">
         <div class="panel-header">
           <div class="panel-title" id="inspector-title">
@@ -435,13 +478,13 @@
           </div>
 
           <div class="image-preview-box">
-            <img id="img-preview" src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80" alt="Captura">
+            <img id="img-preview" src="" alt="Captura de Cámara">
           </div>
         </div>
 
-        <div style="display:flex; gap: 8px; margin-top: 14px;">
+        <div style="display:flex; gap: 8px; margin-top: 12px;">
           <button class="btn-tool" style="flex:1; justify-content:center; color: #ef4444; border-color: rgba(239,68,68,0.4);" onclick="eliminarObjetoSeleccionado()">
-            <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Eliminar
+            <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Eliminar
           </button>
         </div>
       </div>
@@ -455,7 +498,7 @@
         <span class="material-symbols-outlined">close</span>
       </button>
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-        <h3 id="modal-cam-title" style="margin:0; font-size:1.2rem; color:#fff;">Cámara Monitoreo 01</h3>
+        <h3 id="modal-cam-title" style="margin:0; font-size:1.2rem; color:#fff;">Cámara Monitoreo</h3>
         <span style="background:rgba(16,185,129,0.2); color:#10b981; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">● EN VIVO</span>
       </div>
       <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:10px;" id="modal-cam-details">FOV: 60° | Alcance: 8m</div>
@@ -469,12 +512,13 @@
     let objects = [];
     let selectedObject = null;
     let raycaster, mouse;
+    let patrullando = false, patrullaTween = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       initThreeJS();
       crearPisoTienda();
       setupEventListeners();
-      cargarPlanoDemoInicial();
+      cargarPreset('farmacia');
     });
 
     function initThreeJS() {
@@ -487,7 +531,7 @@
       camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
       camera.position.set(0, 18, 22);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
@@ -499,20 +543,16 @@
       controls.dampingFactor = 0.05;
       controls.maxPolarAngle = Math.PI / 2 - 0.02;
 
-      // TransformControls (Gizmo de Movimiento 3D)
       transformControls = new THREE.TransformControls(camera, renderer.domElement);
       transformControls.size = 0.85;
       transformControls.addEventListener('change', () => {
-        if (selectedObject) {
-          sincronizarInspectorDesdeObjeto(selectedObject);
-        }
+        if (selectedObject) sincronizarInspectorDesdeObjeto(selectedObject);
       });
       transformControls.addEventListener('dragging-changed', (event) => {
-        controls.enabled = !event.value; // Deshabilita rotación de cámara al arrastrar el Gizmo!
+        controls.enabled = !event.value;
       });
       scene.add(transformControls);
 
-      // Iluminación
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
       scene.add(ambientLight);
 
@@ -530,7 +570,6 @@
       raycaster = new THREE.Raycaster();
       mouse = new THREE.Vector2();
 
-      // Atajos de teclado para Gizmo
       window.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
         if (e.key === 't' || e.key === 'T') setGizmoMode('translate');
@@ -550,13 +589,13 @@
       scene.add(floor);
     }
 
-    function animate() {
+    function animate(time) {
       requestAnimationFrame(animate);
+      if (typeof TWEEN !== 'undefined') TWEEN.update(time);
       controls.update();
       renderer.render(scene, camera);
     }
 
-    // Agregar Estructuras de Tienda
     function addStructure(type) {
       if (currentMode !== 'edit') return;
 
@@ -565,7 +604,7 @@
       if (type === 'gondola_doble') {
         const group = new THREE.Group();
         const bodyGeo = new THREE.BoxGeometry(4, 2.2, 1.4);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3, metalness: 0.4 });
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
         bodyMesh.position.y = 1.1;
         bodyMesh.castShadow = true;
@@ -578,7 +617,7 @@
         mesh = new THREE.Mesh(geo, mat);
         mesh.position.y = 0.6;
         mesh.castShadow = true;
-        data.name = 'Mostrador Caja ' + (objects.length + 1);
+        data.name = 'Caja Registradora ' + (objects.length + 1);
       } else if (type === 'nevera') {
         const group = new THREE.Group();
         const bodyGeo = new THREE.BoxGeometry(2, 3, 1.2);
@@ -588,7 +627,7 @@
         group.add(bodyMesh);
 
         const glassGeo = new THREE.BoxGeometry(1.8, 2.6, 0.1);
-        const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4, roughness: 0.1 });
+        const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 });
         const glassMesh = new THREE.Mesh(glassGeo, glassMat);
         glassMesh.position.set(0, 1.5, 0.6);
         group.add(glassMesh);
@@ -617,7 +656,7 @@
         group.add(bodyMesh);
 
         const lensGeo = new THREE.CylinderGeometry(0.18, 0.22, 0.35, 16);
-        const lensMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.1 });
+        const lensMat = new THREE.MeshStandardMaterial({ color: 0x090d16 });
         const lensMesh = new THREE.Mesh(lensGeo, lensMat);
         lensMesh.rotation.x = Math.PI / 2;
         lensMesh.position.z = 0.35;
@@ -643,6 +682,7 @@
       mesh.userData = data;
       scene.add(mesh);
       objects.push(mesh);
+      actualizarHUD();
       seleccionarObjeto(mesh);
     }
 
@@ -650,7 +690,7 @@
       const container = document.getElementById('webgl-container');
 
       container.addEventListener('click', (event) => {
-        if (transformControls.dragging) return; // No cambiar selección mientras se arrastra con Gizmo!
+        if (transformControls.dragging) return;
 
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
@@ -693,11 +733,11 @@
 
     function seleccionarObjeto(obj) {
       selectedObject = obj;
-      transformControls.attach(obj); // Adjuntar Gizmo 3D al objeto!
-      
+      transformControls.attach(obj);
+
       const inspector = document.getElementById('inspector-panel');
       const secCam = document.getElementById('section-camera-props');
-      
+
       document.getElementById('inp-nombre').value = obj.userData.name || '';
       document.getElementById('inspector-title').innerText = 'Inspector: ' + obj.userData.type.toUpperCase();
 
@@ -767,6 +807,7 @@
       transformControls.detach();
       scene.remove(selectedObject);
       objects = objects.filter(o => o !== selectedObject);
+      actualizarHUD();
       deseleccionarObjeto();
     }
 
@@ -774,6 +815,7 @@
       transformControls.detach();
       objects.forEach(obj => scene.remove(obj));
       objects = [];
+      actualizarHUD();
       deseleccionarObjeto();
     }
 
@@ -783,6 +825,7 @@
       document.getElementById('btn-mode-monitor').classList.toggle('active', mode === 'monitor');
       document.getElementById('editor-tools').style.display = mode === 'edit' ? 'flex' : 'none';
       document.getElementById('gizmo-mode-group').style.display = mode === 'edit' ? 'flex' : 'none';
+      document.getElementById('hud-mode').innerText = mode === 'edit' ? 'Edición 3D' : 'Monitoreo Vivo';
       if (mode === 'monitor') deseleccionarObjeto();
     }
 
@@ -797,12 +840,82 @@
       document.getElementById('camera-modal').classList.remove('show');
     }
 
-    function cargarPlanoDemoInicial() {
-      addStructure('gondola_doble');
-      addStructure('mostrador');
-      addStructure('nevera');
-      addStructure('camera');
+    function actualizarHUD() {
+      const cams = objects.filter(o => o.userData.type === 'camera');
+      document.getElementById('hud-count-obj').innerText = objects.length;
+      document.getElementById('hud-count-cam').innerText = cams.length;
+    }
+
+    function cargarPreset(type) {
+      limpiarEscena();
+      if (type === 'farmacia') {
+        // Preset Farmacia/Supermercado
+        addStructure('gondola_doble'); objects[objects.length - 1].position.set(-6, 0, -4);
+        addStructure('gondola_doble'); objects[objects.length - 1].position.set(2, 0, -4);
+        addStructure('gondola_doble'); objects[objects.length - 1].position.set(-6, 0, 4);
+        addStructure('gondola_doble'); objects[objects.length - 1].position.set(2, 0, 4);
+        addStructure('mostrador'); objects[objects.length - 1].position.set(10, 0, 8);
+        addStructure('nevera'); objects[objects.length - 1].position.set(-12, 0, -10);
+        addStructure('nevera'); objects[objects.length - 1].position.set(-8, 0, -10);
+        addStructure('camera'); objects[objects.length - 1].position.set(-14, 5, -12);
+        addStructure('camera'); objects[objects.length - 1].position.set(14, 5, 10);
+      } else if (type === 'express') {
+        addStructure('gondola_doble'); objects[objects.length - 1].position.set(0, 0, 0);
+        addStructure('mostrador'); objects[objects.length - 1].position.set(6, 0, 5);
+        addStructure('nevera'); objects[objects.length - 1].position.set(-6, 0, -6);
+        addStructure('camera'); objects[objects.length - 1].position.set(0, 5, 8);
+      }
       deseleccionarObjeto();
+      actualizarHUD();
+    }
+
+    function alternarPatrulla3D() {
+      patrullando = !patrullando;
+      const btn = document.getElementById('btn-patrulla');
+      btn.classList.toggle('active', patrullando);
+
+      if (patrullando) {
+        const cams = objects.filter(o => o.userData.type === 'camera');
+        if (cams.length === 0) {
+          alert('Añade al menos una cámara para iniciar la Patrulla 3D.');
+          patrullando = false;
+          btn.classList.remove('active');
+          return;
+        }
+        iniciarPatrullaCamaras(cams, 0);
+      } else {
+        if (patrullaTween) patrullaTween.stop();
+      }
+    }
+
+    function iniciarPatrullaCamaras(cams, index) {
+      if (!patrullando) return;
+      const camTarget = cams[index % cams.length];
+      const targetPos = {
+        x: camTarget.position.x,
+        y: camTarget.position.y + 1,
+        z: camTarget.position.z + 4
+      };
+
+      patrullaTween = new TWEEN.Tween(camera.position)
+        .to(targetPos, 3500)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => controls.update())
+        .onComplete(() => {
+          if (patrullando) {
+            setTimeout(() => iniciarPatrullaCamaras(cams, index + 1), 1500);
+          }
+        })
+        .start();
+    }
+
+    function capturarPantalla3D() {
+      renderer.render(scene, camera);
+      const dataURL = renderer.domElement.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'mapa_3d_tienda_' + Date.now() + '.png';
+      link.href = dataURL;
+      link.click();
     }
 
     function guardarPlanoGAS() {
@@ -825,37 +938,6 @@
         localStorage.setItem('MAPA_3D_DEMO', JSON.stringify(serializado));
         alert('Plano 3D guardado exitosamente.');
       }
-    }
-
-    function cargarPlanoGAS() {
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler((res) => {
-            if (res.data) rebuildSceneFromData(res.data);
-          })
-          .cargarMapaTienda('tienda_main');
-      } else {
-        const local = localStorage.getItem('MAPA_3D_DEMO');
-        if (local) rebuildSceneFromData(JSON.parse(local));
-      }
-    }
-
-    function rebuildSceneFromData(data) {
-      limpiarEscena();
-      data.forEach(item => {
-        addStructure(item.type);
-        const last = objects[objects.length - 1];
-        last.userData.name = item.name;
-        last.position.set(...item.pos);
-        if (item.rot) last.rotation.set(...item.rot);
-        if (item.scale) last.scale.set(...item.scale);
-        if (item.type === 'camera') {
-          last.userData.fov = item.fov;
-          last.userData.dist = item.dist;
-          last.userData.imageUrl = item.imageUrl;
-        }
-      });
-      deseleccionarObjeto();
     }
   </script>
 </body>
