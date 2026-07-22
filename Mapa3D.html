@@ -47,83 +47,138 @@
       backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 50;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     .toolbar-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 6px;
-      letter-spacing: -0.3px;
+      gap: 8px;
     }
 
-    .toolbar-group {
+    .store-badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .toolbar-actions-cluster {
       display: flex;
       align-items: center;
-      gap: 4px;
-      background: rgba(30, 41, 59, 0.6);
-      padding: 3px 6px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      gap: 8px;
     }
 
-    .btn-tool {
+    /* ESTILOS DE DROPDOWNS ORGANIZADOS */
+    .tool-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .btn-tool-dropdown {
       background: rgba(30, 41, 59, 0.8);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 5px 9px;
-      border-radius: 6px;
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 6px 12px;
+      border-radius: 8px;
       cursor: pointer;
       font-family: inherit;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       transition: all 0.2s ease;
-      white-space: nowrap;
     }
 
-    .btn-tool:hover {
-      background: rgba(56, 189, 248, 0.2);
+    .btn-tool-dropdown:hover {
+      background: rgba(56, 189, 248, 0.15);
       border-color: #38bdf8;
-    }
-
-    .btn-tool.active {
-      background: #0284c7;
       color: #fff;
-      border-color: #38bdf8;
-      box-shadow: 0 0 8px rgba(2, 132, 199, 0.6);
     }
 
-    .btn-gizmo-mode {
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 6px;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 6px;
+      min-width: 190px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 150;
+    }
+
+    .tool-dropdown:hover .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      width: 100%;
       background: transparent;
       border: none;
-      color: #94a3b8;
-      padding: 4px 8px;
-      border-radius: 5px;
+      color: #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       cursor: pointer;
-      font-size: 0.78rem;
+      text-align: left;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+
+    .btn-action-primary {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.82rem;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s ease;
     }
 
-    .btn-gizmo-mode.active {
-      background: #0284c7;
-      color: #fff;
+    .btn-action-primary:hover {
+      background: linear-gradient(135deg, #0369a1, #075985);
+      transform: translateY(-1px);
     }
 
     .mode-switch-container {
       display: flex;
       background: rgba(15, 23, 42, 0.9);
       border-radius: 8px;
-      padding: 2px;
+      padding: 3px;
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
@@ -163,7 +218,7 @@
       background: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%, #090d16 100%);
     }
 
-    /* HUB MENU OVERLAY (Pantalla Inicial de Selección de Tienda) */
+    /* HUB MENU OVERLAY */
     .hub-modal-overlay {
       position: fixed;
       top: 0;
@@ -193,7 +248,6 @@
       max-width: 92vw;
       padding: 30px;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-      position: relative;
     }
 
     .hub-header {
@@ -210,12 +264,6 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-    }
-
-    .hub-subtitle {
-      font-size: 0.9rem;
-      color: #94a3b8;
-      margin: 0;
     }
 
     .cadena-grid {
@@ -238,29 +286,12 @@
     .cadena-card:hover {
       background: rgba(56, 189, 248, 0.12);
       border-color: #38bdf8;
-      transform: translateY(-2px);
     }
 
     .cadena-card.active {
       background: linear-gradient(135deg, rgba(2, 132, 199, 0.3), rgba(3, 105, 161, 0.5));
       border-color: #38bdf8;
       box-shadow: 0 0 16px rgba(2, 132, 199, 0.4);
-    }
-
-    .cadena-icon {
-      font-size: 2rem;
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    .cadena-name {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    .hub-form-group {
-      margin-bottom: 20px;
     }
 
     .hub-select {
@@ -274,6 +305,7 @@
       font-size: 1rem;
       box-sizing: border-box;
       cursor: pointer;
+      margin-bottom: 20px;
     }
 
     .hub-actions {
@@ -294,18 +326,11 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.25s ease;
     }
 
     .btn-hub-primary {
       background: linear-gradient(135deg, #0284c7, #0369a1);
       color: #fff;
-      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
-    }
-
-    .btn-hub-primary:hover {
-      background: linear-gradient(135deg, #0369a1, #075985);
-      transform: translateY(-1px);
     }
 
     .btn-hub-secondary {
@@ -314,11 +339,7 @@
       border: 1px solid rgba(16, 185, 129, 0.4);
     }
 
-    .btn-hub-secondary:hover {
-      background: rgba(16, 185, 129, 0.15);
-    }
-
-    /* Inspector Sidebar */
+    /* Inspector Panel */
     .inspector-panel {
       position: absolute;
       top: 14px;
@@ -340,24 +361,6 @@
       transform: translateX(360px);
       opacity: 0;
       pointer-events: none;
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .panel-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 5px;
     }
 
     .form-group {
@@ -488,7 +491,7 @@
 <body>
   <?!= include('Global_Navbar'); ?>
 
-  <!-- HUB INICIAL DE SELECCIÓN DE TIENDA Y MODO -->
+  <!-- HUB INICIAL DE SELECCIÓN DE TIENDA -->
   <div id="hub-modal" class="hub-modal-overlay">
     <div class="hub-card">
       <div class="hub-header">
@@ -496,34 +499,26 @@
           <span class="material-symbols-outlined" style="color:#38bdf8; font-size:2rem;">domain</span>
           Centro de Monitoreo 3D
         </h2>
-        <p class="hub-subtitle">Selecciona la cadena y la tienda de Puerto Rico para diseñar o monitorear su mapa 3D</p>
+        <p style="color:#94a3b8; font-size:0.9rem; margin:0;">Selecciona la tienda de Puerto Rico para diseñar o monitorear en 3D</p>
       </div>
 
-      <!-- Selección de Cadena -->
       <div class="cadena-grid">
         <div class="cadena-card active" onclick="seleccionarCadena('farmacias', this)">
-          <span class="cadena-icon">🏥</span>
-          <span class="cadena-name">Farmacias Rey</span>
+          <span style="font-size:2rem; display:block; margin-bottom:4px;">🏥</span>
+          <span style="font-weight:600; color:#fff; font-size:0.88rem;">Farmacias Rey</span>
         </div>
         <div class="cadena-card" onclick="seleccionarCadena('chinatown', this)">
-          <span class="cadena-icon">🛍️</span>
-          <span class="cadena-name">Chinatown & More</span>
+          <span style="font-size:2rem; display:block; margin-bottom:4px;">🛍️</span>
+          <span style="font-weight:600; color:#fff; font-size:0.88rem;">Chinatown & More</span>
         </div>
         <div class="cadena-card" onclick="seleccionarCadena('exchange', this)">
-          <span class="cadena-icon">💱</span>
-          <span class="cadena-name">Exchange by Figna</span>
+          <span style="font-size:2rem; display:block; margin-bottom:4px;">💱</span>
+          <span style="font-weight:600; color:#fff; font-size:0.88rem;">Exchange by Figna</span>
         </div>
       </div>
 
-      <!-- Dropdown de Tiendas específicas de la cadena -->
-      <div class="hub-form-group">
-        <label class="form-label" style="font-size:0.85rem; margin-bottom:6px;">Selecciona la Tienda / Sucursal</label>
-        <select id="hub-select-tienda" class="hub-select">
-          <!-- Poblado dinámicamente -->
-        </select>
-      </div>
+      <select id="hub-select-tienda" class="hub-select"></select>
 
-      <!-- Botones de Acción principales -->
       <div class="hub-actions">
         <button class="btn-hub-main btn-hub-primary" onclick="iniciarExperiencia3D('edit')">
           <span class="material-symbols-outlined">edit</span> Diseñar / Editar Mapa 3D
@@ -536,92 +531,122 @@
   </div>
 
   <div class="mapa3d-wrapper">
-    <!-- Toolbar Superior -->
+    <!-- TOOLBAR ORGANIZADO CON CATEGORÍAS Y DROPDOWNS -->
     <div class="mapa3d-toolbar">
       <div class="toolbar-title">
-        <button class="btn-tool" onclick="abrirHubSeleccion()" style="margin-right:6px;" title="Cambiar Tienda">
+        <button class="btn-tool-dropdown" onclick="abrirHubSeleccion()" title="Cambiar Tienda">
           <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
         </button>
-        <span id="label-tienda-activa" style="color:#38bdf8;">Farmacias Rey - FR-01 LITHEDA</span>
+        <span id="label-tienda-activa" class="store-badge">FR-01 LITHEDA</span>
       </div>
 
-      <!-- Herramientas Gizmo -->
-      <div class="toolbar-group" id="gizmo-mode-group">
-        <button id="gizmo-translate" class="btn-gizmo-mode active" onclick="setGizmoMode('translate')" title="Mover (T)">
-          <span class="material-symbols-outlined" style="font-size:15px;">open_with</span> Mover
-        </button>
-        <button id="gizmo-rotate" class="btn-gizmo-mode" onclick="setGizmoMode('rotate')" title="Rotar (R)">
-          <span class="material-symbols-outlined" style="font-size:15px;">sync</span> Rotar
-        </button>
-        <button id="gizmo-scale" class="btn-gizmo-mode" onclick="setGizmoMode('scale')" title="Escalar (S)">
-          <span class="material-symbols-outlined" style="font-size:15px;">aspect_ratio</span> Escalar
-        </button>
-      </div>
+      <div class="toolbar-actions-cluster">
+        <!-- Dropdown 1: Gizmos / Manipulación 3D -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:#38bdf8;">open_with</span>
+            Gizmos <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="setGizmoMode('translate')">
+              <span class="material-symbols-outlined">open_with</span> Mover (Tecla T)
+            </button>
+            <button class="dropdown-item" onclick="setGizmoMode('rotate')">
+              <span class="material-symbols-outlined">sync</span> Rotar (Tecla R)
+            </button>
+            <button class="dropdown-item" onclick="setGizmoMode('scale')">
+              <span class="material-symbols-outlined">aspect_ratio</span> Escalar (Tecla S)
+            </button>
+          </div>
+        </div>
 
-      <!-- Selector Editor vs Monitoreo -->
-      <div class="mode-switch-container">
-        <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
-          <span class="material-symbols-outlined" style="font-size:15px;">edit</span> Editor
-        </button>
-        <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
-          <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Monitoreo Vivo
-        </button>
-      </div>
+        <!-- Dropdown 2: Estructuras y Arquitectura -->
+        <div class="tool-dropdown" id="editor-tools-arch">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:#f59e0b;">domain</span>
+            Arquitectura <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="addStructure('wall')">
+              <span class="material-symbols-outlined">door_sliding</span> Pared / Muro
+            </button>
+            <button class="dropdown-item" onclick="addStructure('column')">
+              <span class="material-symbols-outlined">view_column</span> Columna Soporte
+            </button>
+            <button class="dropdown-item" onclick="addStructure('puerta_entrada')">
+              <span class="material-symbols-outlined">sensor_door</span> Puerta Cristal
+            </button>
+            <button class="dropdown-item" onclick="addStructure('antena_antirrobo')">
+              <span class="material-symbols-outlined">shield_with_house</span> Antena Antirrobo
+            </button>
+          </div>
+        </div>
 
-      <!-- Elementos de Creación de Tienda -->
-      <div class="toolbar-group" id="editor-tools">
-        <button class="btn-tool" onclick="addStructure('gondola_doble')">
-          <span class="material-symbols-outlined" style="font-size:15px;">table_restaurant</span> Góndola Doble
-        </button>
-        <button class="btn-tool" onclick="addStructure('gondola_pared')">
-          <span class="material-symbols-outlined" style="font-size:15px;">shelves</span> Estante Pared
-        </button>
-        <button class="btn-tool" onclick="addStructure('mostrador')">
-          <span class="material-symbols-outlined" style="font-size:15px;">point_of_sale</span> Caja POS
-        </button>
-        <button class="btn-tool" onclick="addStructure('nevera')">
-          <span class="material-symbols-outlined" style="font-size:15px;">kitchen</span> Nevera
-        </button>
-        <button class="btn-tool" onclick="addStructure('isla_promo')">
-          <span class="material-symbols-outlined" style="font-size:15px;">view_in_ar</span> Isla Promo
-        </button>
-        <button class="btn-tool" onclick="addStructure('puerta_entrada')">
-          <span class="material-symbols-outlined" style="font-size:15px;">sensor_door</span> Entradas
-        </button>
-        <button class="btn-tool" onclick="addStructure('antena_antirrobo')">
-          <span class="material-symbols-outlined" style="font-size:15px;">shield_with_house</span> Antirrobo
-        </button>
-        <button class="btn-tool" onclick="addStructure('wall')">
-          <span class="material-symbols-outlined" style="font-size:15px;">door_sliding</span> Pared
-        </button>
-        <button class="btn-tool" onclick="addStructure('column')">
-          <span class="material-symbols-outlined" style="font-size:15px;">view_column</span> Columna
-        </button>
-        <button class="btn-tool" onclick="addStructure('camera')" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
-          <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Cámara CCTV
-        </button>
-      </div>
+        <!-- Dropdown 3: Mobiliario Comercial -->
+        <div class="tool-dropdown" id="editor-tools-mob">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:#a855f7;">storefront</span>
+            Mobiliario <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="addStructure('gondola_doble')">
+              <span class="material-symbols-outlined">table_restaurant</span> Góndola Doble
+            </button>
+            <button class="dropdown-item" onclick="addStructure('gondola_pared')">
+              <span class="material-symbols-outlined">shelves</span> Estante de Pared
+            </button>
+            <button class="dropdown-item" onclick="addStructure('mostrador')">
+              <span class="material-symbols-outlined">point_of_sale</span> Caja Registradora POS
+            </button>
+            <button class="dropdown-item" onclick="addStructure('nevera')">
+              <span class="material-symbols-outlined">kitchen</span> Nevera Exhibidora
+            </button>
+            <button class="dropdown-item" onclick="addStructure('isla_promo')">
+              <span class="material-symbols-outlined">view_in_ar</span> Isla Promocional
+            </button>
+          </div>
+        </div>
 
-      <!-- Presets -->
-      <div class="toolbar-group">
-        <button class="btn-tool" onclick="cargarPreset('farmacia')" title="Plantilla Farmacia">
-          <span class="material-symbols-outlined" style="font-size:15px;">local_pharmacy</span> Farmacia
+        <!-- Botón Directo: Añadir Cámara CCTV -->
+        <button class="btn-tool-dropdown" onclick="addStructure('camera')" style="color:#10b981; border-color:rgba(16,185,129,0.4);" id="btn-add-camera">
+          <span class="material-symbols-outlined" style="font-size:16px;">videocam</span> + Cámara CCTV
         </button>
-        <button class="btn-tool" onclick="cargarPreset('express')" title="Plantilla Express">
-          <span class="material-symbols-outlined" style="font-size:15px;">storefront</span> Express
-        </button>
-      </div>
 
-      <!-- Guardar y Limpiar -->
-      <div class="toolbar-group">
-        <button class="btn-tool" onclick="capturarPantalla3D()" title="Capturar Foto PNG">
-          <span class="material-symbols-outlined" style="font-size:15px;">photo_camera</span> Foto
+        <!-- Dropdown 4: Plantillas y Presets -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:#ec4899;">auto_awesome</span>
+            Plantillas <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="cargarPreset('farmacia')">
+              <span class="material-symbols-outlined">local_pharmacy</span> Farmacia / Supermercado
+            </button>
+            <button class="dropdown-item" onclick="cargarPreset('express')">
+              <span class="material-symbols-outlined">storefront</span> Tienda Express
+            </button>
+          </div>
+        </div>
+
+        <!-- Conmutador Editor vs Monitoreo -->
+        <div class="mode-switch-container">
+          <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
+            <span class="material-symbols-outlined" style="font-size:15px;">edit</span> Editor
+          </button>
+          <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
+            <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Monitoreo
+          </button>
+        </div>
+
+        <!-- Acciones Principales -->
+        <button class="btn-tool-dropdown" onclick="capturarPantalla3D()" title="Capturar Foto PNG">
+          <span class="material-symbols-outlined" style="font-size:16px;">photo_camera</span> Foto
         </button>
-        <button class="btn-tool" onclick="guardarPlanoGAS()" style="color:#fff; background:#0284c7;">
-          <span class="material-symbols-outlined" style="font-size:15px;">save</span> Guardar
+        <button class="btn-action-primary" onclick="guardarPlanoGAS()">
+          <span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar
         </button>
-        <button class="btn-tool" onclick="limpiarEscena()" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">
-          <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Limpiar
+        <button class="btn-tool-dropdown" onclick="limpiarEscena()" style="color:#ef4444;" title="Limpiar Mapa">
+          <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
         </button>
       </div>
     </div>
@@ -633,7 +658,7 @@
       <!-- HUD Informativo -->
       <div class="hud-overlay">
         <div>Tienda: <strong id="hud-store-name" style="color:#38bdf8;">FR-01 LITHEDA</strong></div>
-        <div>Total Objetos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
+        <div>Total Elementos: <strong id="hud-count-obj" style="color:#38bdf8;">0</strong></div>
         <div>Cámaras CCTV: <strong id="hud-count-cam" style="color:#10b981;">0</strong></div>
         <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
       </div>
@@ -644,7 +669,7 @@
           <div class="panel-title" id="inspector-title">
             <span class="material-symbols-outlined">settings_suggest</span> Inspector
           </div>
-          <button class="btn-tool" onclick="deseleccionarObjeto()" style="padding: 2px 6px;">✕</button>
+          <button class="btn-tool-dropdown" onclick="deseleccionarObjeto()" style="padding: 2px 6px;">✕</button>
         </div>
 
         <div class="form-group">
@@ -688,7 +713,7 @@
         </div>
 
         <div style="display:flex; gap: 8px; margin-top: 12px;">
-          <button class="btn-tool" style="flex:1; justify-content:center; color: #ef4444; border-color: rgba(239,68,68,0.4);" onclick="eliminarObjetoSeleccionado()">
+          <button class="btn-tool-dropdown" style="flex:1; justify-content:center; color: #ef4444; border-color: rgba(239,68,68,0.4);" onclick="eliminarObjetoSeleccionado()">
             <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Eliminar
           </button>
         </div>
@@ -720,7 +745,6 @@
     let cadenaSeleccionada = 'farmacias';
     let tiendaActivaId = 'FR-01 LITHEDA';
 
-    // Datos de Tiendas con Fallback seguro desde Global_Datos.html
     const TIENDAS_DATA = (typeof TIENDAS !== 'undefined') ? TIENDAS : {
       farmacias: ["FR-01 LITHEDA", "FR-02 SENORIAL", "FR-03 CAIMITO", "FR-04 GURABO", "FR-05 BARRIO OBRERO", "FR-08 HUMACAO", "FR-18 GUAYNABO"],
       chinatown: ["CT-01 ARECIBO", "CT-02 SALINAS", "CT-03 TRUJILLO ALTO", "CT-04 HUMACAO", "CT-06 BAYAMON", "CT-14 PONCE"],
@@ -766,7 +790,7 @@
       document.getElementById('hub-modal').classList.add('hidden');
 
       setMode(modo);
-      cargarPlanoGAS(); // Carga automática del mapa guardado de esa tienda!
+      cargarPlanoGAS();
     }
 
     function initThreeJS() {
@@ -843,7 +867,6 @@
       renderer.render(scene, camera);
     }
 
-    // Crear Malla 3D Realista de Cámara CCTV Bullet con Brazo, Parasol y Lente
     function crearMallaCamaraCCTV() {
       const group = new THREE.Group();
 
@@ -1054,9 +1077,6 @@
     function setGizmoMode(mode) {
       if (!transformControls) return;
       transformControls.setMode(mode);
-      document.getElementById('gizmo-translate').classList.toggle('active', mode === 'translate');
-      document.getElementById('gizmo-rotate').classList.toggle('active', mode === 'rotate');
-      document.getElementById('gizmo-scale').classList.toggle('active', mode === 'scale');
     }
 
     function seleccionarObjeto(obj) {
@@ -1151,8 +1171,15 @@
       currentMode = mode;
       document.getElementById('btn-mode-edit').classList.toggle('active', mode === 'edit');
       document.getElementById('btn-mode-monitor').classList.toggle('active', mode === 'monitor');
-      document.getElementById('editor-tools').style.display = mode === 'edit' ? 'flex' : 'none';
-      document.getElementById('gizmo-mode-group').style.display = mode === 'edit' ? 'flex' : 'none';
+      
+      const archTools = document.getElementById('editor-tools-arch');
+      const mobTools = document.getElementById('editor-tools-mob');
+      const btnCam = document.getElementById('btn-add-camera');
+      
+      if (archTools) archTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (mobTools) mobTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (btnCam) btnCam.style.display = mode === 'edit' ? 'inline-flex' : 'none';
+      
       document.getElementById('hud-mode').innerText = mode === 'edit' ? 'Edición 3D' : 'Monitoreo Vivo';
       if (mode === 'monitor') deseleccionarObjeto();
     }
