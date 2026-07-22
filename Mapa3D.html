@@ -76,7 +76,6 @@
       gap: 8px;
     }
 
-    /* ESTILOS DE DROPDOWNS ORGANIZADOS */
     .tool-dropdown {
       position: relative;
       display: inline-block;
@@ -114,7 +113,7 @@
       border: 1px solid rgba(56, 189, 248, 0.25);
       border-radius: 12px;
       padding: 6px;
-      min-width: 190px;
+      min-width: 200px;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
       opacity: 0;
       visibility: hidden;
@@ -339,13 +338,13 @@
       border: 1px solid rgba(16, 185, 129, 0.4);
     }
 
-    /* Inspector Panel */
+    /* Inspector Panel Mejores Controles de Rotación */
     .inspector-panel {
       position: absolute;
       top: 14px;
       right: 14px;
-      width: 320px;
-      background: rgba(15, 23, 42, 0.92);
+      width: 330px;
+      background: rgba(15, 23, 42, 0.94);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
@@ -358,19 +357,19 @@
     }
 
     .inspector-panel.hidden {
-      transform: translateX(360px);
+      transform: translateX(370px);
       opacity: 0;
       pointer-events: none;
     }
 
     .form-group {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .form-label {
       font-size: 0.74rem;
       color: #94a3b8;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
       display: block;
       font-weight: 500;
     }
@@ -391,6 +390,24 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 4px;
+    }
+
+    .rot-quick-btn {
+      background: rgba(30, 41, 59, 0.8);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .rot-quick-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      color: #fff;
     }
 
     .image-preview-box {
@@ -531,7 +548,7 @@
   </div>
 
   <div class="mapa3d-wrapper">
-    <!-- TOOLBAR ORGANIZADO CON CATEGORÍAS Y DROPDOWNS -->
+    <!-- TOOLBAR ORGANIZADO SIN PLANTILLAS NI ANTIRROBO -->
     <div class="mapa3d-toolbar">
       <div class="toolbar-title">
         <button class="btn-tool-dropdown" onclick="abrirHubSeleccion()" title="Cambiar Tienda">
@@ -552,7 +569,7 @@
               <span class="material-symbols-outlined">open_with</span> Mover (Tecla T)
             </button>
             <button class="dropdown-item" onclick="setGizmoMode('rotate')">
-              <span class="material-symbols-outlined">sync</span> Rotar (Tecla R)
+              <span class="material-symbols-outlined">sync</span> Rotar Preciso (Tecla R)
             </button>
             <button class="dropdown-item" onclick="setGizmoMode('scale')">
               <span class="material-symbols-outlined">aspect_ratio</span> Escalar (Tecla S)
@@ -560,7 +577,7 @@
           </div>
         </div>
 
-        <!-- Dropdown 2: Estructuras y Arquitectura -->
+        <!-- Dropdown 2: Arquitectura y Estructuras -->
         <div class="tool-dropdown" id="editor-tools-arch">
           <button class="btn-tool-dropdown">
             <span class="material-symbols-outlined" style="font-size:16px; color:#f59e0b;">domain</span>
@@ -576,13 +593,10 @@
             <button class="dropdown-item" onclick="addStructure('puerta_entrada')">
               <span class="material-symbols-outlined">sensor_door</span> Puerta Cristal
             </button>
-            <button class="dropdown-item" onclick="addStructure('antena_antirrobo')">
-              <span class="material-symbols-outlined">shield_with_house</span> Antena Antirrobo
-            </button>
           </div>
         </div>
 
-        <!-- Dropdown 3: Mobiliario Comercial -->
+        <!-- Dropdown 3: Mobiliario Comercial Ampliado -->
         <div class="tool-dropdown" id="editor-tools-mob">
           <button class="btn-tool-dropdown">
             <span class="material-symbols-outlined" style="font-size:16px; color:#a855f7;">storefront</span>
@@ -590,19 +604,25 @@
           </button>
           <div class="dropdown-menu">
             <button class="dropdown-item" onclick="addStructure('gondola_doble')">
-              <span class="material-symbols-outlined">table_restaurant</span> Góndola Doble
+              <span class="material-symbols-outlined">table_restaurant</span> Góndola Doble Central
             </button>
             <button class="dropdown-item" onclick="addStructure('gondola_pared')">
-              <span class="material-symbols-outlined">shelves</span> Estante de Pared
+              <span class="material-symbols-outlined">shelves</span> Estante Pared Alta
             </button>
             <button class="dropdown-item" onclick="addStructure('mostrador')">
               <span class="material-symbols-outlined">point_of_sale</span> Caja Registradora POS
+            </button>
+            <button class="dropdown-item" onclick="addStructure('escritorio_servicio')">
+              <span class="material-symbols-outlined">desk</span> Mostrador Atención / Farmacia
             </button>
             <button class="dropdown-item" onclick="addStructure('nevera')">
               <span class="material-symbols-outlined">kitchen</span> Nevera Exhibidora
             </button>
             <button class="dropdown-item" onclick="addStructure('isla_promo')">
               <span class="material-symbols-outlined">view_in_ar</span> Isla Promocional
+            </button>
+            <button class="dropdown-item" onclick="addStructure('tarima_pallet')">
+              <span class="material-symbols-outlined">inventory_2</span> Paleta / Tarima Almacén
             </button>
           </div>
         </div>
@@ -611,22 +631,6 @@
         <button class="btn-tool-dropdown" onclick="addStructure('camera')" style="color:#10b981; border-color:rgba(16,185,129,0.4);" id="btn-add-camera">
           <span class="material-symbols-outlined" style="font-size:16px;">videocam</span> + Cámara CCTV
         </button>
-
-        <!-- Dropdown 4: Plantillas y Presets -->
-        <div class="tool-dropdown">
-          <button class="btn-tool-dropdown">
-            <span class="material-symbols-outlined" style="font-size:16px; color:#ec4899;">auto_awesome</span>
-            Plantillas <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
-          </button>
-          <div class="dropdown-menu">
-            <button class="dropdown-item" onclick="cargarPreset('farmacia')">
-              <span class="material-symbols-outlined">local_pharmacy</span> Farmacia / Supermercado
-            </button>
-            <button class="dropdown-item" onclick="cargarPreset('express')">
-              <span class="material-symbols-outlined">storefront</span> Tienda Express
-            </button>
-          </div>
-        </div>
 
         <!-- Conmutador Editor vs Monitoreo -->
         <div class="mode-switch-container">
@@ -663,7 +667,7 @@
         <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
       </div>
 
-      <!-- Inspector Sidebar -->
+      <!-- Inspector Panel con Controles de Rotación Mejorados -->
       <div id="inspector-panel" class="inspector-panel hidden">
         <div class="panel-header">
           <div class="panel-title" id="inspector-title">
@@ -686,9 +690,18 @@
           </div>
         </div>
 
+        <!-- CONTROLES DE ROTACIÓN MEJORADOS -->
         <div class="form-group">
-          <label class="form-label">Rotación en Grados (Y)</label>
-          <input type="range" id="rot-y" min="0" max="360" value="0" style="width:100%;" oninput="actualizarObjetoDesdeInputs()">
+          <label class="form-label">Rotación Y (<span id="val-rot-y">0</span>°)</label>
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+            <input type="range" id="rot-y" min="0" max="360" value="0" style="flex:1;" oninput="actualizarRotDesdeSlider()">
+            <input type="number" id="rot-y-num" min="0" max="360" value="0" class="form-input" style="width:65px;" oninput="actualizarRotDesdeNum()">
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px;">
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-90)">-90°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(90)">+90°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(180)">180°</button>
+          </div>
         </div>
 
         <div id="section-camera-props" style="display:none;">
@@ -955,6 +968,15 @@
 
         mesh = group;
         data.name = 'Caja POS ' + (objects.length + 1);
+      } else if (type === 'escritorio_servicio') {
+        const group = new THREE.Group();
+        const deskGeo = new THREE.BoxGeometry(4, 1.1, 1.8);
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.3 });
+        const deskMesh = new THREE.Mesh(deskGeo, deskMat);
+        deskMesh.position.y = 0.55;
+        group.add(deskMesh);
+        mesh = group;
+        data.name = 'Mostrador Atención ' + (objects.length + 1);
       } else if (type === 'nevera') {
         const group = new THREE.Group();
         const bodyGeo = new THREE.BoxGeometry(2, 3, 1.2);
@@ -978,6 +1000,13 @@
         mesh.position.y = 0.5;
         mesh.castShadow = true;
         data.name = 'Isla Promocional ' + (objects.length + 1);
+      } else if (type === 'tarima_pallet') {
+        const geo = new THREE.BoxGeometry(2.5, 0.3, 2.5);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.15;
+        mesh.castShadow = true;
+        data.name = 'Paleta Almacén ' + (objects.length + 1);
       } else if (type === 'puerta_entrada') {
         const group = new THREE.Group();
         const doorGeo = new THREE.BoxGeometry(3.5, 3.2, 0.15);
@@ -987,15 +1016,6 @@
         group.add(doorMesh);
         mesh = group;
         data.name = 'Puerta Cristal ' + (objects.length + 1);
-      } else if (type === 'antena_antirrobo') {
-        const group = new THREE.Group();
-        const p1Geo = new THREE.BoxGeometry(0.15, 2.2, 0.4);
-        const p1Mat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7 });
-        const p1Mesh = new THREE.Mesh(p1Geo, p1Mat);
-        p1Mesh.position.y = 1.1;
-        group.add(p1Mesh);
-        mesh = group;
-        data.name = 'Sensor Antirrobo ' + (objects.length + 1);
       } else if (type === 'wall') {
         const geo = new THREE.BoxGeometry(8, 3.5, 0.4);
         const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
@@ -1110,13 +1130,48 @@
       document.getElementById('pos-x').value = obj.position.x.toFixed(1);
       document.getElementById('pos-y').value = obj.position.y.toFixed(1);
       document.getElementById('pos-z').value = obj.position.z.toFixed(1);
-      document.getElementById('rot-y').value = Math.round((obj.rotation.y * 180 / Math.PI) % 360);
+
+      const degY = Math.round((obj.rotation.y * 180 / Math.PI) % 360);
+      const valPosY = degY < 0 ? degY + 360 : degY;
+
+      document.getElementById('rot-y').value = valPosY;
+      document.getElementById('rot-y-num').value = valPosY;
+      document.getElementById('val-rot-y').innerText = valPosY;
     }
 
     function deseleccionarObjeto() {
       selectedObject = null;
       transformControls.detach();
       document.getElementById('inspector-panel').classList.add('hidden');
+    }
+
+    function actualizarRotDesdeSlider() {
+      const val = parseInt(document.getElementById('rot-y').value);
+      document.getElementById('rot-y-num').value = val;
+      document.getElementById('val-rot-y').innerText = val;
+      if (selectedObject) {
+        selectedObject.rotation.y = val * Math.PI / 180;
+      }
+    }
+
+    function actualizarRotDesdeNum() {
+      let val = parseInt(document.getElementById('rot-y-num').value) || 0;
+      val = Math.max(0, Math.min(360, val));
+      document.getElementById('rot-y').value = val;
+      document.getElementById('val-rot-y').innerText = val;
+      if (selectedObject) {
+        selectedObject.rotation.y = val * Math.PI / 180;
+      }
+    }
+
+    function rotarObjetoRapido(grados) {
+      if (!selectedObject) return;
+      let actual = Math.round(selectedObject.rotation.y * 180 / Math.PI);
+      let nuevo = (actual + grados) % 360;
+      if (nuevo < 0) nuevo += 360;
+
+      selectedObject.rotation.y = nuevo * Math.PI / 180;
+      sincronizarInspectorDesdeObjeto(selectedObject);
     }
 
     function actualizarObjetoDesdeInputs() {
@@ -1126,7 +1181,6 @@
       selectedObject.position.x = parseFloat(document.getElementById('pos-x').value) || 0;
       selectedObject.position.y = parseFloat(document.getElementById('pos-y').value) || 0;
       selectedObject.position.z = parseFloat(document.getElementById('pos-z').value) || 0;
-      selectedObject.rotation.y = (parseFloat(document.getElementById('rot-y').value) || 0) * Math.PI / 180;
 
       if (selectedObject.userData.type === 'camera') {
         const fov = parseInt(document.getElementById('inp-fov').value);
@@ -1171,15 +1225,15 @@
       currentMode = mode;
       document.getElementById('btn-mode-edit').classList.toggle('active', mode === 'edit');
       document.getElementById('btn-mode-monitor').classList.toggle('active', mode === 'monitor');
-      
+
       const archTools = document.getElementById('editor-tools-arch');
       const mobTools = document.getElementById('editor-tools-mob');
       const btnCam = document.getElementById('btn-add-camera');
-      
+
       if (archTools) archTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
       if (mobTools) mobTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
       if (btnCam) btnCam.style.display = mode === 'edit' ? 'inline-flex' : 'none';
-      
+
       document.getElementById('hud-mode').innerText = mode === 'edit' ? 'Edición 3D' : 'Monitoreo Vivo';
       if (mode === 'monitor') deseleccionarObjeto();
     }
@@ -1199,27 +1253,6 @@
       const cams = objects.filter(o => o.userData.type === 'camera');
       document.getElementById('hud-count-obj').innerText = objects.length;
       document.getElementById('hud-count-cam').innerText = cams.length;
-    }
-
-    function cargarPreset(type) {
-      limpiarEscena();
-      if (type === 'farmacia') {
-        addStructure('gondola_doble'); objects[objects.length - 1].position.set(-6, 0, -4);
-        addStructure('gondola_doble'); objects[objects.length - 1].position.set(2, 0, -4);
-        addStructure('gondola_pared'); objects[objects.length - 1].position.set(-12, 0, -10);
-        addStructure('mostrador'); objects[objects.length - 1].position.set(10, 0, 8);
-        addStructure('nevera'); objects[objects.length - 1].position.set(-8, 0, -10);
-        addStructure('antena_antirrobo'); objects[objects.length - 1].position.set(0, 0, 12);
-        addStructure('camera'); objects[objects.length - 1].position.set(-14, 5, -12);
-        addStructure('camera'); objects[objects.length - 1].position.set(14, 5, 10);
-      } else if (type === 'express') {
-        addStructure('gondola_doble'); objects[objects.length - 1].position.set(0, 0, 0);
-        addStructure('mostrador'); objects[objects.length - 1].position.set(6, 0, 5);
-        addStructure('nevera'); objects[objects.length - 1].position.set(-6, 0, -6);
-        addStructure('camera'); objects[objects.length - 1].position.set(0, 5, 8);
-      }
-      deseleccionarObjeto();
-      actualizarHUD();
     }
 
     function capturarPantalla3D() {
@@ -1261,13 +1294,11 @@
         google.script.run
           .withSuccessHandler((res) => {
             if (res.data) rebuildSceneFromData(res.data);
-            else cargarPreset('farmacia');
           })
           .cargarMapaTienda(tiendaActivaId);
       } else {
         const local = localStorage.getItem(claveStorage);
         if (local) rebuildSceneFromData(JSON.parse(local));
-        else cargarPreset('farmacia');
       }
     }
 
