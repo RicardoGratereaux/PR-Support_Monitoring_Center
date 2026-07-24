@@ -21,6 +21,24 @@ function processIncludes(content) {
 
 const server = http.createServer((req, res) => {
   try {
+    const reqUrl = req.url.split('?')[0];
+
+    if (reqUrl.endsWith('.js')) {
+      const jsPath = path.join(__dirname, reqUrl);
+      if (fs.existsSync(jsPath)) {
+        res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+        return res.end(fs.readFileSync(jsPath, 'utf8'));
+      }
+    }
+
+    if (reqUrl.endsWith('.css')) {
+      const cssPath = path.join(__dirname, reqUrl);
+      if (fs.existsSync(cssPath)) {
+        res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8' });
+        return res.end(fs.readFileSync(cssPath, 'utf8'));
+      }
+    }
+
     const rawHtml = fs.readFileSync(path.join(__dirname, 'Mapa3D.html'), 'utf8');
     const processedHtml = processIncludes(rawHtml);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

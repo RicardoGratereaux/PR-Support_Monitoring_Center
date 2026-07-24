@@ -326,7 +326,7 @@
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-right: 1px solid var(--glass-border);
-    z-index: 100;
+    z-index: 999999;
     transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 10px 0 40px var(--shadow-color);
     padding-top: 25px;
@@ -428,7 +428,7 @@
     left: 0;
     right: 0;
     background: var(--overlay-bg);
-    z-index: 98;
+    z-index: 999998;
     backdrop-filter: blur(5px);
     transition: opacity 0.3s ease;
   }
@@ -1070,6 +1070,7 @@
       height: calc(100vh - 50px);
       margin-top: 50px;
       position: relative;
+      overflow: visible;
     }
 
     .mapa3d-toolbar {
@@ -1080,9 +1081,10 @@
       background: rgba(24, 24, 37, 0.92);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--glass-border);
-      z-index: 50;
+      z-index: 2500;
       gap: 10px;
       flex-wrap: wrap;
+      overflow: visible;
     }
 
     .toolbar-title {
@@ -1113,6 +1115,12 @@
     .tool-dropdown {
       position: relative;
       display: inline-block;
+    }
+
+    .tool-dropdown:hover,
+    .tool-dropdown:focus-within,
+    .tool-dropdown:active {
+      z-index: 99999 !important;
     }
 
     .btn-tool-dropdown {
@@ -1153,7 +1161,7 @@
       visibility: hidden;
       transform: translateY(-6px);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 150;
+      z-index: 9000;
     }
 
     .tool-dropdown:hover .dropdown-menu {
@@ -1258,7 +1266,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 200;
+      z-index: 100000;
       opacity: 1;
       transition: opacity 0.4s ease;
     }
@@ -1651,13 +1659,33 @@
           </button>
           <div class="dropdown-menu">
             <button class="dropdown-item" onclick="setGizmoMode('translate')">
-              <span class="material-symbols-outlined">open_with</span> Mover (Tecla T)
+              <span class="material-symbols-outlined">open_with</span> Mover (Shift + T)
             </button>
             <button class="dropdown-item" onclick="setGizmoMode('rotate')">
-              <span class="material-symbols-outlined">sync</span> Rotar (Tecla R)
+              <span class="material-symbols-outlined">sync</span> Rotar (Shift + R)
             </button>
             <button class="dropdown-item" onclick="setGizmoMode('scale')">
-              <span class="material-symbols-outlined">aspect_ratio</span> Escalar (Tecla S)
+              <span class="material-symbols-outlined">aspect_ratio</span> Escalar (Shift + S)
+            </button>
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--sapphire); padding:4px 12px; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+              <span>SNAP ROTACIÓN</span>
+              <span id="label-snap-rot" style="color:var(--text); font-weight:600;">15°</span>
+            </div>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(0)">
+              <span class="material-symbols-outlined" style="font-size:14px;">do_not_disturb_on</span> Libre (Sin Snap)
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(5)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 5°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(15)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 15°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(45)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 45°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(90)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 90°
             </button>
           </div>
         </div>
@@ -1802,17 +1830,27 @@
           </div>
         </div>
 
-        <!-- CONTROLES DE ROTACIÓN -->
+        <!-- CONTROLES DE ROTACIÓN Y -->
         <div class="form-group">
           <label class="form-label">Rotación Y (<span id="val-rot-y">0</span>°)</label>
           <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-            <input type="range" id="rot-y" min="0" max="360" value="0" style="flex:1;" oninput="actualizarRotDesdeSlider()">
-            <input type="number" id="rot-y-num" min="0" max="360" value="0" class="form-input" style="width:65px;" oninput="actualizarRotDesdeNum()">
+            <input type="range" id="rot-y" min="0" max="360" value="0" style="flex:1;" oninput="actualizarRotDesdeSlider('y')">
+            <input type="number" id="rot-y-num" min="0" max="360" value="0" class="form-input" style="width:60px;" oninput="actualizarRotDesdeNum('y')">
           </div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px;">
-            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-90)">-90°</button>
-            <button class="rot-quick-btn" onclick="rotarObjetoRapido(90)">+90°</button>
-            <button class="rot-quick-btn" onclick="rotarObjetoRapido(180)">180°</button>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-bottom:4px;">
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(0)" title="Orientar al Norte (0°)">N (0°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(90)" title="Orientar al Este (90°)">E (90°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(180)" title="Orientar al Sur (180°)">S (180°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(270)" title="Orientar al Oeste (270°)">W (270°)</button>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px;">
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-45)">-45°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-15)">-15°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(15)">+15°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(45)">+45°</button>
+          </div>
+          <div style="font-size:0.66rem; color:var(--text-muted); margin-top:6px; text-align:center;">
+            💡 Atajos: <kbd style="background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:3px; font-family:monospace;">Q</kbd> / <kbd style="background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:3px; font-family:monospace;">E</kbd> para girar objeto
           </div>
         </div>
 
@@ -1980,12 +2018,27 @@
       raycaster = new THREE.Raycaster();
       mouse = new THREE.Vector2();
 
+      inicializarCompasRotacion();
+
       window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT') return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === 't' || e.key === 'T') setGizmoMode('translate');
         if (e.key === 'r' || e.key === 'R') setGizmoMode('rotate');
         if (e.key === 's' || e.key === 'S') setGizmoMode('scale');
         if (e.key === 'f' || e.key === 'F') enfocarObjetoSeleccionado();
+
+        if (selectedObject) {
+          if (e.key === 'q' || e.key === 'Q') {
+            const step = e.shiftKey ? -90 : -rotationSnapDegrees;
+            rotarObjetoRapido(step);
+            return;
+          }
+          if (e.key === 'e' || e.key === 'E') {
+            const step = e.shiftKey ? 90 : rotationSnapDegrees;
+            rotarObjetoRapido(step);
+            return;
+          }
+        }
       });
 
       animate();
@@ -2074,12 +2127,69 @@
       }
     }
 
+    function crearMallaPuerta() {
+      const group = new THREE.Group();
+
+      const anchoMarco = 1.2;
+      const altoMarco = 2.4;
+      const grosorMarco = 0.2;
+      const grosorPerfil = 0.08;
+
+      const matMarco = new THREE.MeshStandardMaterial({ color: 0x313244, roughness: 0.5, metalness: 0.6 });
+      const matHoja = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.4, metalness: 0.2 });
+      const matPomo = new THREE.MeshStandardMaterial({ color: 0xf9e2af, metalness: 0.9, roughness: 0.2 });
+
+      const jambaIzq = new THREE.Mesh(new THREE.BoxGeometry(grosorPerfil, altoMarco, grosorMarco), matMarco);
+      jambaIzq.position.set(-anchoMarco / 2 + grosorPerfil / 2, altoMarco / 2, 0);
+      jambaIzq.castShadow = true;
+      group.add(jambaIzq);
+
+      const jambaDer = new THREE.Mesh(new THREE.BoxGeometry(grosorPerfil, altoMarco, grosorMarco), matMarco);
+      jambaDer.position.set(anchoMarco / 2 - grosorPerfil / 2, altoMarco / 2, 0);
+      jambaDer.castShadow = true;
+      group.add(jambaDer);
+
+      const dintel = new THREE.Mesh(new THREE.BoxGeometry(anchoMarco, grosorPerfil, grosorMarco), matMarco);
+      dintel.position.set(0, altoMarco - grosorPerfil / 2, 0);
+      dintel.castShadow = true;
+      group.add(dintel);
+
+      const anchoHoja = anchoMarco - (grosorPerfil * 2);
+      const altoHoja = altoMarco - grosorPerfil;
+      const grosorHoja = 0.05;
+
+      const hojaGroup = new THREE.Group();
+      hojaGroup.position.set(-anchoMarco / 2 + grosorPerfil, 0, 0);
+
+      const hojaMesh = new THREE.Mesh(new THREE.BoxGeometry(anchoHoja, altoHoja, grosorHoja), matHoja);
+      hojaMesh.position.set(anchoHoja / 2, altoHoja / 2, 0);
+      hojaMesh.castShadow = true;
+      hojaGroup.add(hojaMesh);
+
+      const pomoGeo = new THREE.SphereGeometry(0.04, 16, 16);
+      const pomoMesh = new THREE.Mesh(pomoGeo, matPomo);
+      pomoMesh.position.set(anchoHoja - 0.1, altoHoja / 2, 0.04);
+      hojaGroup.add(pomoMesh);
+
+      const pomoMesh2 = pomoMesh.clone();
+      pomoMesh2.position.z = -0.04;
+      hojaGroup.add(pomoMesh2);
+
+      hojaGroup.rotation.y = Math.PI / 7;
+
+      group.add(hojaGroup);
+      return group;
+    }
+
     function addStructure(type) {
       if (currentMode !== 'edit') return;
 
       let mesh, data = { id: Date.now(), type: type, name: '', pos: [0, 0, 0] };
 
-      if (type === 'gondola_doble') {
+      if (type === 'puerta') {
+        mesh = crearMallaPuerta();
+        data.name = 'Puerta ' + (objects.length + 1);
+      } else if (type === 'gondola_doble') {
         const group = new THREE.Group();
         const bodyGeo = new THREE.BoxGeometry(4, 2.2, 1.4);
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.3 });
@@ -2257,7 +2367,8 @@
         data.imageUrl = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
       }
 
-      mesh.userData = data;
+      mesh.rotation.order = 'YXZ';
+      mesh.userData = Object.assign({}, mesh.userData || {}, data);
       scene.add(mesh);
       objects.push(mesh);
       actualizarHUD();
@@ -2377,14 +2488,68 @@
     function sincronizarInspectorDesdeObjeto(obj) {
       document.getElementById('pos-x').value = obj.position.x.toFixed(1);
       document.getElementById('pos-y').value = obj.position.y.toFixed(1);
+    let rotationSnapDegrees = 15;
+
+    function setRotationSnapAngle(grados) {
+      rotationSnapDegrees = grados;
+      if (transformControls) {
+        transformControls.setRotationSnap(grados > 0 ? (grados * Math.PI / 180) : null);
+      }
+      const badge = document.getElementById('label-snap-rot');
+      if (badge) badge.innerText = grados === 0 ? 'Libre' : `${grados}°`;
+    }
+
+    function toggleModoEjesRotacion() {
+      const extraDiv = document.getElementById('rot-extra-axes');
+      const btn = document.getElementById('btn-toggle-rot-ejes');
+      if (!extraDiv) return;
+      const isHidden = extraDiv.style.display === 'none' || !extraDiv.style.display;
+      extraDiv.style.display = isHidden ? 'flex' : 'none';
+      if (btn) btn.innerText = isHidden ? 'Modo 1D (Y)' : 'Modo 3D (X,Y,Z)';
+    }
+
+    function sincronizarInspectorDesdeObjeto(obj) {
+      if (!obj) return;
+      if (obj.rotation) obj.rotation.order = 'YXZ';
+
+      document.getElementById('pos-x').value = obj.position.x.toFixed(1);
+      document.getElementById('pos-y').value = obj.position.y.toFixed(1);
       document.getElementById('pos-z').value = obj.position.z.toFixed(1);
 
-      const degY = Math.round((obj.rotation.y * 180 / Math.PI) % 360);
+      const euler = new THREE.Euler().copy(obj.rotation);
+      euler.reorder('YXZ');
+
+      const degY = Math.round((euler.y * 180 / Math.PI) % 360);
       const valPosY = degY < 0 ? degY + 360 : degY;
 
-      document.getElementById('rot-y').value = valPosY;
-      document.getElementById('rot-y-num').value = valPosY;
-      document.getElementById('val-rot-y').innerText = valPosY;
+      const degX = Math.round((euler.x * 180 / Math.PI));
+      const degZ = Math.round((euler.z * 180 / Math.PI));
+
+      const elRotY = document.getElementById('rot-y');
+      if (elRotY) elRotY.value = valPosY;
+      const elRotYNum = document.getElementById('rot-y-num');
+      if (elRotYNum) elRotYNum.value = valPosY;
+      const elValRotY = document.getElementById('val-rot-y');
+      if (elValRotY) elValRotY.innerText = valPosY;
+
+      const elRotX = document.getElementById('rot-x');
+      if (elRotX) elRotX.value = degX;
+      const elRotXNum = document.getElementById('rot-x-num');
+      if (elRotXNum) elRotXNum.value = degX;
+      const elValRotX = document.getElementById('val-rot-x');
+      if (elValRotX) elValRotX.innerText = degX;
+
+      const elRotZ = document.getElementById('rot-z');
+      if (elRotZ) elRotZ.value = degZ;
+      const elRotZNum = document.getElementById('rot-z-num');
+      if (elRotZNum) elRotZNum.value = degZ;
+      const elValRotZ = document.getElementById('val-rot-z');
+      if (elValRotZ) elValRotZ.innerText = degZ;
+
+      const needle = document.getElementById('rot-compass-needle');
+      if (needle) needle.setAttribute('transform', `rotate(${valPosY} 55 55)`);
+      const valCompass = document.getElementById('rot-compass-val');
+      if (valCompass) valCompass.innerText = `${valPosY}°`;
     }
 
     function deseleccionarObjeto() {
@@ -2395,28 +2560,269 @@
       document.getElementById('inspector-panel').classList.add('hidden');
     }
 
-    function actualizarRotDesdeSlider() {
-      const val = parseInt(document.getElementById('rot-y').value);
-      document.getElementById('rot-y-num').value = val;
-      document.getElementById('val-rot-y').innerText = val;
-      if (selectedObject) selectedObject.rotation.y = val * Math.PI / 180;
+    function aplicarRotacionEje(axis, degValue) {
+      if (!selectedObject) return;
+      if (selectedObject.rotation) selectedObject.rotation.order = 'YXZ';
+      const radValue = degValue * Math.PI / 180;
+
+      if (selectedObjects.length > 1) {
+        const center = new THREE.Vector3();
+        selectedObjects.forEach(o => {
+          if (o.rotation) o.rotation.order = 'YXZ';
+          center.add(o.position);
+        });
+        center.divideScalar(selectedObjects.length);
+
+        const oldRad = selectedObject.rotation[axis];
+        const deltaRad = radValue - oldRad;
+
+        selectedObjects.forEach(o => {
+          o.rotation[axis] += deltaRad;
+          if (axis === 'y' && deltaRad !== 0) {
+            const relX = o.position.x - center.x;
+            const relZ = o.position.z - center.z;
+            const cos = Math.cos(deltaRad);
+            const sin = Math.sin(deltaRad);
+            o.position.x = center.x + (relX * cos - relZ * sin);
+            o.position.z = center.z + (relX * sin + relZ * cos);
+          }
+        });
+      } else {
+        selectedObject.rotation[axis] = radValue;
+        if (selectedObject.userData.type === 'camera' && axis === 'x') {
+          const pitch = Math.round(degValue);
+          selectedObject.userData.pitch = pitch;
+          const elPitch = document.getElementById('inp-pitch');
+          if (elPitch) elPitch.value = pitch;
+          const elValPitch = document.getElementById('val-pitch');
+          if (elValPitch) elValPitch.innerText = pitch;
+        }
+      }
+      actualizarTodosLosConosCamara();
+      sincronizarInspectorDesdeObjeto(selectedObject);
     }
 
-    function actualizarRotDesdeNum() {
-      let val = parseInt(document.getElementById('rot-y-num').value) || 0;
-      val = Math.max(0, Math.min(360, val));
-      document.getElementById('rot-y').value = val;
-      document.getElementById('val-rot-y').innerText = val;
-      if (selectedObject) selectedObject.rotation.y = val * Math.PI / 180;
+    // CÁLCULO DE COLISIÓN Y ACOTIACIÓN INDIVIDUAL DE LÍNEAS DE CONOS CCTV (SISTEMA ANTI-TRASPASO MULTI-RAYO)
+    function actualizarGeometriaConoCamara(cam) {
+      if (!cam || !cam.userData || cam.userData.type !== 'camera') return;
+      const coneMesh = cam.getObjectByName('frustumCone');
+      if (!coneMesh) return;
+
+      const fov = cam.userData.fov || 60;
+      const maxDist = cam.userData.dist || 8;
+      const outerSegments = 24; // 24 líneas radiales de colisión
+
+      cam.updateMatrixWorld(true);
+
+      const lensWorldPos = new THREE.Vector3();
+      const lensChild = cam.children.find(c => c.material && c.position.z > 0.9);
+      if (lensChild) {
+        lensChild.getWorldPosition(lensWorldPos);
+      } else {
+        cam.getWorldPosition(lensWorldPos);
+      }
+
+      const camWorldQuat = new THREE.Quaternion();
+      cam.getWorldQuaternion(camWorldQuat);
+
+      const targets = objects.filter(o => o !== cam && !cam.children.includes(o) && o.visible);
+      if (floorMesh) targets.push(floorMesh);
+
+      // Forzar temporalmente DoubleSide en los materiales para detectar cualquier cara (frontal o trasera) de paredes y objetos
+      const savedSides = new Map();
+      targets.forEach(o => {
+        o.traverse(child => {
+          if (child.isMesh && child.material) {
+            savedSides.set(child.material, child.material.side);
+            child.material.side = THREE.DoubleSide;
+          }
+        });
+      });
+
+      const halfFovRad = ((fov * 0.5) * Math.PI) / 180;
+      const tanFov = Math.tan(halfFovRad);
+
+      const vertices = [];
+      const indices = [];
+
+      const apexLocal = new THREE.Vector3(0, -0.32, 0.98);
+      vertices.push(apexLocal.x, apexLocal.y, apexLocal.z); // Index 0
+
+      const outerVertexIndices = [];
+      for (let i = 0; i < outerSegments; i++) {
+        const angle = (i / outerSegments) * Math.PI * 2;
+        const dirLocal = new THREE.Vector3(
+          tanFov * Math.cos(angle),
+          tanFov * Math.sin(angle),
+          1.0
+        ).normalize();
+
+        const dirWorld = dirLocal.clone().applyQuaternion(camWorldQuat).normalize();
+
+        const rayLine = new THREE.Raycaster(lensWorldPos, dirWorld, 0.01, maxDist);
+        const hits = rayLine.intersectObjects(targets, true);
+
+        let lineDist = maxDist;
+        if (hits.length > 0) {
+          lineDist = Math.max(0.15, hits[0].distance - 0.08);
+        }
+
+        const endPtLocal = dirLocal.clone().multiplyScalar(lineDist).add(apexLocal);
+        vertices.push(endPtLocal.x, endPtLocal.y, endPtLocal.z);
+        outerVertexIndices.push(i + 1);
+      }
+
+      // Restaurar el estado 'side' de los materiales
+      savedSides.forEach((origSide, mat) => {
+        mat.side = origSide;
+      });
+
+      // Triángulos laterales del cono limpia (sin radios centrales que corten paredes)
+      for (let i = 0; i < outerSegments; i++) {
+        const curr = outerVertexIndices[i];
+        const next = outerVertexIndices[(i + 1) % outerSegments];
+
+        // Ápex del lente (0) -> Vértice Perimetral Actual (curr) -> Vértice Siguiente (next)
+        indices.push(0, curr, next);
+      }
+
+      const newGeo = new THREE.BufferGeometry();
+      newGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      newGeo.setIndex(indices);
+      newGeo.computeVertexNormals();
+
+      coneMesh.geometry.dispose();
+      coneMesh.geometry = newGeo;
+      coneMesh.position.set(0, 0, 0);
+      coneMesh.rotation.set(0, 0, 0);
     }
 
-    function rotarObjetoRapido(grados) {
+      if (selectedObjects.length > 1) {
+        const center = new THREE.Vector3();
+        selectedObjects.forEach(o => {
+          if (o.rotation) o.rotation.order = 'YXZ';
+          center.add(o.position);
+        });
+        center.divideScalar(selectedObjects.length);
+
+        const oldRad = selectedObject.rotation[axis];
+        const deltaRad = radValue - oldRad;
+
+        selectedObjects.forEach(o => {
+          o.rotation[axis] += deltaRad;
+          if (axis === 'y' && deltaRad !== 0) {
+            const relX = o.position.x - center.x;
+            const relZ = o.position.z - center.z;
+            const cos = Math.cos(deltaRad);
+            const sin = Math.sin(deltaRad);
+            o.position.x = center.x + (relX * cos - relZ * sin);
+            o.position.z = center.z + (relX * sin + relZ * cos);
+          }
+        });
+      } else {
+        selectedObject.rotation[axis] = radValue;
+        if (selectedObject.userData.type === 'camera' && axis === 'x') {
+          const pitch = Math.round(degValue);
+          selectedObject.userData.pitch = pitch;
+          const elPitch = document.getElementById('inp-pitch');
+          if (elPitch) elPitch.value = pitch;
+          const elValPitch = document.getElementById('val-pitch');
+          if (elValPitch) elValPitch.innerText = pitch;
+        }
+      }
+      actualizarTodosLosConosCamara();
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function actualizarRotDesdeSlider(axis = 'y') {
+      const el = document.getElementById(`rot-${axis}`);
+      if (!el) return;
+      const val = parseInt(el.value) || 0;
+      aplicarRotacionEje(axis, val);
+    }
+
+    function actualizarRotDesdeNum(axis = 'y') {
+      const el = document.getElementById(`rot-${axis}-num`);
+      if (!el) return;
+      let val = parseInt(el.value) || 0;
+      if (axis === 'y') val = Math.max(0, Math.min(360, val));
+      else val = Math.max(-180, Math.min(180, val));
+      aplicarRotacionEje(axis, val);
+    }
+
+    function orientarObjetoCardinal(grados) {
+      aplicarRotacionEje('y', grados);
+    }
+
+    function rotarObjetoRapido(gradosDelta) {
       if (!selectedObject) return;
       let actual = Math.round(selectedObject.rotation.y * 180 / Math.PI);
-      let nuevo = (actual + grados) % 360;
+      let nuevo = (actual + gradosDelta) % 360;
       if (nuevo < 0) nuevo += 360;
-      selectedObject.rotation.y = nuevo * Math.PI / 180;
+      aplicarRotacionEje('y', nuevo);
+    }
+
+    function nivelarObjeto() {
+      if (!selectedObject) return;
+      if (selectedObjects.length > 1) {
+        selectedObjects.forEach(o => {
+          o.rotation.x = 0;
+          o.rotation.z = 0;
+        });
+      } else {
+        selectedObject.rotation.x = 0;
+        selectedObject.rotation.z = 0;
+      }
       sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function reiniciarRotacion() {
+      if (!selectedObject) return;
+      if (selectedObjects.length > 1) {
+        selectedObjects.forEach(o => {
+          o.rotation.set(0, 0, 0);
+        });
+      } else {
+        selectedObject.rotation.set(0, 0, 0);
+      }
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+        if (!selectedObject) return;
+        const rect = dial.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+
+        let rad = Math.atan2(dy, dx) + Math.PI / 2;
+        if (rad < 0) rad += Math.PI * 2;
+        let deg = Math.round(rad * 180 / Math.PI) % 360;
+
+        if (rotationSnapDegrees > 0) {
+          deg = Math.round(deg / rotationSnapDegrees) * rotationSnapDegrees % 360;
+        }
+        aplicarRotacionEje('y', deg);
+      };
+
+      dial.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        dial.setPointerCapture(e.pointerId);
+        handlePointer(e);
+      });
+
+      dial.addEventListener('pointermove', (e) => {
+        if (isDragging) handlePointer(e);
+      });
+
+      const stopDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          try { dial.releasePointerCapture(e.pointerId); } catch(err){}
+        }
+      };
+      dial.addEventListener('pointerup', stopDrag);
+      dial.addEventListener('pointercancel', stopDrag);
     }
 
     function actualizarObjetoDesdeInputs() {
@@ -2432,7 +2838,7 @@
         const dist = parseInt(document.getElementById('inp-dist').value);
         const imgUrl = document.getElementById('inp-img-url').value;
 
-        document.getElementById('val-fov').innerText = fov;
+document.getElementById('val-fov').innerText = fov;
         document.getElementById('val-dist').innerText = dist;
         document.getElementById('img-preview').src = imgUrl;
 
@@ -2440,16 +2846,11 @@
         selectedObject.userData.dist = dist;
         selectedObject.userData.imageUrl = imgUrl;
 
-        const coneMesh = selectedObject.getObjectByName('frustumCone');
-        if (coneMesh) {
-          coneMesh.geometry.dispose();
-          coneMesh.geometry = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
-          coneMesh.position.set(0, -0.32, dist / 2 + 0.98);
-        }
+        actualizarGeometriaConoCamara(selectedObject);
+        actualizarTodosLosConosCamara();
       }
     }
 
-    // GUARDAR CONJUNTO MULTISELECCIONADO COMO PREFAB PERSONALIZADO
     function guardarConjuntoComoPrefab() {
       if (selectedObjects.length === 0) return;
       const nombrePrefab = prompt(`Ingresa un nombre para este Conjunto (${selectedObjects.length} elementos):`, `Conjunto ${selectedObjects.length} Muebles`);
