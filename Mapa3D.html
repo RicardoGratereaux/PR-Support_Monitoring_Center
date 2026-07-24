@@ -12,72 +12,112 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-  <!-- Three.js y Addons -->
+  <!-- Three.js, OrbitControls, TransformControls y TWEEN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
   <?!= include('Global_CSS'); ?>
+  <?!= include('Global_Datos'); ?>
 
   <style>
+    :root {
+      --bg-main: #11111b;
+      --glass-bg: #1e1e2e;
+      --glass-bg-hover: #313244;
+      --glass-border: #45475a;
+      --glass-border-focus: #f9e2af;
+      --text-main: #cdd6f4;
+      --text-muted: #bac2de;
+      --accent-primary: #f9e2af;
+      --sapphire: #74c7ec;
+      --blue: #89b4fa;
+      --teal: #94e2d5;
+      --success: #a6e3a1;
+      --danger: #f38ba8;
+    }
+
     body {
       font-family: 'Outfit', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #0b0f19;
-      color: #e2e8f0;
+      background-color: var(--bg-main);
+      color: var(--text-main);
       overflow-x: hidden;
     }
 
     .mapa3d-wrapper {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 50px);
+      margin-top: 50px;
       position: relative;
+      overflow: visible;
     }
 
     .mapa3d-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 20px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      z-index: 10;
-      gap: 12px;
+      padding: 8px 16px;
+      background: rgba(24, 24, 37, 0.94);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      z-index: 2500;
+      gap: 8px 12px;
       flex-wrap: wrap;
-    }
-
-    .toolbar-title-section {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      overflow: visible;
     }
 
     .toolbar-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
     }
 
-    .toolbar-actions {
+    .store-badge {
+      background: rgba(116, 199, 236, 0.15);
+      color: var(--sapphire);
+      border: 1px solid rgba(116, 199, 236, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .toolbar-actions-cluster {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px 8px;
+      flex-wrap: wrap;
     }
 
-    .btn-tool {
-      background: rgba(30, 41, 59, 0.7);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 8px 14px;
+    .tool-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tool-dropdown:hover,
+    .tool-dropdown:focus-within,
+    .tool-dropdown:active {
+      z-index: 99999 !important;
+    }
+
+    .btn-tool-dropdown {
+      background: var(--glass-bg);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+      padding: 6px 12px;
       border-radius: 8px;
       cursor: pointer;
       font-family: inherit;
-      font-size: 0.875rem;
+      font-size: 0.82rem;
       font-weight: 500;
       display: flex;
       align-items: center;
@@ -85,67 +125,112 @@
       transition: all 0.2s ease;
     }
 
-    .btn-tool:hover {
-      background: rgba(56, 189, 248, 0.15);
-      border-color: #38bdf8;
-      transform: translateY(-1px);
-    }
-
-    .btn-tool.active {
-      background: #0284c7;
+    .btn-tool-dropdown:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--sapphire);
       color: #fff;
-      border-color: #38bdf8;
-      box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
     }
 
-    .btn-action {
-      background: #1e293b;
-      color: #e2e8f0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 8px 14px;
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 6px;
+      background: rgba(24, 24, 37, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 6px;
+      min-width: 240px;
+      max-height: 450px;
+      overflow-y: auto;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+      z-index: 9000;
+    }
+
+    .dropdown-menu.dropdown-right {
+      left: auto;
+      right: 0;
+    }
+
+    .tool-dropdown:hover .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(116, 199, 236, 0.15);
+      color: var(--sapphire);
+    }
+
+    .btn-action-primary {
+      background: linear-gradient(135deg, var(--sapphire), var(--blue));
+      color: #11111b;
+      border: none;
+      padding: 6px 14px;
       border-radius: 8px;
       cursor: pointer;
       font-family: inherit;
-      font-size: 0.875rem;
+      font-size: 0.82rem;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 6px;
+      box-shadow: 0 2px 10px rgba(116, 199, 236, 0.3);
       transition: all 0.2s ease;
-    }
-
-    .btn-action:hover {
-      background: #334155;
-      color: #fff;
     }
 
     .mode-switch-container {
       display: flex;
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: 10px;
+      background: var(--glass-bg);
+      border-radius: 8px;
       padding: 3px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--glass-border);
     }
 
     .mode-btn {
-      padding: 6px 16px;
-      border-radius: 8px;
+      padding: 5px 12px;
+      border-radius: 6px;
       border: none;
       background: transparent;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-family: inherit;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .mode-btn.active {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+      background: linear-gradient(135deg, var(--sapphire), var(--blue));
+      color: #11111b;
+      box-shadow: 0 2px 8px rgba(116, 199, 236, 0.4);
     }
 
     .mapa3d-main {
@@ -159,97 +244,227 @@
       flex: 1;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%, #090d16 100%);
-      cursor: grab;
+      background: radial-gradient(circle at center, #1e1e2e 0%, #181825 70%, #11111b 100%);
     }
 
-    #webgl-container:active {
-      cursor: grabbing;
+    /* HUB MENU OVERLAY & CONFIGURADOR DE TIENDA */
+    .hub-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(17, 17, 27, 0.94);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100000;
+      opacity: 1;
+      transition: opacity 0.4s ease;
     }
 
-    /* Inspector Sidebar */
-    .inspector-panel {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 320px;
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      z-index: 20;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      max-height: calc(100% - 40px);
-      overflow-y: auto;
-    }
-
-    .inspector-panel.hidden {
-      transform: translateX(360px);
+    .hub-modal-overlay.hidden {
       opacity: 0;
       pointer-events: none;
     }
 
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    .hub-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      width: 680px;
+      max-width: 92vw;
+      padding: 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
-    .panel-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #38bdf8;
+    .hub-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .hub-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0 0 6px 0;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .cadena-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .cadena-card {
+      background: var(--glass-bg-hover);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .cadena-card:hover {
+      background: rgba(116, 199, 236, 0.12);
+      border-color: var(--sapphire);
+    }
+
+    .cadena-card.active {
+      background: linear-gradient(135deg, rgba(116, 199, 236, 0.2), rgba(137, 180, 250, 0.3));
+      border-color: var(--sapphire);
+      box-shadow: 0 0 16px rgba(116, 199, 236, 0.3);
+    }
+
+    .cadena-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+      background: rgba(24, 24, 37, 0.6);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .hub-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: #181825;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 1rem;
+      box-sizing: border-box;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .hub-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn-hub-main {
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-hub-primary {
+      background: linear-gradient(135deg, var(--sapphire), var(--blue));
+      color: #11111b;
+    }
+
+    .btn-hub-secondary {
+      background: rgba(49, 50, 68, 0.8);
+      color: var(--success);
+      border: 1px solid rgba(166, 227, 161, 0.4);
+    }
+
+    /* Inspector Panel Flotante */
+    .inspector-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 330px;
+      background: rgba(30, 30, 46, 0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      max-height: calc(100% - 28px);
+      overflow-y: auto;
+      display: none;
+    }
+
+    .inspector-panel.hidden {
+      transform: translateX(400px);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .form-group {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .form-label {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      margin-bottom: 4px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
       display: block;
       font-weight: 500;
     }
 
     .form-input {
       width: 100%;
-      padding: 8px 12px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: #fff;
+      padding: 6px 9px;
+      background: #181825;
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-main);
       font-family: inherit;
-      font-size: 0.875rem;
+      font-size: 0.82rem;
       box-sizing: border-box;
     }
 
-    .form-input:focus {
-      outline: none;
-      border-color: #38bdf8;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    .coord-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+    }
+
+    .rot-quick-btn {
+      background: var(--glass-bg-hover);
+      color: var(--sapphire);
+      border: 1px solid rgba(116, 199, 236, 0.3);
+      padding: 4px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .image-preview-box {
       width: 100%;
-      height: 140px;
+      height: 120px;
+      background: #181825;
       border-radius: 8px;
-      background: #0f172a;
-      border: 1px dashed rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      margin-top: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      margin-top: 6px;
     }
 
     .image-preview-box img {
@@ -258,233 +473,1269 @@
       object-fit: cover;
     }
 
-    /* Modal de Monitoreo de Cámara */
+    .hud-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(24, 24, 37, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 15;
+    }
+
+    /* Palette Vertical CAD Flotante Izquierda */
+    .left-tool-palette {
+      position: absolute;
+      top: 75px;
+      left: 16px;
+      background: rgba(24, 24, 37, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 3500;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+
+    .palette-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .palette-btn:hover {
+      background: var(--glass-bg-hover);
+      color: var(--sapphire);
+      border-color: var(--sapphire);
+    }
+
+    .palette-btn.active {
+      background: rgba(116, 199, 236, 0.2);
+      color: var(--sapphire);
+      border-color: var(--sapphire);
+    }
+
+    /* BADGE TOOLTIP FLOTANTE GLOBAL (POSICIONAMIENTO FIXED SIN RECORTES DE OVERFLOW) */
+    .left-palette-badge-tooltip {
+      position: fixed;
+      background: rgba(24, 24, 37, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: #fff;
+      border: 1px solid var(--sapphire);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 100000;
+      transform: translateY(-50%) translateX(4px);
+    }
+
+    .left-palette-badge-tooltip.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    .left-palette-badge-tooltip::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 5px 6px 5px 0;
+      border-style: solid;
+      border-color: transparent var(--sapphire) transparent transparent;
+    }
+
+    /* Modal Overlay Global de Alta Calidad (Popups de Pantalla Completa) */
     .camera-modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
+      background: rgba(17, 17, 27, 0.84);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 9999;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      visibility: hidden;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .camera-modal-overlay.show {
       opacity: 1;
-      pointer-events: auto;
+      visibility: visible;
     }
 
     .camera-modal {
-      background: #0f172a;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 16px;
-      width: 540px;
-      max-width: 90vw;
+      background: rgba(24, 24, 37, 0.96);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
       padding: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      width: 90%;
+      max-width: 580px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(116, 199, 236, 0.15);
       position: relative;
+      transform: scale(0.92) translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .camera-modal-overlay.show .camera-modal {
+      transform: scale(1) translateY(0);
     }
 
     .modal-close-btn {
       position: absolute;
       top: 16px;
       right: 16px;
-      background: rgba(255, 255, 255, 0.1);
-      border: none;
-      color: #94a3b8;
-      border-radius: 50%;
+      background: var(--glass-bg-hover);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
       width: 32px;
       height: 32px;
-      cursor: pointer;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     .modal-close-btn:hover {
-      background: rgba(239, 68, 68, 0.3);
-      color: #fff;
+      background: rgba(243, 139, 168, 0.2);
+      color: var(--danger);
+      border-color: var(--danger);
     }
 
     .camera-modal-img {
       width: 100%;
-      height: 280px;
-      border-radius: 12px;
+      height: 320px;
       object-fit: cover;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-top: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
     }
 
-    .camera-status-badge {
-      display: inline-flex;
+    /* ESTILOS DE MINIMAPA 2D (HUD FLOOR RADAR) & MEDIDA 3D */
+    .hud-minimap-container {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(24, 24, 37, 0.92);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+      z-index: 120;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hud-minimap-container:hover {
+      border-color: var(--sapphire);
+      box-shadow: 0 12px 35px rgba(116, 199, 236, 0.25);
+    }
+
+    .minimap-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: rgba(49, 50, 68, 0.6);
+      border-bottom: 1px solid var(--glass-border);
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: 0.5px;
+    }
+
+    .minimap-title {
+      display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
     }
 
-    .camera-status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
+    .btn-minimap-toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .btn-minimap-toggle:hover {
+      color: var(--sapphire);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .minimap-body {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #minimap-canvas {
+      background: #0d0e17;
+      border: 1px solid rgba(116, 199, 236, 0.25);
+      border-radius: 6px;
+      display: block;
+    }
+
+    .minimap-footer {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 5px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .measure-hud-overlay {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(24, 24, 37, 0.94);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--accent-primary);
+      border-radius: 30px;
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      color: #fff;
+      z-index: 150;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-tool-dropdown.active-tool {
+      background: rgba(249, 226, 175, 0.2) !important;
+      border-color: var(--accent-primary) !important;
+      color: var(--accent-primary) !important;
     }
   </style>
 </head>
 <body>
   <?!= include('Global_Navbar'); ?>
 
-  <div class="mapa3d-wrapper">
-    <!-- Toolbar Superior -->
-    <div class="mapa3d-toolbar">
-      <div class="toolbar-title-section">
-        <div class="toolbar-title">
-          <span class="material-symbols-outlined" style="color: #38bdf8;">view_in_ar</span>
-          Mapa 3D de Tiendas & Monitoreo
+  <!-- HUB INICIAL DE CONFIGURACIÓN Y DIMENSIONADO DE TIENDA -->
+  <div id="hub-modal" class="hub-modal-overlay">
+    <div class="hub-card">
+      <div class="hub-header">
+        <h2 class="hub-title">
+          <span class="material-symbols-outlined" style="color:var(--sapphire); font-size:2rem;">domain</span>
+          Configurador de Tiendas 3D
+        </h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">Define el local, dimensiones y ambiente de la sucursal antes de comenzar</p>
+      </div>
+
+      <!-- Selección de Cadena -->
+      <div class="cadena-grid">
+        <div class="cadena-card active" onclick="seleccionarCadena('farmacias', this)">
+          <span class="cadena-name">Farmacias Rey</span>
+        </div>
+        <div class="cadena-card" onclick="seleccionarCadena('chinatown', this)">
+          <span class="cadena-name">Chinatown & More</span>
+        </div>
+        <div class="cadena-card" onclick="seleccionarCadena('exchange', this)">
+          <span class="cadena-name">Exchange by Figna</span>
         </div>
       </div>
 
-      <div class="mode-switch-container">
-        <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
-          <span class="material-symbols-outlined" style="font-size:18px;">edit</span> Editor 3D
-        </button>
-        <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
-          <span class="material-symbols-outlined" style="font-size:18px;">videocam</span> Monitoreo Vivo
+      <div style="margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+        <label class="form-label" style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin:0;">Selecciona la Sucursal:</label>
+        <span id="hub-store-map-badge" style="font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:12px; background:rgba(166,227,161,0.15); color:var(--success); border:1px solid rgba(166,227,161,0.3);">● Verificando...</span>
+      </div>
+
+      <select id="hub-select-tienda" class="hub-select" onchange="verificarEstadoMapaTienda()"></select>
+
+      <!-- VISTA 1: SI LA TIENDA NO TIENE MAPA -->
+      <div id="hub-section-no-map">
+        <div style="font-size:0.85rem; font-weight:700; color:var(--sapphire); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+          <span class="material-symbols-outlined" style="font-size:18px;">aspect_ratio</span> Dimensiones del Local
+        </div>
+
+        <div class="config-grid" style="grid-template-columns: 1fr 1fr;">
+          <div>
+            <label class="form-label">Ancho Tienda (m)</label>
+            <input type="number" id="config-ancho" class="form-input" value="40" min="20" max="100">
+          </div>
+          <div>
+            <label class="form-label">Largo Tienda (m)</label>
+            <input type="number" id="config-largo" class="form-input" value="30" min="15" max="80">
+          </div>
+        </div>
+
+        <button class="btn-hub-main btn-hub-primary" style="width:100%; font-size:0.95rem; margin-top:14px;" onclick="iniciarExperiencia3D('edit', true)">
+          <span class="material-symbols-outlined">add_location_alt</span> Crear Nuevo Mapa 3D para esta Tienda
         </button>
       </div>
 
-      <div class="toolbar-actions" id="editor-tools">
-        <button class="btn-tool" onclick="addStructure('gondola')">
-          <span class="material-symbols-outlined" style="font-size:18px;">table_restaurant</span> + Góndola
-        </button>
-        <button class="btn-tool" onclick="addStructure('wall')">
-          <span class="material-symbols-outlined" style="font-size:18px;">door_sliding</span> + Pared
-        </button>
-        <button class="btn-tool" onclick="addStructure('camera')" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">
-          <span class="material-symbols-outlined" style="font-size:18px;">videocam</span> + Cámara
-        </button>
-        <div style="height: 20px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
-        <button class="btn-action" onclick="guardarPlanoGAS()">
-          <span class="material-symbols-outlined" style="font-size:18px;">save</span> Guardar
-        </button>
-        <button class="btn-action" onclick="cargarPlanoGAS()">
-          <span class="material-symbols-outlined" style="font-size:18px;">download</span> Cargar
-        </button>
-        <button class="btn-action" onclick="limpiarEscena()" style="color: #ef4444;">
-          <span class="material-symbols-outlined" style="font-size:18px;">delete</span> Limpiar
-        </button>
-      </div>
-    </div>
-
-    <!-- Contenedor WebGL 3D -->
-    <div class="mapa3d-main">
-      <div id="webgl-container"></div>
-
-      <!-- Inspector Panel (Propiedades del Objeto Seleccionado) -->
-      <div id="inspector-panel" class="inspector-panel hidden">
-        <div class="panel-header">
-          <div class="panel-title" id="inspector-title">
-            <span class="material-symbols-outlined">settings_suggest</span> Inspector
-          </div>
-          <button class="btn-action" onclick="deseleccionarObjeto()" style="padding: 4px 8px;">✕</button>
+      <!-- VISTA 2: SI LA TIENDA YA TIENE MAPA -->
+      <div id="hub-section-has-map" style="display:none;">
+        <div class="hub-actions" style="margin-bottom:14px;">
+          <button class="btn-hub-main btn-hub-secondary" onclick="iniciarExperiencia3D('monitor')">
+            <span class="material-symbols-outlined">visibility</span> Monitorear Mapa Vivo
+          </button>
+          <button class="btn-hub-main btn-hub-primary" onclick="iniciarExperiencia3D('edit')">
+            <span class="material-symbols-outlined">edit</span> Editar Mapa Existente
+          </button>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Nombre / Identificador</label>
-          <input type="text" id="inp-nombre" class="form-input" oninput="actualizarObjetoSeleccionado()">
+        <div style="text-align:center;">
+          <button class="btn-tool-dropdown" style="display:inline-flex; font-size:0.78rem; color:var(--text-muted); padding:4px 10px;" onclick="toggleReconfigurarMenu()">
+            <span class="material-symbols-outlined" style="font-size:15px;">settings</span> Reconfigurar dimensiones / Recrear mapa
+          </button>
         </div>
 
-        <div id="section-camera-props" style="display:none;">
-          <div class="form-group">
-            <label class="form-label">Ángulo de Visión (FOV: <span id="val-fov">60</span>°)</label>
-            <input type="range" id="inp-fov" min="20" max="120" value="60" style="width:100%;" oninput="actualizarObjetoSeleccionado()">
+        <div id="hub-reconfig-box" style="display:none; margin-top:14px; background:rgba(24, 24, 37, 0.6); padding:14px; border-radius:12px; border:1px solid var(--glass-border);">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--accent-primary); margin-bottom:8px;">Reconfiguración de Local</div>
+          <div class="config-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:10px; background:transparent; padding:0; border:none;">
+            <div>
+              <label class="form-label">Ancho (m)</label>
+              <input type="number" id="reconfig-ancho" class="form-input" value="40" min="20" max="100">
+            </div>
+            <div>
+              <label class="form-label">Largo (m)</label>
+              <input type="number" id="reconfig-largo" class="form-input" value="30" min="15" max="80">
+            </div>
           </div>
-
-          <div class="form-group">
-            <label class="form-label">Alcance del Cono (<span id="val-dist">8</span>m)</label>
-            <input type="range" id="inp-dist" min="3" max="25" value="8" style="width:100%;" oninput="actualizarObjetoSeleccionado()">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">URL Imagen de Cobertura / Referencia</label>
-            <input type="text" id="inp-img-url" class="form-input" placeholder="https://ejemplo.com/camara1.jpg" onchange="actualizarObjetoSeleccionado()">
-          </div>
-
-          <div class="image-preview-box">
-            <img id="img-preview" src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80" alt="Captura de cámara">
-          </div>
-        </div>
-
-        <div style="display:flex; gap: 8px; margin-top: 16px;">
-          <button class="btn-action" style="flex:1; justify-content:center; color: #ef4444; border-color: rgba(239,68,68,0.4);" onclick="eliminarObjetoSeleccionado()">
-            <span class="material-symbols-outlined" style="font-size:18px;">delete</span> Eliminar
+          <button class="btn-hub-main btn-hub-primary" style="width:100%; font-size:0.85rem; padding:8px;" onclick="aplicarReconfiguracionMapa()">
+            <span class="material-symbols-outlined" style="font-size:16px;">refresh</span> Aplicar Reconfiguración y Editar
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Inspección de Cámara (Modo Monitoreo) -->
-  <div id="camera-modal" class="camera-modal-overlay">
+  <div class="mapa3d-wrapper">
+    <!-- TOOLBAR ORGANIZADO CON DESNIVELES Y HABITACIONES PREBUILD -->
+    <div class="mapa3d-toolbar">
+      <div class="toolbar-title">
+        <button class="btn-tool-dropdown" onclick="abrirHubSeleccion()" title="Configurar Tienda / Dimensiones">
+          <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
+        </button>
+        <span id="label-tienda-activa" class="store-badge">FR-01 LITHEDA</span>
+      </div>
+
+      <div class="toolbar-actions-cluster">
+        <!-- Gizmos -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--sapphire);">open_with</span>
+            Gizmos <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="setGizmoMode('translate')">
+              <span class="material-symbols-outlined">open_with</span> Mover (Shift + T)
+            </button>
+            <button class="dropdown-item" onclick="setGizmoMode('rotate')">
+              <span class="material-symbols-outlined">sync</span> Rotar (Shift + R)
+            </button>
+            <button class="dropdown-item" onclick="setGizmoMode('scale')">
+              <span class="material-symbols-outlined">aspect_ratio</span> Escalar (Shift + S)
+            </button>
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--sapphire); padding:4px 12px; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+              <span>SNAP ROTACIÓN</span>
+              <span id="label-snap-rot" style="color:var(--text); font-weight:600;">15°</span>
+            </div>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(0)">
+              <span class="material-symbols-outlined" style="font-size:14px;">do_not_disturb_on</span> Libre (Sin Snap)
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(5)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 5°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(15)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 15°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(45)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 45°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(90)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 90°
+            </button>
+          </div>
+        </div>
+
+        <!-- Vistas de Cámara y Ambiente Real Estate -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--blue);">videocam</span>
+            Vistas & Iluminación <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="cambiarVistaCamara('2d')">
+              <span class="material-symbols-outlined">grid_view</span> Plano 2D Superior (Zenital)
+            </button>
+            <button class="dropdown-item" onclick="cambiarVistaCamara('3d')">
+              <span class="material-symbols-outlined">view_in_ar</span> Vista Isométrica 3D
+            </button>
+            <button class="dropdown-item" onclick="cambiarVistaCamara('entrada')">
+              <span class="material-symbols-outlined">meeting_room</span> Vista Frontal / Entrada
+            </button>
+            <button class="dropdown-item" onclick="cambiarVistaCamara('peaton')">
+              <span class="material-symbols-outlined">directions_walk</span> Recorrido Peatón (1ra Persona)
+            </button>
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--sapphire); padding:4px 12px; font-weight:700;">MODOS DE ILUMINACIÓN</div>
+            <button class="dropdown-item" onclick="setLightingEnvironment('day')">
+              <span class="material-symbols-outlined" style="color:#74c7ec;">wb_sunny</span> Modo Día (Fondo Azul)
+            </button>
+            <button class="dropdown-item" onclick="setLightingEnvironment('night')">
+              <span class="material-symbols-outlined" style="color:#cba6f7;">dark_mode</span> Modo Noche (Modo Oscuro)
+            </button>
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <button class="dropdown-item" onclick="cambiarVistaCamara('reset')">
+              <span class="material-symbols-outlined">restart_alt</span> Restablecer Cámara (Default)
+            </button>
+          </div>
+        </div>
+
+        <!-- Dropdown Capas (Control de Capas / Layers CAD) -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown" title="Control de Capas (Ocultar / Mostrar)">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--teal);">layers</span>
+            Capas <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="toggleCapa('paredes')">
+              <span id="chk-layer-paredes" class="material-symbols-outlined" style="color:var(--sapphire);">check_box</span> Paredes / Estructuras
+            </button>
+            <button class="dropdown-item" onclick="toggleCapa('mobiliario')">
+              <span id="chk-layer-mobiliario" class="material-symbols-outlined" style="color:var(--sapphire);">check_box</span> Mobiliario Comercial
+            </button>
+            <button class="dropdown-item" onclick="toggleCapa('camaras')">
+              <span id="chk-layer-camaras" class="material-symbols-outlined" style="color:var(--sapphire);">check_box</span> Cámaras CCTV
+            </button>
+            <button class="dropdown-item" onclick="toggleCapa('desniveles')">
+              <span id="chk-layer-desniveles" class="material-symbols-outlined" style="color:var(--sapphire);">check_box</span> Desniveles / Bloques
+            </button>
+          </div>
+        </div>
+
+        <!-- Snap to Grid Dropdown (0.5m / 1.0m / Libre) -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown" title="Ajuste Magnético a Rejilla (Snap to Grid)">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--accent-primary);">grid_4x4</span>
+            Snap: <span id="lbl-snap-val" style="font-weight:700; color:var(--accent-primary);">0.5m</span> <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button id="btn-snap-0" class="dropdown-item" onclick="setSnapStep(0)">
+              <span class="material-symbols-outlined">grid_off</span> Libre (Sin Ajuste)
+            </button>
+            <button id="btn-snap-0.5" class="dropdown-item active" onclick="setSnapStep(0.5)">
+              <span class="material-symbols-outlined">grid_4x4</span> Snap 0.5 metros (Estándar)
+            </button>
+            <button id="btn-snap-1" class="dropdown-item" onclick="setSnapStep(1.0)">
+              <span class="material-symbols-outlined">grid_on</span> Snap 1.0 metro (Grande)
+            </button>
+          </div>
+        </div>
+
+        <!-- Duplicar Objeto (Ctrl+D) -->
+        <button class="btn-tool-dropdown" onclick="duplicarObjetoSeleccionado()" title="Duplicar Objeto Seleccionado (Ctrl + D)">
+          <span class="material-symbols-outlined" style="font-size:16px; color:var(--sapphire);">content_copy</span> Clonar (Ctrl+D)
+        </button>
+
+        <!-- Analizador Cobertura CCTV & Puntos Ciegos -->
+        <button class="btn-tool-dropdown" onclick="abrirAnalisisCoberturaCCTV()" title="Analizador de Cobertura CCTV & Puntos Ciegos">
+          <span class="material-symbols-outlined" style="font-size:16px; color:var(--teal);">analytics</span> Cobertura CCTV
+        </button>
+
+        <!-- Dropdown Importar/Exportar JSON -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown" title="Gestión de Archivo Plano JSON">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--blue);">folder_open</span>
+            Plano JSON <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="exportarPlanoJSON()">
+              <span class="material-symbols-outlined">download</span> Exportar Plano (.json)
+            </button>
+            <button class="dropdown-item" onclick="abrirSelectorImportarJSON()">
+              <span class="material-symbols-outlined">upload_file</span> Importar Plano (.json)
+            </button>
+          </div>
+        </div>
+        <input type="file" id="inp-import-json" accept=".json" style="display:none;" onchange="importarPlanoJSON(event)">
+
+        <!-- Conmutador Editor vs Monitoreo -->
+        <div class="mode-switch-container">
+          <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
+            <span class="material-symbols-outlined" style="font-size:15px;">edit</span> Editor
+          </button>
+          <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
+            <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Monitoreo
+          </button>
+        </div>
+
+        <!-- Acciones Principales -->
+        <button class="btn-tool-dropdown" onclick="capturarPantalla3D()" title="Capturar Foto PNG">
+          <span class="material-symbols-outlined" style="font-size:16px;">photo_camera</span> Foto
+        </button>
+        <button class="btn-action-primary" onclick="guardarPlanoGAS()">
+          <span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar
+        </button>
+        <button class="btn-tool-dropdown" onclick="limpiarEscena()" style="color:var(--danger);" title="Limpiar Mapa">
+          <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas WebGL 3D -->
+    <div class="mapa3d-main">
+      <div id="webgl-container"></div>
+
+      <!-- HUD Informativo con Cobertura CCTV -->
+      <div class="hud-overlay">
+        <div>Tienda: <strong id="hud-store-name" style="color:var(--sapphire);">FR-01 LITHEDA</strong></div>
+        <div>Total Elementos: <strong id="hud-count-obj" style="color:var(--sapphire);">0</strong></div>
+        <div>Cámaras CCTV: <strong id="hud-count-cam" style="color:var(--success);">0</strong></div>
+        <div>Cobertura CCTV: <strong id="hud-coverage-pct" style="color:var(--success);">0%</strong></div>
+        <div>Seleccionados: <strong id="hud-count-selected" style="color:var(--accent-primary);">0</strong></div>
+        <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
+      </div>
+
+      <!-- Minimapa 2D en Esquina (HUD 2D Floor Radar) -->
+      <div id="minimap-container" class="hud-minimap-container">
+        <div class="minimap-header">
+          <span class="minimap-title">
+            <span class="material-symbols-outlined" style="font-size:14px; color:var(--sapphire);">radar</span> RADAR 2D
+          </span>
+          <button class="btn-minimap-toggle" onclick="toggleMinimapa2D()" title="Minimizar / Mostrar Minimapa">
+            <span id="minimap-toggle-icon" class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+        </div>
+        <div id="minimap-body" class="minimap-body">
+          <canvas id="minimap-canvas" width="180" height="135"></canvas>
+          <div class="minimap-footer">
+            <span id="minimap-cam-pos">X:0 Z:22</span>
+            <span id="minimap-scale">HUD 2D</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HUD Overlay Modo Medición de Distancias 3D -->
+      <div id="measure-hud-overlay" class="measure-hud-overlay" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="material-symbols-outlined" style="color:var(--accent-primary);">straighten</span>
+          <span><strong>Modo Medición 3D</strong>: Haga clic en 2 puntos del plano para medir metros exactos.</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn-tool-dropdown" onclick="limpiarMediciones3D()" style="padding:2px 8px; font-size:0.75rem; border-color:var(--sapphire); color:var(--sapphire);" title="Eliminar cotas de medición">
+            <span class="material-symbols-outlined" style="font-size:14px;">delete_sweep</span> Limpiar
+          </button>
+          <button class="btn-tool-dropdown" onclick="toggleModoMedicion(false)" style="padding:2px 8px; font-size:0.75rem; border-color:var(--danger); color:var(--danger);">
+            ✕ Salir
+          </button>
+        </div>
+      </div>
+
+        <!-- Dock / Palette de Herramientas CAD Flotante Izquierda -->
+      <div id="left-tool-palette" class="left-tool-palette">
+        <button class="palette-btn" onclick="addStructure('camera')" data-tooltip="Añadir Cámara CCTV" title="+ Añadir Cámara CCTV">
+          <span class="material-symbols-outlined" style="color:var(--success);">videocam</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('puerta')" data-tooltip="Añadir Puerta" title="+ Añadir Puerta">
+          <span class="material-symbols-outlined" style="color:var(--sapphire);">door_back</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('wall')" data-tooltip="Añadir Pared / Muro" title="+ Añadir Pared / Muro">
+          <span class="material-symbols-outlined" style="color:var(--accent-primary);">door_sliding</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('habitacion_box')" data-tooltip="Habitación / Espacio Box" title="+ Habitación Completa">
+          <span class="material-symbols-outlined" style="color:var(--sapphire);">room</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('oficina_box_room')" data-tooltip="Cuarto Oficina Administrador" title="+ Cuarto Oficina Admin">
+          <span class="material-symbols-outlined" style="color:var(--blue);">meeting_room</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('almacen_box_room')" data-tooltip="Cuarto Almacén / Depósito" title="+ Cuarto Almacén">
+          <span class="material-symbols-outlined" style="color:var(--teal);">inventory_2</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('recetario_box_room')" data-tooltip="Cuarto Recetario / Farmacia" title="+ Cuarto Recetario">
+          <span class="material-symbols-outlined" style="color:var(--danger);">medical_services</span>
+        </button>
+        <div style="border-top:1px solid var(--glass-border); margin:2px 0;"></div>
+        <button class="palette-btn" onclick="addStructure('gondola_doble')" data-tooltip="Añadir Góndola Comercial" title="+ Añadir Góndola Comercial">
+          <span class="material-symbols-outlined" style="color:var(--text-main);">storefront</span>
+        </button>
+        <button class="palette-btn" onclick="addStructure('plataforma_desnivel')" data-tooltip="Plataforma / Desnivel (0.5m)" title="+ Desnivel / Plataforma 0.5m">
+          <span class="material-symbols-outlined" style="color:var(--sapphire);">layers</span>
+        </button>
+        <div style="border-top:1px solid var(--glass-border); margin:2px 0;"></div>
+        <!-- HERRAMIENTAS AVANZADAS DE MONITOREO Y MEDIDA -->
+        <button class="palette-btn" onclick="addAlertMarker('hurto')" data-tooltip="Marcador Alerta 3D: Hurto" title="+ Alerta 3D Hurto">
+          <span class="material-symbols-outlined" style="color:var(--danger);">gavel</span>
+        </button>
+        <button class="palette-btn" onclick="addAlertMarker('derrame')" data-tooltip="Marcador Alerta 3D: Riesgo / Derrame" title="+ Alerta 3D Riesgo / Derrame">
+          <span class="material-symbols-outlined" style="color:var(--accent-primary);">report_problem</span>
+        </button>
+        <button class="palette-btn" onclick="toggleModoMedicion()" data-tooltip="Regla / Cota Medición CAD 3D" title="Regla / Cota CAD 3D">
+          <span class="material-symbols-outlined" style="color:var(--sapphire);">straighten</span>
+        </button>
+        <button id="btn-toggle-cones-palette" class="palette-btn" onclick="toggleConosVisionCCTV()" data-tooltip="Mostrar / Ocultar Conos de Visión" title="Mostrar / Ocultar Conos de Visión CCTV">
+          <span class="material-symbols-outlined" style="color:var(--teal);">visibility</span>
+        </button>
+      </div>
+
+      <!-- Elemento Flotante Global de Badge Tooltip para la Barra Izquierda -->
+      <div id="left-palette-badge-tooltip" class="left-palette-badge-tooltip"></div>
+
+      <!-- HUD Recorrido Peatón 1ra Persona -->
+      <div id="peaton-hud-overlay" style="position:absolute; top:16px; left:50%; transform:translateX(-50%); background:rgba(24,24,37,0.92); backdrop-filter:blur(14px); border:1px solid var(--success); border-radius:30px; padding:8px 20px; font-size:0.85rem; color:#fff; display:none; align-items:center; gap:12px; z-index:150; box-shadow:0 10px 30px rgba(0,0,0,0.7);">
+        <span class="material-symbols-outlined" style="color:var(--success);">directions_walk</span>
+        <span><strong>Modo Peatón 1ra Persona</strong> (Altura: 1.65m) | Usa <strong>WASD / Flechas</strong> para caminar</span>
+        <button class="btn-tool-dropdown" onclick="desactivarModoPeaton()" style="padding:3px 10px; font-size:0.75rem; border-color:var(--danger); color:var(--danger);">✕ Salir</button>
+      </div>
+
+      <!-- Control de Mapa de Calor 3D (Leyenda u Opacidad) -->
+      <div id="heatmap-legend-overlay" style="position:absolute; bottom:185px; right:16px; background:rgba(24,24,37,0.94); backdrop-filter:blur(14px); border:1px solid var(--teal); border-radius:10px; padding:10px 14px; font-size:0.78rem; display:none; flex-direction:column; gap:8px; z-index:2000; box-shadow:0 8px 25px rgba(0,0,0,0.6);">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <strong style="color:var(--teal); display:flex; align-items:center; gap:6px;">
+            <span class="material-symbols-outlined" style="font-size:16px;">map</span> Mapa de Calor 3D
+          </strong>
+          <button class="btn-tool-dropdown" onclick="ocultarMapaDeCalorCCTV()" style="padding:2px 6px; font-size:0.7rem;">✕ Ocultar</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:0.73rem;">
+          <span style="color:var(--success); display:flex; align-items:center; gap:4px;">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--teal);"></span> Cubierto
+          </span>
+          <span style="color:var(--danger); display:flex; align-items:center; gap:4px;">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--danger);"></span> Punto Ciego
+          </span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:0.72rem;">
+          <label style="color:var(--text-muted);">Opacidad Capa:</label>
+          <input type="range" id="heatmap-opacity-range" min="0.1" max="1.0" step="0.05" value="0.75" oninput="cambiarOpacidadMapaCalor(this.value)" style="width:90px;">
+        </div>
+      </div>
+
+      <!-- Inspector Panel (MENÚ PROPIEDADES COMPLETO) -->
+      <div id="inspector-panel" class="inspector-panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="panel-title" id="inspector-title" style="font-weight:700; color:var(--text-main);">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">settings_suggest</span> Inspector
+          </div>
+          <button class="btn-tool-dropdown" onclick="deseleccionarObjeto()" style="padding: 2px 6px;">✕</button>
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+          <label class="form-label">Nombre del Elemento / Conjunto</label>
+          <input type="text" id="inp-nombre" class="form-input" oninput="actualizarObjetoDesdeInputs()">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Posición (X, Y, Z)</label>
+          <div class="coord-grid">
+            <input type="number" step="0.5" id="pos-x" class="form-input" placeholder="X" oninput="actualizarObjetoDesdeInputs()">
+            <input type="number" step="0.5" id="pos-y" class="form-input" placeholder="Y" oninput="actualizarObjetoDesdeInputs()">
+            <input type="number" step="0.5" id="pos-z" class="form-input" placeholder="Z" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Escala / Tamaño (X, Y, Z)</label>
+          <div class="coord-grid">
+            <input type="number" step="0.1" id="scale-x" class="form-input" placeholder="Sx" oninput="actualizarObjetoDesdeInputs()">
+            <input type="number" step="0.1" id="scale-y" class="form-input" placeholder="Sy" oninput="actualizarObjetoDesdeInputs()">
+            <input type="number" step="0.1" id="scale-z" class="form-input" placeholder="Sz" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+        </div>
+
+        <!-- CONTROLES DE ROTACIÓN Y -->
+        <div class="form-group">
+          <label class="form-label">Rotación Y (<span id="val-rot-y">0</span>°)</label>
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+            <input type="range" id="rot-y" min="0" max="360" value="0" style="flex:1;" oninput="actualizarRotDesdeSlider('y')">
+            <input type="number" id="rot-y-num" min="0" max="360" value="0" class="form-input" style="width:60px;" oninput="actualizarRotDesdeNum('y')">
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-bottom:4px;">
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(0)" title="Orientar al Norte (0°)">N (0°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(90)" title="Orientar al Este (90°)">E (90°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(180)" title="Orientar al Sur (180°)">S (180°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(270)" title="Orientar al Oeste (270°)">W (270°)</button>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px;">
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-45)">-45°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-15)">-15°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(15)">+15°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(45)">+45°</button>
+          </div>
+          <div style="font-size:0.66rem; color:var(--text-muted); margin-top:6px; text-align:center;">
+            💡 Atajos: <kbd style="background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:3px; font-family:monospace;">Q</kbd> / <kbd style="background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:3px; font-family:monospace;">E</kbd> para girar objeto
+          </div>
+        </div>
+
+        <!-- PROPIEDADES ESPECÍFICAS DE HABITACIÓN / ESTRUCTURA CERRADA -->
+        <div id="section-room-props" style="display:none;">
+          <div style="border-top:1px solid var(--glass-border); margin:10px 0;"></div>
+          <div style="font-size:0.75rem; color:var(--sapphire); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span class="material-symbols-outlined" style="font-size:16px;">door_sliding</span> Puerta & Dimensiones de Habitación
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ubicación Pared Puerta</label>
+            <select id="inp-room-door-wall" class="form-input" onchange="actualizarDimensionesHabitacion()">
+              <option value="frontal">Pared Frontal (Frente)</option>
+              <option value="trasera">Pared Trasera (Atrás)</option>
+              <option value="izquierda">Pared Izquierda</option>
+              <option value="derecha">Pared Derecha</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Desplazamiento Puerta: <span id="val-room-door-offset" style="color:var(--sapphire); font-weight:700;">0.0</span>m</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <input type="range" id="inp-room-door-offset" min="-5.0" max="5.0" step="0.1" value="0.0" style="flex:1;" oninput="actualizarDimensionesHabitacion()">
+              <input type="number" id="inp-room-door-offset-num" min="-5.0" max="5.0" step="0.1" value="0.0" class="form-input" style="width:65px;" oninput="actualizarDimensionesHabitacionDesdeNum()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ancho Puerta: <span id="val-room-door-w" style="color:var(--sapphire); font-weight:700;">1.8</span>m</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <input type="range" id="inp-room-door-w" min="0.8" max="5.0" step="0.1" value="1.8" style="flex:1;" oninput="actualizarDimensionesHabitacion()">
+              <input type="number" id="inp-room-door-w-num" min="0.8" max="5.0" step="0.1" value="1.8" class="form-input" style="width:65px;" oninput="actualizarDimensionesHabitacionDesdeNum()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alto Puerta: <span id="val-room-door-h" style="color:var(--sapphire); font-weight:700;">2.4</span>m</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <input type="range" id="inp-room-door-h" min="1.5" max="4.0" step="0.1" value="2.4" style="flex:1;" oninput="actualizarDimensionesHabitacion()">
+              <input type="number" id="inp-room-door-h-num" min="1.5" max="4.0" step="0.1" value="2.4" class="form-input" style="width:65px;" oninput="actualizarDimensionesHabitacionDesdeNum()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ancho del Cuarto: <span id="val-room-width" style="color:var(--text); font-weight:700;">7.0</span>m</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <input type="range" id="inp-room-width" min="3.0" max="25.0" step="0.5" value="7.0" style="flex:1;" oninput="actualizarDimensionesHabitacion()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Largo del Cuarto: <span id="val-room-length" style="color:var(--text); font-weight:700;">7.0</span>m</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <input type="range" id="inp-room-length" min="3.0" max="25.0" step="0.5" value="7.0" style="flex:1;" oninput="actualizarDimensionesHabitacion()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alto Paredes Cuarto: <span id="val-room-height" style="color:var(--text); font-weight:700;">3.2</span>m</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <input type="range" id="inp-room-height" min="2.2" max="10.0" step="0.2" value="3.2" style="flex:1;" oninput="actualizarDimensionesHabitacion()">
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPIEDADES ESPECÍFICAS DE CÁMARA CCTV -->
+        <div id="section-camera-props" style="display:none;">
+          <div style="border-top:1px solid var(--glass-border); margin:10px 0;"></div>
+          <div style="font-size:0.75rem; color:var(--success); font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span class="material-symbols-outlined" style="font-size:16px;">videocam</span> Configuración de Cámara (Snapshot / Captura)
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Ángulo de Visión (FOV: <span id="val-fov">60</span>°)</label>
+            <input type="range" id="inp-fov" min="20" max="120" value="60" style="width:100%;" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Alcance del Cono (<span id="val-dist">8</span>m)</label>
+            <input type="range" id="inp-dist" min="3" max="25" value="8" style="width:100%;" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Inclinación Vertical (Tilt: <span id="val-pitch">30</span>°)</label>
+            <input type="range" id="inp-pitch" min="0" max="85" value="30" style="width:100%;" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">URL de Imagen de Captura / Snapshot (Foto fija)</label>
+            <input type="text" id="inp-img-url" class="form-input" placeholder="https://..." onchange="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="image-preview-box">
+            <img id="img-preview" src="" alt="Imagen de Captura / Snapshot">
+          </div>
+        </div>
+
+        <!-- ACCIONES RÁPIDAS CAD (Bloquear, Centrar, Ocultar) -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:4px; margin-bottom:10px;">
+          <button id="btn-lock-obj" class="rot-quick-btn" onclick="toggleLockObjeto()" title="Bloquear / Desbloquear Posición">
+            <span id="icon-lock-obj" class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">lock_open</span> Bloqueo
+          </button>
+          <button class="rot-quick-btn" onclick="centrarObjetoSeleccionado()" title="Centrar Elemento en (0, 0, 0)">
+            <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">center_focus_strong</span> Centrar
+          </button>
+          <button id="btn-hide-obj" class="rot-quick-btn" onclick="toggleVisibilidadObjeto()" title="Ocultar / Mostrar Elemento">
+            <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">visibility_off</span> Ocultar
+          </button>
+        </div>
+
+        <!-- ACCIONES Y CLONACIÓN DEL INSPECTOR -->
+        <div style="margin-top: 10px; border-top: 1px solid var(--glass-border); padding-top: 10px; display:flex; flex-direction:column; gap:6px;">
+          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; color:var(--sapphire); border-color:rgba(116,199,236,0.4);" onclick="duplicarObjetoSeleccionado()">
+            <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span> Duplicar Seleccionado (Ctrl+D)
+          </button>
+          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; color:var(--accent-primary); border-color:rgba(249,226,175,0.4);" onclick="guardarConjuntoComoPrefab()">
+            <span class="material-symbols-outlined" style="font-size:16px;">bookmark_add</span> Guardar Conjunto Prefab
+          </button>
+          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; color: var(--danger); border-color: rgba(243,139,168,0.4);" onclick="eliminarObjetoSeleccionado()">
+            <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Eliminar Seleccionado(s)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Inspección de Cámara (Snapshot / Captura) -->
+  <div id="camera-modal" class="camera-modal-overlay" onclick="if(event.target===this) cerrarModalCamara()">
     <div class="camera-modal">
       <button class="modal-close-btn" onclick="cerrarModalCamara()">
         <span class="material-symbols-outlined">close</span>
       </button>
-
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-        <h3 id="modal-cam-title" style="margin:0; font-size:1.25rem; color:#fff;">Cámara Monitoreo 01</h3>
-        <div class="camera-status-badge">
-          <div class="camera-status-dot"></div> EN VIVO
-        </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <h3 id="modal-cam-title" style="margin:0; font-size:1.2rem; color:#fff;">Cámara CCTV - Captura</h3>
+        <span style="background:rgba(116,199,236,0.2); color:var(--sapphire); padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; display:flex; align-items:center; gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:14px;">photo_camera</span> CAPTURA / SNAPSHOT
+        </span>
       </div>
-
-      <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;" id="modal-cam-details">
-        Ubicación: Zona Central | FOV: 60° | Estado: Activo
-      </div>
-
-      <img id="modal-cam-img" class="camera-modal-img" src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop&q=80" alt="Captura Cámara">
+      <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px;" id="modal-cam-details">FOV: 60° | Alcance: 8m</div>
+      <img id="modal-cam-img" class="camera-modal-img" src="" alt="Imagen de Captura / Snapshot">
     </div>
   </div>
 
+  <!-- Modal Analizador Cobertura CCTV & Puntos Ciegos -->
+  <div id="cctv-analysis-modal" class="camera-modal-overlay" onclick="if(event.target===this) cerrarModalCoberturaCCTV()">
+    <div class="camera-modal" style="max-width:550px;">
+      <button class="modal-close-btn" onclick="cerrarModalCoberturaCCTV()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <h3 style="margin:0; font-size:1.15rem; color:var(--teal); display:flex; align-items:center; gap:8px;">
+          <span class="material-symbols-outlined">analytics</span> Cobertura CCTV & Puntos Ciegos
+        </h3>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
+        <div style="background:rgba(148,226,213,0.1); border:1px solid rgba(148,226,213,0.3); border-radius:10px; padding:12px; text-align:center;">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Cobertura Total</div>
+          <div id="cctv-stat-percentage" style="font-size:2.1rem; font-weight:800; color:var(--teal); margin:4px 0;">0%</div>
+          <div id="cctv-stat-area-covered" style="font-size:0.75rem; color:var(--success);">0 m² cubiertos</div>
+        </div>
+        <div style="background:rgba(243,139,168,0.1); border:1px solid rgba(243,139,168,0.3); border-radius:10px; padding:12px; text-align:center;">
+          <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Puntos Ciegos</div>
+          <div id="cctv-stat-blind" style="font-size:2.1rem; font-weight:800; color:var(--danger); margin:4px 0;">0%</div>
+          <div id="cctv-stat-area-blind" style="font-size:0.75rem; color:var(--danger);">0 m² desprotegidos</div>
+        </div>
+      </div>
+
+      <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:16px; font-size:0.82rem; color:var(--text-main);">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span>Cámaras CCTV Activas:</span>
+          <strong id="cctv-stat-cams" style="color:var(--sapphire);">0</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span>Superficie Total Estimada:</span>
+          <strong id="cctv-stat-total-area" style="color:var(--text-main);">0 m²</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>Diagnóstico de Seguridad:</span>
+          <strong id="cctv-stat-status" style="color:var(--accent-primary);">Verificando...</strong>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn-tool-dropdown" style="flex:1; justify-content:center; color:var(--teal); border-color:rgba(148,226,213,0.4);" onclick="toggleMapaDeCalorCCTV()">
+          <span class="material-symbols-outlined">map</span> Mapa de Calor / Puntos Ciegos
+        </button>
+        <button class="btn-tool-dropdown" style="padding:8px 16px; justify-content:center;" onclick="cerrarModalCoberturaCCTV()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/cctv_analytics.js"></script>
   <script>
-    // Variables globales de Three.js
-    let scene, camera, renderer, controls;
-    let currentMode = 'edit'; // 'edit' o 'monitor'
+    if (!window.CCTVAnalytics) {
+      window.CCTVAnalytics = {
+        calcularCoberturaTienda: function(cams, ancho = 40, largo = 30) {
+          const minX = -ancho / 2, maxX = ancho / 2, stepX = 1.0;
+          const minZ = -largo / 2, maxZ = largo / 2, stepZ = 1.0;
+          let totalPuntos = 0, puntosCubiertos = 0;
+          const gridRows = Math.floor((maxZ - minZ) / stepZ);
+          const gridCols = Math.floor((maxX - minX) / stepX);
+          const gridData = [];
+
+          const camData = cams.map(cam => {
+            const worldPos = new THREE.Vector3();
+            cam.getWorldPosition(worldPos);
+            const worldDir = new THREE.Vector3(0, 0, 1).applyQuaternion(cam.getWorldQuaternion(new THREE.Quaternion())).normalize();
+            const fov = cam.userData.fov || 60;
+            const halfFovRad = ((fov * 0.5) * Math.PI) / 180;
+            const maxDist = cam.userData.dist || 8;
+            return { worldPos, worldDir, fov, halfFovRad, maxDist };
+          });
+
+          for (let r = 0; r < gridRows; r++) {
+            const row = [];
+            const z = minZ + r * stepZ + stepZ / 2;
+            for (let c = 0; c < gridCols; c++) {
+              const x = minX + c * stepX + stepX / 2;
+              totalPuntos++;
+              const pt = new THREE.Vector3(x, 0, z);
+              let cubierto = false;
+              for (let i = 0; i < camData.length; i++) {
+                const cd = camData[i];
+                const vecToPt = pt.clone().sub(cd.worldPos);
+                if (vecToPt.length() <= cd.maxDist) {
+                  const dirToPt = vecToPt.normalize();
+                  const angle = Math.acos(Math.max(-1, Math.min(1, dirToPt.dot(cd.worldDir))));
+                  if (angle <= cd.halfFovRad) { cubierto = true; break; }
+                }
+              }
+              if (cubierto) puntosCubiertos++;
+              row.push(cubierto);
+            }
+            gridData.push(row);
+          }
+
+          const porcentaje = totalPuntos > 0 ? Math.round((puntosCubiertos / totalPuntos) * 100) : 0;
+          const superficieTotal = ancho * largo;
+          const superficieCubierta = Math.round(superficieTotal * (porcentaje / 100));
+
+          return {
+            porcentaje, puntosCubiertos, totalPuntos, superficieTotal, superficieCubierta,
+            superficieCiega: superficieTotal - superficieCubierta, camsCount: cams.length,
+            gridCols, gridRows, gridData, ancho, largo
+          };
+        },
+
+        generarTexturaMapaCalor: function(cams, ancho = 40, largo = 30, targets = []) {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512; canvas.height = 384;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = 'rgba(243, 139, 168, 0.45)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const raycaster = new THREE.Raycaster();
+          const doubleSideSaved = new Map();
+          if (targets && targets.length > 0) {
+            targets.forEach(o => {
+              o.traverse(child => {
+                if (child.isMesh && child.material) {
+                  doubleSideSaved.set(child.material, child.material.side);
+                  child.material.side = THREE.DoubleSide;
+                }
+              });
+            });
+          }
+
+          cams.forEach(cam => {
+            if (!cam.visible) return;
+            const worldPos = new THREE.Vector3(); cam.getWorldPosition(worldPos);
+            const camWorldQuat = new THREE.Quaternion(); cam.getWorldQuaternion(camWorldQuat);
+            const fov = cam.userData.fov || 60; const maxDist = cam.userData.dist || 8;
+            const numRays = 36;
+            const cx = ((worldPos.x + (ancho / 2)) / ancho) * canvas.width;
+            const cy = ((worldPos.z + (largo / 2)) / largo) * canvas.height;
+            const maxRadiusPx = (maxDist / ancho) * canvas.width;
+            const halfFovRad = ((fov * 0.5) * Math.PI) / 180;
+            const tanFov = Math.tan(halfFovRad);
+
+            const polygonPoints = [];
+            for (let i = 0; i <= numRays; i++) {
+              const frac = i / numRays;
+              const currentAngleInFov = -halfFovRad + frac * (halfFovRad * 2);
+              const dirLocal = new THREE.Vector3(Math.sin(currentAngleInFov) * tanFov, 0, Math.cos(currentAngleInFov)).normalize();
+              const dirWorld = dirLocal.clone().applyQuaternion(camWorldQuat).normalize();
+
+              let effectiveDist = maxDist;
+              if (targets && targets.length > 0) {
+                raycaster.set(worldPos, dirWorld);
+                raycaster.near = 0.05;
+                raycaster.far = maxDist;
+                const hits = raycaster.intersectObjects(targets, true);
+                if (hits.length > 0) {
+                  effectiveDist = Math.max(0.2, hits[0].distance - 0.08);
+                }
+              }
+
+              const hitWorldPos = worldPos.clone().add(dirWorld.multiplyScalar(effectiveDist));
+              const px = ((hitWorldPos.x + (ancho / 2)) / ancho) * canvas.width;
+              const py = ((hitWorldPos.z + (largo / 2)) / largo) * canvas.height;
+              polygonPoints.push({ x: px, y: py });
+            }
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            polygonPoints.forEach(pt => ctx.lineTo(pt.x, pt.y));
+            ctx.closePath();
+
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxRadiusPx);
+            grad.addColorStop(0, 'rgba(148, 226, 213, 0.9)');
+            grad.addColorStop(0.7, 'rgba(116, 199, 236, 0.65)');
+            grad.addColorStop(1, 'rgba(148, 226, 213, 0)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.restore();
+          });
+
+          doubleSideSaved.forEach((origSide, mat) => {
+            mat.side = origSide;
+          });
+
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.magFilter = THREE.LinearFilter;
+          texture.minFilter = THREE.LinearFilter;
+          return texture;
+        }
+      };
+    }
+    let scene, camera, renderer, controls, transformControls;
+    let currentMode = 'edit';
     let objects = [];
+    let selectedObjects = [];
     let selectedObject = null;
     let raycaster, mouse;
+    let cadenaSeleccionada = 'farmacias';
+    let tiendaActivaId = 'FR-01 LITHEDA';
+    let floorMesh = null;
+    let pointerDownPos = { x: 0, y: 0 };
 
-    // Inicialización al cargar la página
+    // ESTADO DE LAS 4 NUEVAS FUNCIONALIDADES AVANZADAS
+    let cctvConesVisible = true;
+    let modoMedicion = false;
+    let medicionPuntos = [];
+    let medicionesList = [];
+    let tempMeasureMarker = null;
+    let minimapaVisible = true;
+
+    const TIENDAS_DATA = (typeof TIENDAS !== 'undefined') ? TIENDAS : {
+      farmacias: ["FR-01 LITHEDA", "FR-02 SENORIAL", "FR-03 CAIMITO", "FR-04 GURABO", "FR-05 BARRIO OBRERO", "FR-08 HUMACAO", "FR-18 GUAYNABO"],
+      chinatown: ["CT-01 ARECIBO", "CT-02 SALINAS", "CT-03 TRUJILLO ALTO", "CT-04 HUMACAO", "CT-06 BAYAMON", "CT-14 PONCE"],
+      exchange: ["QTD-01 CAROLINA", "QTD-02 SAN JUAN", "QTD-03 GURABO", "QTD-07 ARECIBO", "QTD-09 MAYAGUEZ"]
+    };
+
     window.addEventListener('DOMContentLoaded', () => {
+      poblarSelectTiendas('farmacias');
       initThreeJS();
-      crearPisoTienda();
+      crearPisoTienda(40, 30, 'ceramica');
       setupEventListeners();
-      cargarPlanoDemoInicial();
+      renderizarMenuPrefabsPersonalizados();
     });
+
+    function seleccionarCadena(cadena, element) {
+      cadenaSeleccionada = cadena;
+      document.querySelectorAll('.cadena-card').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      poblarSelectTiendas(cadena);
+    }
+
+    function poblarSelectTiendas(cadena) {
+      const select = document.getElementById('hub-select-tienda');
+      select.innerHTML = '';
+      const lista = TIENDAS_DATA[cadena] || [];
+      lista.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+      verificarEstadoMapaTienda();
+    }
+
+    function verificarEstadoMapaTienda() {
+      const select = document.getElementById('hub-select-tienda');
+      if (!select) return;
+      const tiendaId = select.value || 'FR-01 LITHEDA';
+      const badge = document.getElementById('hub-store-map-badge');
+      const secNoMap = document.getElementById('hub-section-no-map');
+      const secHasMap = document.getElementById('hub-section-has-map');
+      const reconfigBox = document.getElementById('hub-reconfig-box');
+
+      if (reconfigBox) reconfigBox.style.display = 'none';
+
+      const savedData = localStorage.getItem('MAPA_3D_' + tiendaId) || localStorage.getItem('GAS_MAPA_' + tiendaId);
+      const existeMapa = savedData && savedData !== '[]';
+
+      if (existeMapa) {
+        if (badge) {
+          badge.innerText = '● MAPA EXISTENTE EN MEMORIA';
+          badge.style.background = 'rgba(166,227,161,0.15)';
+          badge.style.color = 'var(--success)';
+          badge.style.borderColor = 'rgba(166,227,161,0.3)';
+        }
+        if (secNoMap) secNoMap.style.display = 'none';
+        if (secHasMap) secHasMap.style.display = 'block';
+      } else {
+        if (badge) {
+          badge.innerText = '○ TIENDA SIN MAPA (NUEVO)';
+          badge.style.background = 'rgba(249,226,175,0.15)';
+          badge.style.color = 'var(--accent-primary)';
+          badge.style.borderColor = 'rgba(249,226,175,0.3)';
+        }
+        if (secNoMap) secNoMap.style.display = 'block';
+        if (secHasMap) secHasMap.style.display = 'none';
+      }
+    }
+
+    function toggleReconfigurarMenu() {
+      const box = document.getElementById('hub-reconfig-box');
+      if (box) {
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+      }
+    }
+
+    function aplicarReconfiguracionMapa() {
+      const ancho = parseFloat(document.getElementById('reconfig-ancho')?.value) || 40;
+      const largo = parseFloat(document.getElementById('reconfig-largo')?.value) || 30;
+
+      const elAncho = document.getElementById('config-ancho');
+      const elLargo = document.getElementById('config-largo');
+      if (elAncho) elAncho.value = ancho;
+      if (elLargo) elLargo.value = largo;
+
+      iniciarExperiencia3D('edit', false);
+    }
+
+    function abrirHubSeleccion() {
+      document.getElementById('hub-modal').classList.remove('hidden');
+      verificarEstadoMapaTienda();
+    }
+
+    function iniciarExperiencia3D(modo, esNuevoMapa = false) {
+      const select = document.getElementById('hub-select-tienda');
+      tiendaActivaId = select ? (select.value || 'FR-01 LITHEDA') : 'FR-01 LITHEDA';
+
+      const ancho = parseFloat(document.getElementById('config-ancho')?.value) || 40;
+      const largo = parseFloat(document.getElementById('config-largo')?.value) || 30;
+
+      crearPisoTienda(ancho, largo);
+
+      document.getElementById('label-tienda-activa').innerText = tiendaActivaId;
+      document.getElementById('hud-store-name').innerText = tiendaActivaId;
+      document.getElementById('hub-modal').classList.add('hidden');
+
+      setMode(modo);
+      if (esNuevoMapa) {
+        limpiarEscena();
+      } else {
+        cargarPlanoGAS();
+      }
+    }
+
+    // SIMULADOR DE ILUMINACIÓN Y HORA DEL DÍA
+    let dirLight = null;
+    let ambientLight = null;
+    let ledSpotLight = null;
+
+    function setLightingEnvironment(env) {
+      if (!scene) return;
+      if (ledSpotLight) {
+        scene.remove(ledSpotLight);
+        ledSpotLight = null;
+      }
+
+      if (env === 'day' || env === 'dia') {
+        scene.background = new THREE.Color(0x1e293b);
+        if (scene.fog) { scene.fog.color.setHex(0x1e293b); scene.fog.density = 0.01; }
+        if (ambientLight) { ambientLight.color.setHex(0xffffff); ambientLight.intensity = 0.9; }
+        if (dirLight) { dirLight.color.setHex(0xf8fafc); dirLight.intensity = 1.4; dirLight.position.set(15, 30, 15); }
+      } else if (env === 'night' || env === 'noche') {
+        scene.background = new THREE.Color(0x0a0c14);
+        if (scene.fog) { scene.fog.color.setHex(0x0a0c14); scene.fog.density = 0.02; }
+        if (ambientLight) { ambientLight.color.setHex(0x38bdf8); ambientLight.intensity = 0.3; }
+        if (dirLight) { dirLight.color.setHex(0x89b4fa); dirLight.intensity = 0.6; dirLight.position.set(0, 20, 0); }
+      }
+    }
+
+    function cambiarIluminacion(modo) {
+      setLightingEnvironment(modo);
+    }
+
+
+
+    // MODO RECORRIDO PEATÓN EN 1RA PERSONA (1.65M)
+    let modoPeaton = false;
+
+    function activarModoPeaton() {
+      modoPeaton = true;
+      deseleccionarObjeto();
+
+      camera.position.set(0, 1.65, 12);
+      controls.target.set(0, 1.65, 0);
+      controls.maxPolarAngle = Math.PI / 2 + 0.05;
+      controls.minPolarAngle = Math.PI / 2 - 0.35;
+      controls.update();
+
+      const overlay = document.getElementById('peaton-hud-overlay');
+      if (overlay) overlay.style.display = 'flex';
+    }
+
+    function desactivarModoPeaton() {
+      modoPeaton = false;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      controls.minPolarAngle = 0;
+
+      const overlay = document.getElementById('peaton-hud-overlay');
+      if (overlay) overlay.style.display = 'none';
+
+      cambiarVistaCamara('3d');
+    }
+
+    let keyState = {};
+    let selectionBoxHelper = null;
 
     function initThreeJS() {
       const container = document.getElementById('webgl-container');
-      
+
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0b0f19);
-      scene.fog = new THREE.FogExp2(0x0b0f19, 0.015);
+      scene.background = new THREE.Color(0x11111b);
+      scene.fog = new THREE.FogExp2(0x11111b, 0.015);
 
       camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
       camera.position.set(0, 18, 22);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
@@ -494,137 +1745,1068 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-      controls.maxPolarAngle = Math.PI / 2 - 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02;
 
-      // Iluminación
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      transformControls = new THREE.TransformControls(camera, renderer.domElement);
+      transformControls.size = 0.85;
+      transformControls.addEventListener('change', () => {
+        if (selectedObject) {
+          sincronizarInspectorDesdeObjeto(selectedObject);
+          actualizarTodosLosConosCamara();
+          if (selectionBoxHelper) selectionBoxHelper.update();
+        }
+      });
+      transformControls.addEventListener('dragging-changed', (event) => {
+        controls.enabled = !event.value;
+      });
+      scene.add(transformControls);
+
+      ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
       scene.add(ambientLight);
 
-      const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+      dirLight = new THREE.DirectionalLight(0x74c7ec, 1.2);
       dirLight.position.set(15, 25, 15);
       dirLight.castShadow = true;
       dirLight.shadow.mapSize.width = 2048;
       dirLight.shadow.mapSize.height = 2048;
       scene.add(dirLight);
 
-      const gridHelper = new THREE.GridHelper(40, 40, 0x38bdf8, 0x1e293b);
+      const gridHelper = new THREE.GridHelper(40, 40, 0x74c7ec, 0x313244);
       gridHelper.position.y = 0.01;
       scene.add(gridHelper);
 
       raycaster = new THREE.Raycaster();
       mouse = new THREE.Vector2();
 
+      inicializarCompasRotacion();
+
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        keyState[e.code] = true;
+
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'D')) {
+          e.preventDefault();
+          duplicarObjetoSeleccionado();
+          return;
+        }
+
+        // Hotkeys de Gizmos (Requieren Shift + T/R/S para no interferir con navegación WASD)
+        if (e.shiftKey && (e.key === 'T' || e.key === 't')) setGizmoMode('translate');
+        if (e.shiftKey && (e.key === 'R' || e.key === 'r')) setGizmoMode('rotate');
+        if (e.shiftKey && (e.key === 'S' || e.key === 's')) setGizmoMode('scale');
+        if (e.key === 'f' || e.key === 'F') enfocarObjetoSeleccionado();
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (selectedObjects.length > 0) eliminarObjetoSeleccionado();
+        }
+
+        // Hotkeys de Rotación rápida para el objeto seleccionado (Q = antihorario, E = horario)
+        if (selectedObject) {
+          if (e.key === 'q' || e.key === 'Q') {
+            const step = e.shiftKey ? -90 : -rotationSnapDegrees;
+            rotarObjetoRapido(step);
+            return;
+          }
+          if (e.key === 'e' || e.key === 'E') {
+            const step = e.shiftKey ? 90 : rotationSnapDegrees;
+            rotarObjetoRapido(step);
+            return;
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        keyState[e.code] = false;
+      });
+
+      inicializarBadgesBarraIzquierda();
       animate();
     }
 
-    function crearPisoTienda() {
-      const floorGeo = new THREE.PlaneGeometry(40, 30);
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
-        roughness: 0.4,
-        metalness: 0.2
+    function inicializarBadgesBarraIzquierda() {
+      const tooltip = document.getElementById('left-palette-badge-tooltip');
+      if (!tooltip) return;
+
+      const buttons = document.querySelectorAll('.left-tool-palette .palette-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+          const text = btn.getAttribute('data-tooltip');
+          if (!text) return;
+          tooltip.innerText = text;
+          const rect = btn.getBoundingClientRect();
+          tooltip.style.top = (rect.top + rect.height / 2) + 'px';
+          tooltip.style.left = (rect.right + 10) + 'px';
+          tooltip.classList.add('show');
+        });
+
+        btn.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('show');
+        });
       });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
-      floor.rotation.x = -Math.PI / 2;
-      floor.receiveShadow = true;
-      scene.add(floor);
+    }
+
+    function procesarNavegacionTecladoWASD() {
+      const speed = modoPeaton ? 0.2 : 0.35;
+      const forward = new THREE.Vector3();
+      camera.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
+
+      const side = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+
+      let moved = false;
+      if (keyState['KeyW'] || keyState['ArrowUp']) {
+        camera.position.addScaledVector(forward, speed);
+        controls.target.addScaledVector(forward, speed);
+        moved = true;
+      }
+      if (keyState['KeyS'] || keyState['ArrowDown']) {
+        camera.position.addScaledVector(forward, -speed);
+        controls.target.addScaledVector(forward, -speed);
+        moved = true;
+      }
+      if (keyState['KeyA'] || keyState['ArrowLeft']) {
+        camera.position.addScaledVector(side, -speed);
+        controls.target.addScaledVector(side, -speed);
+        moved = true;
+      }
+      if (keyState['KeyD'] || keyState['ArrowRight']) {
+        camera.position.addScaledVector(side, speed);
+        controls.target.addScaledVector(side, speed);
+        moved = true;
+      }
+
+      if (modoPeaton) {
+        camera.position.y = 1.65;
+        controls.target.y = 1.65;
+      }
+
+      if (moved) controls.update();
+    }
+
+    function cambiarVistaCamara(modo) {
+      if (modo === 'peaton') {
+        activarModoPeaton();
+        return;
+      }
+      if (modoPeaton) {
+        modoPeaton = false;
+        controls.maxPolarAngle = Math.PI / 2 - 0.02;
+        controls.minPolarAngle = 0;
+        const overlay = document.getElementById('peaton-hud-overlay');
+        if (overlay) overlay.style.display = 'none';
+      }
+
+      let targetPos = { x: 0, y: 18, z: 22 };
+      let targetLook = { x: 0, y: 0, z: 0 };
+
+      if (modo === '2d') {
+        targetPos = { x: 0, y: 42, z: 0.1 };
+      } else if (modo === '3d') {
+        targetPos = { x: 24, y: 22, z: 24 };
+      } else if (modo === 'entrada') {
+        targetPos = { x: 0, y: 4, z: 18 };
+        targetLook = { x: 0, y: 2, z: 0 };
+      }
+
+      if (typeof TWEEN !== 'undefined') {
+        new TWEEN.Tween(camera.position)
+          .to(targetPos, 750)
+          .easing(TWEEN.Easing.Cubic.Out)
+          .onUpdate(() => {
+            controls.target.set(targetLook.x, targetLook.y, targetLook.z);
+            controls.update();
+          })
+          .start();
+      } else {
+        camera.position.set(targetPos.x, targetPos.y, targetPos.z);
+        controls.target.set(targetLook.x, targetLook.y, targetLook.z);
+        controls.update();
+      }
+    }
+
+    function crearPisoTienda(ancho = 40, largo = 30) {
+      if (floorMesh) scene.remove(floorMesh);
+
+      const floorGeo = new THREE.PlaneGeometry(ancho, largo);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e1e2e, roughness: 0.4, metalness: 0.2 });
+
+      floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.receiveShadow = true;
+      floorMesh.userData = { isFloor: true };
+      scene.add(floorMesh);
     }
 
     function animate() {
       requestAnimationFrame(animate);
+      if (typeof TWEEN !== 'undefined') TWEEN.update();
+      procesarNavegacionTecladoWASD();
+      animarAlertas3D();
+      if (minimapaVisible) dibujarMinimapa2D();
       controls.update();
       renderer.render(scene, camera);
     }
 
-    // Agregar Estructuras (Góndolas, Paredes, Cámaras)
-    function addStructure(type) {
-      if (currentMode !== 'edit') return;
+    // HERRAMIENTAS REALES DE DISEÑO CAD & MONITOREO CCTV
+
+    // 1. Control de Capas (Layers CAD)
+    let capasState = {
+      paredes: true,
+      mobiliario: true,
+      camaras: true,
+      desniveles: true
+    };
+
+    function toggleCapa(tipoCapa) {
+      capasState[tipoCapa] = !capasState[tipoCapa];
+      const esVisible = capasState[tipoCapa];
+
+      let matchTypes = [];
+      if (tipoCapa === 'paredes') matchTypes = ['wall', 'column', 'puerta_entrada', 'habitacion_box', 'oficina_box_room', 'almacen_box_room', 'recetario_box_room'];
+      else if (tipoCapa === 'mobiliario') matchTypes = ['gondola_doble', 'gondola_pared', 'mostrador', 'escritorio_oficina', 'mesa_asientos', 'carritos_compra', 'cajas_carton', 'nevera', 'isla_promo', 'tarima_pallet', 'arbol_planta', 'parking_area'];
+      else if (tipoCapa === 'camaras') matchTypes = ['camera'];
+      else if (tipoCapa === 'desniveles') matchTypes = ['plataforma_desnivel', 'escalera_desnivel', 'rampa_desnivel', 'bloque_generico', 'podio_elevado', 'muro_divisor'];
+
+      objects.forEach(o => {
+        if (matchTypes.includes(o.userData.type)) {
+          o.visible = esVisible;
+        }
+      });
+
+      const iconEl = document.getElementById(`chk-layer-${tipoCapa}`);
+      if (iconEl) {
+        iconEl.innerText = esVisible ? 'check_box' : 'check_box_outline_blank';
+        iconEl.style.color = esVisible ? 'var(--sapphire)' : 'var(--text-muted)';
+      }
+
+      if (selectedObject && !selectedObject.visible) {
+        deseleccionarObjeto();
+      }
+      actualizarHUD();
+    }
+
+    // 2. Ajuste Magnético a Rejilla (Snap to Grid)
+    let snapStep = 0.5;
+
+    function setSnapStep(step) {
+      snapStep = step;
+      if (transformControls) {
+        transformControls.setTranslationSnap(step > 0 ? step : null);
+        transformControls.setRotationSnap(step > 0 ? Math.PI / 12 : null);
+      }
+      const lbl = document.getElementById('lbl-snap-val');
+      if (lbl) lbl.innerText = step === 0 ? 'Libre' : `${step}m`;
+
+      [0, 0.5, 1.0].forEach(val => {
+        const btn = document.getElementById(`btn-snap-${val}`);
+        if (btn) btn.classList.toggle('active', step === val);
+      });
+    }
+
+    // 3. Duplicar / Clonar Objetos (Ctrl+D)
+    function duplicarObjetoSeleccionado() {
+      const targets = (selectedObjects && selectedObjects.length > 0) ? selectedObjects : (selectedObject ? [selectedObject] : []);
+      if (targets.length === 0) {
+        alert('Por favor selecciona uno o más elementos en el mapa 3D para clonar.');
+        return;
+      }
+
+      const nuevosClones = [];
+      targets.forEach(orig => {
+        const tipo = orig.userData ? orig.userData.type : 'bloque_generico';
+        const originalName = orig.userData ? (orig.userData.name || 'Objeto') : 'Objeto';
+        const newMesh = addStructure(tipo, false);
+
+        if (newMesh) {
+          newMesh.position.copy(orig.position).add(new THREE.Vector3(1.0, 0, 1.0));
+          newMesh.rotation.copy(orig.rotation);
+          newMesh.scale.copy(orig.scale);
+
+          if (orig.userData) {
+            Object.assign(newMesh.userData, JSON.parse(JSON.stringify(orig.userData)));
+            newMesh.userData.id = Date.now() + Math.floor(Math.random() * 10000);
+            newMesh.userData.name = originalName + ' (Copia)';
+          }
+          nuevosClones.push(newMesh);
+        }
+      });
+
+      if (nuevosClones.length > 0) {
+        selectedObjects = nuevosClones;
+        seleccionarObjeto(nuevosClones[nuevosClones.length - 1], nuevosClones.length > 1);
+      }
+    }
+
+    // 4. Exportar e Importar Plano JSON
+    function exportarPlanoJSON() {
+      const serializado = objects.map(o => ({
+        type: o.userData.type,
+        name: o.userData.name,
+        pos: [o.position.x, o.position.y, o.position.z],
+        rot: [o.rotation.x, o.rotation.y, o.rotation.z],
+        scale: [o.scale.x, o.scale.y, o.scale.z],
+        fov: o.userData.fov,
+        dist: o.userData.dist,
+        imageUrl: o.userData.imageUrl,
+        materialCad: o.userData.materialCad
+      }));
+
+      const exportObj = {
+        version: '1.0',
+        tiendaId: tiendaActivaId,
+        exportedAt: new Date().toISOString(),
+        elementos: serializado
+      };
+
+      const jsonStr = JSON.stringify(exportObj, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MAPA_3D_${tiendaActivaId.replace(/\s+/g, '_')}_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function abrirSelectorImportarJSON() {
+      const inp = document.getElementById('inp-import-json');
+      if (inp) inp.click();
+    }
+
+    function importarPlanoJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const items = Array.isArray(parsed) ? parsed : (parsed.elementos || []);
+          if (items.length > 0) {
+            rebuildSceneFromData(items);
+            alert(`Plano JSON importado exitosamente (${items.length} elementos).`);
+          } else {
+            alert('El archivo JSON no contiene elementos válidos.');
+          }
+        } catch (err) {
+          alert('Error al procesar archivo JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    let conosVisibles = true;
+
+    function toggleConosVisioCCTV() {
+      conosVisibles = !conosVisibles;
+      const cams = objects.filter(o => o.userData && o.userData.type === 'camera');
+      cams.forEach(cam => {
+        const coneMesh = cam.getObjectByName('frustumCone');
+        if (coneMesh) coneMesh.visible = conosVisibles;
+      });
+    }
+
+    // 5. Analizador de Cobertura CCTV & Puntos Ciegos (Módulo Escalable)
+    let cctvHeatmapMesh = null;
+
+    function calcularCoberturaCCTV() {
+      const cams = objects.filter(o => o.userData && o.userData.type === 'camera' && o.visible);
+      return window.CCTVAnalytics.calcularCoberturaTienda(cams, 40, 30);
+    }
+
+    function abrirAnalisisCoberturaCCTV() {
+      const data = calcularCoberturaCCTV();
+      
+      const elPct = document.getElementById('cctv-stat-percentage');
+      if (elPct) elPct.innerText = `${data.porcentaje}%`;
+
+      const elCovArea = document.getElementById('cctv-stat-area-covered');
+      if (elCovArea) elCovArea.innerText = `${data.superficieCubierta} m² cubiertos`;
+
+      const elBlind = document.getElementById('cctv-stat-blind');
+      if (elBlind) elBlind.innerText = `${100 - data.porcentaje}%`;
+
+      const elBlindArea = document.getElementById('cctv-stat-area-blind');
+      if (elBlindArea) elBlindArea.innerText = `${data.superficieCiega} m² desprotegidos`;
+
+      const elCams = document.getElementById('cctv-stat-cams');
+      if (elCams) elCams.innerText = data.camsCount;
+
+      const elTotalArea = document.getElementById('cctv-stat-total-area');
+      if (elTotalArea) elTotalArea.innerText = `${data.superficieTotal} m²`;
+
+      let statusText = 'Óptimo (Excelente Cobertura)';
+      let statusColor = 'var(--success)';
+      if (data.porcentaje < 40) {
+        statusText = 'Crítico (Graves Puntos Ciegos)';
+        statusColor = 'var(--danger)';
+      } else if (data.porcentaje < 75) {
+        statusText = 'Aceptable (Cobertura Parcial)';
+        statusColor = 'var(--accent-primary)';
+      }
+
+      const elStatus = document.getElementById('cctv-stat-status');
+      if (elStatus) {
+        elStatus.innerText = statusText;
+        elStatus.style.color = statusColor;
+      }
+
+      const modal = document.getElementById('cctv-analysis-modal');
+      if (modal) modal.classList.add('show');
+    }
+
+    function cerrarModalCoberturaCCTV() {
+      const modal = document.getElementById('cctv-analysis-modal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    function toggleMapaDeCalorCCTV() {
+      cerrarModalCoberturaCCTV();
+
+      if (cctvHeatmapMesh) {
+        scene.remove(cctvHeatmapMesh);
+        cctvHeatmapMesh.geometry.dispose();
+        cctvHeatmapMesh.material.dispose();
+        cctvHeatmapMesh = null;
+      }
+
+      const legend = document.getElementById('heatmap-legend-overlay');
+      const cams = objects.filter(o => o.userData && o.userData.type === 'camera' && o.visible);
+
+      if (cams.length === 0) {
+        alert('No hay cámaras CCTV activas en la escena para generar el mapa de calor.');
+        if (legend) legend.style.display = 'none';
+        return;
+      }
+
+      // Generar la textura con conos sectoriales acotados contra las paredes reales de la escena
+      const targets = objects.filter(o => !cams.includes(o) && o.visible);
+      if (floorMesh) targets.push(floorMesh);
+      const texture = window.CCTVAnalytics.generarTexturaMapaCalor(cams, 40, 30, targets);
+
+      const geo = new THREE.PlaneGeometry(40, 30);
+      const initialOpacity = parseFloat(document.getElementById('heatmap-opacity-range')?.value || 0.75);
+      const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: initialOpacity, side: THREE.DoubleSide });
+
+      cctvHeatmapMesh = new THREE.Mesh(geo, mat);
+      cctvHeatmapMesh.rotation.x = -Math.PI / 2;
+      cctvHeatmapMesh.position.y = 0.05;
+      scene.add(cctvHeatmapMesh);
+
+      if (legend) legend.style.display = 'flex';
+    }
+
+    function ocultarMapaDeCalorCCTV() {
+      if (cctvHeatmapMesh) {
+        cctvHeatmapMesh.visible = false;
+      }
+      const legend = document.getElementById('heatmap-legend-overlay');
+      if (legend) legend.style.display = 'none';
+    }
+
+    function cambiarOpacidadMapaCalor(val) {
+      if (cctvHeatmapMesh && cctvHeatmapMesh.material) {
+        cctvHeatmapMesh.material.opacity = parseFloat(val);
+      }
+    }
+
+    function crearMallaCamaraCCTV() {
+      const group = new THREE.Group();
+      
+      const baseGeo = new THREE.CylinderGeometry(0.25, 0.3, 0.1, 16);
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0x45475a, metalness: 0.8, roughness: 0.3 });
+      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+      baseMesh.rotation.x = Math.PI / 2;
+      group.add(baseMesh);
+
+      const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 12);
+      const armMesh = new THREE.Mesh(armGeo, baseMat);
+      armMesh.rotation.x = Math.PI / 4;
+      armMesh.position.set(0, -0.18, 0.2);
+      group.add(armMesh);
+
+      const bodyGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.85, 16);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x313244, metalness: 0.7, roughness: 0.2 });
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.rotation.x = Math.PI / 2;
+      bodyMesh.position.set(0, -0.32, 0.55);
+      group.add(bodyMesh);
+
+      const shieldGeo = new THREE.CylinderGeometry(0.33, 0.33, 0.75, 16, 1, false, 0, Math.PI);
+      const shieldMat = new THREE.MeshStandardMaterial({ color: 0x181825, metalness: 0.5 });
+      const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+      shieldMesh.rotation.x = Math.PI / 2;
+      shieldMesh.rotation.z = Math.PI;
+      shieldMesh.position.set(0, -0.28, 0.58);
+      group.add(shieldMesh);
+
+      const lensGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 16);
+      const lensMat = new THREE.MeshStandardMaterial({ color: 0x11111b, roughness: 0.1 });
+      const lensMesh = new THREE.Mesh(lensGeo, lensMat);
+      lensMesh.rotation.x = Math.PI / 2;
+      lensMesh.position.set(0, -0.32, 0.98);
+      group.add(lensMesh);
+
+      const ledGeo = new THREE.SphereGeometry(0.04, 8, 8);
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0xa6e3a1 });
+      const ledMesh = new THREE.Mesh(ledGeo, ledMat);
+      ledMesh.position.set(0.16, -0.16, 0.98);
+      group.add(ledMesh);
+
+      group.traverse(child => {
+        if (child.isMesh) child.frustumCulled = false;
+      });
+
+      return group;
+    }
+
+    function crearMallaPuerta() {
+      const group = new THREE.Group();
+
+      const anchoMarco = 1.2;
+      const altoMarco = 2.4;
+      const grosorMarco = 0.2;
+      const grosorPerfil = 0.08;
+
+      const matMarco = new THREE.MeshStandardMaterial({ color: 0x313244, roughness: 0.5, metalness: 0.6 });
+      const matHoja = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.4, metalness: 0.2 });
+      const matPomo = new THREE.MeshStandardMaterial({ color: 0xf9e2af, metalness: 0.9, roughness: 0.2 });
+
+      const jambaIzq = new THREE.Mesh(new THREE.BoxGeometry(grosorPerfil, altoMarco, grosorMarco), matMarco);
+      jambaIzq.position.set(-anchoMarco / 2 + grosorPerfil / 2, altoMarco / 2, 0);
+      jambaIzq.castShadow = true;
+      group.add(jambaIzq);
+
+      const jambaDer = new THREE.Mesh(new THREE.BoxGeometry(grosorPerfil, altoMarco, grosorMarco), matMarco);
+      jambaDer.position.set(anchoMarco / 2 - grosorPerfil / 2, altoMarco / 2, 0);
+      jambaDer.castShadow = true;
+      group.add(jambaDer);
+
+      const dintel = new THREE.Mesh(new THREE.BoxGeometry(anchoMarco, grosorPerfil, grosorMarco), matMarco);
+      dintel.position.set(0, altoMarco - grosorPerfil / 2, 0);
+      dintel.castShadow = true;
+      group.add(dintel);
+
+      const anchoHoja = anchoMarco - (grosorPerfil * 2);
+      const altoHoja = altoMarco - grosorPerfil;
+      const grosorHoja = 0.05;
+
+      const hojaGroup = new THREE.Group();
+      hojaGroup.position.set(-anchoMarco / 2 + grosorPerfil, 0, 0);
+
+      const hojaMesh = new THREE.Mesh(new THREE.BoxGeometry(anchoHoja, altoHoja, grosorHoja), matHoja);
+      hojaMesh.position.set(anchoHoja / 2, altoHoja / 2, 0);
+      hojaMesh.castShadow = true;
+      hojaGroup.add(hojaMesh);
+
+      const pomoGeo = new THREE.SphereGeometry(0.04, 16, 16);
+      const pomoMesh = new THREE.Mesh(pomoGeo, matPomo);
+      pomoMesh.position.set(anchoHoja - 0.1, altoHoja / 2, 0.04);
+      hojaGroup.add(pomoMesh);
+
+      const pomoMesh2 = pomoMesh.clone();
+      pomoMesh2.position.z = -0.04;
+      hojaGroup.add(pomoMesh2);
+
+      hojaGroup.rotation.y = Math.PI / 7; // Bisagra semiabierta a 25 grados
+
+      group.add(hojaGroup);
+      return group;
+    }
+
+    function reconstruirMallaHabitacion(roomGroup) {
+      if (!roomGroup || !roomGroup.userData || !roomGroup.userData.isRoom) return;
+
+      const ancho = roomGroup.userData.ancho || 7;
+      const largo = roomGroup.userData.largo || 7;
+      const alto = roomGroup.userData.alto || 3.2;
+      const anchoPuerta = Math.min(ancho - 0.6, roomGroup.userData.anchoPuerta || 1.8);
+      const altoPuerta = Math.min(alto - 0.2, roomGroup.userData.altoPuerta || 2.4);
+      const posicionParedPuerta = roomGroup.userData.posicionParedPuerta || 'frontal';
+      const offsetPuerta = roomGroup.userData.offsetPuerta || 0;
+      const colorHex = roomGroup.userData.colorHex || 0x585b70;
+
+      while (roomGroup.children.length > 0) {
+        const child = roomGroup.children[0];
+        if (child.geometry) child.geometry.dispose();
+        roomGroup.remove(child);
+      }
+
+      const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.6 });
+      const grosor = 0.3;
+
+      function agregarPared(ubicacionPared, totalLength, fixedCoord, isAxisX) {
+        const tienePuerta = (posicionParedPuerta === ubicacionPared);
+        if (!tienePuerta) {
+          const geo = isAxisX 
+            ? new THREE.BoxGeometry(totalLength, alto, grosor)
+            : new THREE.BoxGeometry(grosor, alto, totalLength);
+          const p = new THREE.Mesh(geo, mat);
+          if (isAxisX) p.position.set(0, alto / 2, fixedCoord);
+          else p.position.set(fixedCoord, alto / 2, 0);
+          p.castShadow = true;
+          roomGroup.add(p);
+          return;
+        }
+
+        const maxOffset = Math.max(0, (totalLength - anchoPuerta) / 2 - 0.2);
+        const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offsetPuerta));
+
+        const seg1Len = (totalLength / 2) + clampedOffset - (anchoPuerta / 2);
+        const seg2Len = (totalLength / 2) - clampedOffset - (anchoPuerta / 2);
+
+        if (seg1Len > 0.05) {
+          const seg1Geo = isAxisX 
+            ? new THREE.BoxGeometry(seg1Len, alto, grosor)
+            : new THREE.BoxGeometry(grosor, alto, seg1Len);
+          const p1 = new THREE.Mesh(seg1Geo, mat);
+          const posAxis1 = -totalLength / 2 + seg1Len / 2;
+          if (isAxisX) p1.position.set(posAxis1, alto / 2, fixedCoord);
+          else p1.position.set(fixedCoord, alto / 2, posAxis1);
+          p1.castShadow = true;
+          roomGroup.add(p1);
+        }
+
+        if (seg2Len > 0.05) {
+          const seg2Geo = isAxisX 
+            ? new THREE.BoxGeometry(seg2Len, alto, grosor)
+            : new THREE.BoxGeometry(grosor, alto, seg2Len);
+          const p2 = new THREE.Mesh(seg2Geo, mat);
+          const posAxis2 = totalLength / 2 - seg2Len / 2;
+          if (isAxisX) p2.position.set(posAxis2, alto / 2, fixedCoord);
+          else p2.position.set(fixedCoord, alto / 2, posAxis2);
+          p2.castShadow = true;
+          roomGroup.add(p2);
+        }
+
+        const altoDintel = alto - altoPuerta;
+        if (altoDintel > 0) {
+          const dintelGeo = isAxisX 
+            ? new THREE.BoxGeometry(anchoPuerta, altoDintel, grosor)
+            : new THREE.BoxGeometry(grosor, altoDintel, anchoPuerta);
+          const pD = new THREE.Mesh(dintelGeo, mat);
+          if (isAxisX) pD.position.set(clampedOffset, alto - altoDintel / 2, fixedCoord);
+          else pD.position.set(fixedCoord, alto - altoDintel / 2, clampedOffset);
+          pD.castShadow = true;
+          roomGroup.add(pD);
+        }
+      }
+
+      agregarPared('frontal', ancho, largo / 2 - grosor / 2, true);
+      agregarPared('trasera', ancho, -largo / 2 + grosor / 2, true);
+      agregarPared('izquierda', largo, -ancho / 2 + grosor / 2, false);
+      agregarPared('derecha', largo, ancho / 2 - grosor / 2, false);
+    }
+
+    function crearEstructuraHabitacion(ancho = 7, largo = 7, alto = 3.2, colorHex = 0x585b70, anchoPuerta = 1.8, altoPuerta = 2.4, posicionParedPuerta = 'frontal', offsetPuerta = 0) {
+      const group = new THREE.Group();
+      group.userData = {
+        isRoom: true,
+        ancho: ancho,
+        largo: largo,
+        alto: alto,
+        anchoPuerta: anchoPuerta,
+        altoPuerta: altoPuerta,
+        posicionParedPuerta: posicionParedPuerta,
+        offsetPuerta: offsetPuerta,
+        colorHex: colorHex
+      };
+      reconstruirMallaHabitacion(group);
+      return group;
+    }
+
+    function addStructure(type, autoSelect = true) {
+      if (currentMode !== 'edit') return null;
 
       let mesh, data = { id: Date.now(), type: type, name: '', pos: [0, 0, 0] };
 
-      if (type === 'gondola') {
-        const geo = new THREE.BoxGeometry(4, 2, 1.5);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3, metalness: 0.5 });
+      if (type === 'plataforma_desnivel') {
+        const geo = new THREE.BoxGeometry(8, 0.8, 8);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x45475a, roughness: 0.5 });
         mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set((Math.random() - 0.5) * 10, 1, (Math.random() - 0.5) * 10);
+        mesh.position.y = 0.4;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        data.name = 'Góndola ' + (objects.length + 1);
-      } else if (type === 'wall') {
-        const geo = new THREE.BoxGeometry(8, 3.5, 0.4);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
-        mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set((Math.random() - 0.5) * 10, 1.75, (Math.random() - 0.5) * 10);
-        mesh.castShadow = true;
-        data.name = 'Pared ' + (objects.length + 1);
-      } else if (type === 'camera') {
+        data.name = 'Plataforma / Desnivel ' + (objects.length + 1);
+      } else if (type === 'escalera_desnivel') {
         const group = new THREE.Group();
-        
-        // Cuerpo Cámara
-        const bodyGeo = new THREE.SphereGeometry(0.5, 16, 16);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.2, metalness: 0.8 });
+        const mat = new THREE.MeshStandardMaterial({ color: 0x585b70, roughness: 0.6 });
+        for (let i = 0; i < 4; i++) {
+          const stepGeo = new THREE.BoxGeometry(4, 0.25, 0.6);
+          const stepMesh = new THREE.Mesh(stepGeo, mat);
+          stepMesh.position.set(0, (i + 1) * 0.25, (3 - i) * 0.6);
+          stepMesh.castShadow = true;
+          group.add(stepMesh);
+        }
+        mesh = group;
+        data.name = 'Escalera / Peldaños ' + (objects.length + 1);
+      } else if (type === 'rampa_desnivel') {
+        const group = new THREE.Group();
+        const rampaGeo = new THREE.BoxGeometry(4, 0.2, 6);
+        const rampaMat = new THREE.MeshStandardMaterial({ color: 0x6c7086, roughness: 0.5 });
+        const rampaMesh = new THREE.Mesh(rampaGeo, rampaMat);
+        rampaMesh.rotation.x = Math.PI / 12;
+        rampaMesh.position.set(0, 0.6, 0);
+        rampaMesh.castShadow = true;
+        group.add(rampaMesh);
+        mesh = group;
+        data.name = 'Rampa de Acceso ' + (objects.length + 1);
+      } else if (type === 'bloque_generico') {
+        const geo = new THREE.BoxGeometry(2, 2, 2);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.4 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 1;
+        mesh.castShadow = true;
+        data.name = 'Bloque Genérico Multiuso ' + (objects.length + 1);
+      } else if (type === 'podio_elevado') {
+        const geo = new THREE.CylinderGeometry(2.5, 2.7, 0.6, 32);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xf9e2af, roughness: 0.3 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.3;
+        mesh.castShadow = true;
+        data.name = 'Podio Elevado ' + (objects.length + 1);
+      } else if (type === 'puerta') {
+        mesh = crearMallaPuerta();
+        data.name = 'Puerta ' + (objects.length + 1);
+      } else if (type === 'muro_divisor') {
+        const geo = new THREE.BoxGeometry(4, 1.2, 0.2);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x9399b2, roughness: 0.5 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.6;
+        mesh.castShadow = true;
+        data.name = 'Muro Divisor Bajo ' + (objects.length + 1);
+      } else if (type === 'habitacion_box') {
+        const a = 7, l = 7, h = 3.2, dp = 1.8, dh = 2.4;
+        mesh = crearEstructuraHabitacion(a, l, h, 0x585b70, dp, dh);
+        data.name = 'Habitación Completa ' + (objects.length + 1);
+        data.isRoom = true; data.ancho = a; data.largo = l; data.alto = h; data.anchoPuerta = dp; data.altoPuerta = dh;
+      } else if (type === 'oficina_box_room') {
+        const a = 5, l = 4.5, h = 3, dp = 1.5, dh = 2.2;
+        mesh = crearEstructuraHabitacion(a, l, h, 0x45475a, dp, dh);
+        data.name = 'Cuarto Oficina Admin ' + (objects.length + 1);
+        data.isRoom = true; data.ancho = a; data.largo = l; data.alto = h; data.anchoPuerta = dp; data.altoPuerta = dh;
+      } else if (type === 'almacen_box_room') {
+        const a = 8, l = 6, h = 3.2, dp = 2.2, dh = 2.6;
+        mesh = crearEstructuraHabitacion(a, l, h, 0x313244, dp, dh);
+        data.name = 'Cuarto Almacén Cerrado ' + (objects.length + 1);
+        data.isRoom = true; data.ancho = a; data.largo = l; data.alto = h; data.anchoPuerta = dp; data.altoPuerta = dh;
+      } else if (type === 'recetario_box_room') {
+        const a = 6, l = 5, h = 3, dp = 1.6, dh = 2.2;
+        mesh = crearEstructuraHabitacion(a, l, h, 0x585b70, dp, dh);
+        data.name = 'Cuarto Recetario Cerrado ' + (objects.length + 1);
+        data.isRoom = true; data.ancho = a; data.largo = l; data.alto = h; data.anchoPuerta = dp; data.altoPuerta = dh;
+      } else if (type === 'gondola_doble') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(4, 2.2, 1.4);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.3 });
         const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.1;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+        mesh = group;
+        data.name = 'Góndola Doble ' + (objects.length + 1);
+      } else if (type === 'gondola_pared') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(3.5, 2.8, 0.6);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x74c7ec, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.4;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+        mesh = group;
+        data.name = 'Estante Pared ' + (objects.length + 1);
+      } else if (type === 'mostrador') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(3, 1.2, 1.2);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf9e2af, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 0.6;
+        bodyMesh.castShadow = true;
         group.add(bodyMesh);
 
-        // Lente
-        const lensGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.4, 16);
-        const lensMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.1 });
-        const lensMesh = new THREE.Mesh(lensGeo, lensMat);
-        lensMesh.rotation.x = Math.PI / 2;
-        lensMesh.position.z = 0.4;
-        group.add(lensMesh);
+        const posGeo = new THREE.BoxGeometry(0.5, 0.4, 0.1);
+        const posMat = new THREE.MeshStandardMaterial({ color: 0x181825 });
+        const posMesh = new THREE.Mesh(posGeo, posMat);
+        posMesh.position.set(0.8, 1.4, 0);
+        group.add(posMesh);
 
-        // Cono de Visión 3D
+        mesh = group;
+        data.name = 'Caja POS ' + (objects.length + 1);
+      } else if (type === 'escritorio_oficina') {
+        const group = new THREE.Group();
+        const deskGeo = new THREE.BoxGeometry(3.5, 1.1, 1.6);
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0xb4befe, roughness: 0.3 });
+        const deskMesh = new THREE.Mesh(deskGeo, deskMat);
+        deskMesh.position.y = 0.55;
+        group.add(deskMesh);
+
+        const monGeo = new THREE.BoxGeometry(0.8, 0.5, 0.08);
+        const monMat = new THREE.MeshStandardMaterial({ color: 0x11111b });
+        const monMesh = new THREE.Mesh(monGeo, monMat);
+        monMesh.position.set(0, 1.4, 0);
+        group.add(monMesh);
+
+        mesh = group;
+        data.name = 'Escritorio Oficina ' + (objects.length + 1);
+      } else if (type === 'mesa_asientos') {
+        const group = new THREE.Group();
+        const tableGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.9, 16);
+        const tableMat = new THREE.MeshStandardMaterial({ color: 0xfab387, roughness: 0.4 });
+        const tableMesh = new THREE.Mesh(tableGeo, tableMat);
+        tableMesh.position.y = 0.45;
+        group.add(tableMesh);
+        mesh = group;
+        data.name = 'Mesa y Asientos ' + (objects.length + 1);
+      } else if (type === 'carritos_compra') {
+        const group = new THREE.Group();
+        for (let i = 0; i < 4; i++) {
+          const cartGeo = new THREE.BoxGeometry(0.9, 1.1, 1.2);
+          const cartMat = new THREE.MeshStandardMaterial({ color: 0x9399b2, metalness: 0.8 });
+          const cartMesh = new THREE.Mesh(cartGeo, cartMat);
+          cartMesh.position.set(0, 0.55, i * 0.5);
+          group.add(cartMesh);
+        }
+        mesh = group;
+        data.name = 'Stack Carritos ' + (objects.length + 1);
+      } else if (type === 'cajas_carton') {
+        const group = new THREE.Group();
+        const boxGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+        const boxMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 });
+        const b1 = new THREE.Mesh(boxGeo, boxMat); b1.position.set(0, 0.6, 0); group.add(b1);
+        const b2 = new THREE.Mesh(boxGeo, boxMat); b2.position.set(1.3, 0.6, 0); group.add(b2);
+        const b3 = new THREE.Mesh(boxGeo, boxMat); b3.position.set(0.6, 1.8, 0); group.add(b3);
+        mesh = group;
+        data.name = 'Stack Cajas Cartón ' + (objects.length + 1);
+      } else if (type === 'parking_area') {
+        const geo = new THREE.BoxGeometry(12, 0.05, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x313244, roughness: 0.8 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.025;
+        data.name = 'Área Parking ' + (objects.length + 1);
+      } else if (type === 'arbol_planta') {
+        const group = new THREE.Group();
+        const potGeo = new THREE.CylinderGeometry(0.7, 0.5, 1.2, 16);
+        const potMat = new THREE.MeshStandardMaterial({ color: 0x45475a });
+        const potMesh = new THREE.Mesh(potGeo, potMat);
+        potMesh.position.y = 0.6;
+        group.add(potMesh);
+
+        const treeGeo = new THREE.ConeGeometry(1.8, 3.5, 16);
+        const treeMat = new THREE.MeshStandardMaterial({ color: 0xa6e3a1, roughness: 0.5 });
+        const treeMesh = new THREE.Mesh(treeGeo, treeMat);
+        treeMesh.position.y = 2.8;
+        group.add(treeMesh);
+
+        mesh = group;
+        data.name = 'Árbol Planta 3D ' + (objects.length + 1);
+      } else if (type === 'nevera') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(2, 3, 1.2);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x45475a, roughness: 0.2 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.5;
+        group.add(bodyMesh);
+
+        const glassGeo = new THREE.BoxGeometry(1.8, 2.6, 0.1);
+        const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x74c7ec, transparent: true, opacity: 0.4 });
+        const glassMesh = new THREE.Mesh(glassGeo, glassMat);
+        glassMesh.position.set(0, 1.5, 0.6);
+        group.add(glassMesh);
+
+        mesh = group;
+        data.name = 'Nevera Exhibidora ' + (objects.length + 1);
+      } else if (type === 'isla_promo') {
+        const geo = new THREE.CylinderGeometry(1.5, 1.8, 1, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xf5c2e7, roughness: 0.3 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.5;
+        mesh.castShadow = true;
+        data.name = 'Isla Promocional ' + (objects.length + 1);
+      } else if (type === 'tarima_pallet') {
+        const geo = new THREE.BoxGeometry(2.5, 0.3, 2.5);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xfab387, roughness: 0.8 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.15;
+        mesh.castShadow = true;
+        data.name = 'Paleta Almacén ' + (objects.length + 1);
+      } else if (type === 'puerta_entrada') {
+        const group = new THREE.Group();
+        const doorGeo = new THREE.BoxGeometry(3.5, 3.2, 0.15);
+        const doorMat = new THREE.MeshPhysicalMaterial({ color: 0x94e2d5, transparent: true, opacity: 0.4 });
+        const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+        doorMesh.position.y = 1.6;
+        group.add(doorMesh);
+        mesh = group;
+        data.name = 'Puerta Cristal ' + (objects.length + 1);
+      } else if (type === 'wall') {
+        const geo = new THREE.BoxGeometry(8, 3.5, 0.4);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x585b70, roughness: 0.6 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 1.75;
+        mesh.castShadow = true;
+        data.name = 'Pared ' + (objects.length + 1);
+      } else if (type === 'column') {
+        const geo = new THREE.CylinderGeometry(0.6, 0.6, 5, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x6c7086, roughness: 0.5 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 2.5;
+        mesh.castShadow = true;
+        data.name = 'Columna ' + (objects.length + 1);
+      } else if (type === 'camera') {
+        const group = crearMallaCamaraCCTV();
+
         const fov = 60, dist = 8;
-        const coneGeo = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
-        const coneMat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true, transparent: true, opacity: 0.35 });
+        const coneGeo = new THREE.BufferGeometry();
+        const coneMat = new THREE.MeshBasicMaterial({ color: 0xa6e3a1, wireframe: true, transparent: true, opacity: 0.45, side: THREE.DoubleSide });
         const coneMesh = new THREE.Mesh(coneGeo, coneMat);
-        coneMesh.rotation.x = -Math.PI / 2;
-        coneMesh.position.z = dist / 2;
         coneMesh.name = 'frustumCone';
         group.add(coneMesh);
 
         group.position.set((Math.random() - 0.5) * 8, 4, (Math.random() - 0.5) * 8);
         mesh = group;
-        data.name = 'Cámara Monitoreo ' + (objects.length + 1);
+        data.name = 'Cámara CCTV ' + (objects.length + 1);
         data.fov = fov;
         data.dist = dist;
         data.imageUrl = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
+      } else if (type === 'alerta_hurto') {
+        const group = new THREE.Group();
+        const pinGeo = new THREE.CylinderGeometry(0.3, 0.05, 1.2, 16);
+        const pinMat = new THREE.MeshStandardMaterial({ color: 0xf38ba8, roughness: 0.2, metalness: 0.8 });
+        const pinMesh = new THREE.Mesh(pinGeo, pinMat);
+        pinMesh.position.y = 0.6;
+        group.add(pinMesh);
+
+        const sphereGeo = new THREE.SphereGeometry(0.4, 16, 16);
+        const sphereMat = new THREE.MeshBasicMaterial({ color: 0xf38ba8 });
+        const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+        sphereMesh.position.y = 1.4;
+        group.add(sphereMesh);
+
+        group.position.set((Math.random() - 0.5) * 8, 0, (Math.random() - 0.5) * 8);
+        mesh = group;
+        data.name = 'Alerta Hurto ' + (objects.length + 1);
+      } else if (type === 'alerta_riesgo') {
+        const group = new THREE.Group();
+        const pinGeo = new THREE.CylinderGeometry(0.3, 0.05, 1.2, 16);
+        const pinMat = new THREE.MeshStandardMaterial({ color: 0xf9e2af, roughness: 0.2, metalness: 0.8 });
+        const pinMesh = new THREE.Mesh(pinGeo, pinMat);
+        pinMesh.position.y = 0.6;
+        group.add(pinMesh);
+
+        const sphereGeo = new THREE.SphereGeometry(0.4, 16, 16);
+        const sphereMat = new THREE.MeshBasicMaterial({ color: 0xf9e2af });
+        const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+        sphereMesh.position.y = 1.4;
+        group.add(sphereMesh);
+
+        group.position.set((Math.random() - 0.5) * 8, 0, (Math.random() - 0.5) * 8);
+        mesh = group;
+        data.name = 'Alerta Riesgo ' + (objects.length + 1);
       }
 
-      mesh.userData = data;
+      mesh.rotation.order = 'YXZ';
+      mesh.userData = Object.assign({}, mesh.userData || {}, data);
       scene.add(mesh);
       objects.push(mesh);
-      seleccionarObjeto(mesh);
+      actualizarHUD();
+      
+      if (autoSelect) {
+        deseleccionarObjeto();
+        seleccionarObjeto(mesh);
+      }
+      
+      return mesh;
     }
 
-    // Event Listeners e Interacción
+    // MANEJADOR ROBUSTO DE DETECCIÓN DE CLIC Y MEDICIÓN 3D
     function setupEventListeners() {
       const container = document.getElementById('webgl-container');
 
-      container.addEventListener('click', (event) => {
-        const rect = renderer.domElement.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+      container.addEventListener('dblclick', () => {
+        if (selectedObject) enfocarObjetoSeleccionado();
+      });
 
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(objects, true);
+      container.addEventListener('pointerdown', (event) => {
+        pointerDownPos.x = event.clientX;
+        pointerDownPos.y = event.clientY;
+      });
 
-        if (intersects.length > 0) {
-          let rootObj = intersects[0].object;
-          while (rootObj.parent && rootObj.parent !== scene) {
-            rootObj = rootObj.parent;
+      container.addEventListener('pointerup', (event) => {
+        if (transformControls.dragging) return;
+
+        const dx = event.clientX - pointerDownPos.x;
+        const dy = event.clientY - pointerDownPos.y;
+        const distMoved = Math.sqrt(dx * dx + dy * dy);
+
+        // Si el puntero apenas se movio (<6px), es un clic genuino en el visor 3D
+        if (distMoved < 6) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+          raycaster.setFromCamera(mouse, camera);
+
+          // Si el modo de medición 3D está activo
+          if (modoMedicion) {
+            const targets = floorMesh ? [floorMesh, ...objects] : objects;
+            const intersectsMeasure = raycaster.intersectObjects(targets, true);
+            if (intersectsMeasure.length > 0) {
+              const hitPt = intersectsMeasure[0].point;
+              if (medicionPuntos.length === 0) {
+                medicionPuntos.push(hitPt.clone());
+                const sphGeo = new THREE.SphereGeometry(0.15, 16, 16);
+                const sphMat = new THREE.MeshBasicMaterial({ color: 0xf9e2af });
+                tempMeasureMarker = new THREE.Mesh(sphGeo, sphMat);
+                tempMeasureMarker.position.copy(hitPt);
+                scene.add(tempMeasureMarker);
+              } else if (medicionPuntos.length === 1) {
+                crearCotaMedicion3D(medicionPuntos[0], hitPt.clone());
+                medicionPuntos = [];
+              }
+            }
+            return;
           }
-          
-          if (currentMode === 'edit') {
-            seleccionarObjeto(rootObj);
-          } else if (currentMode === 'monitor') {
-            if (rootObj.userData.type === 'camera') {
-              abrirModalCamara(rootObj.userData);
+
+          const intersects = raycaster.intersectObjects(objects, true);
+
+          if (intersects.length > 0) {
+            let rootObj = intersects[0].object;
+            while (rootObj) {
+              if (objects.includes(rootObj)) break;
+              rootObj = rootObj.parent;
+            }
+            if (!rootObj) rootObj = intersects[0].object;
+
+            if (currentMode === 'edit') {
+              if (event.shiftKey) {
+                if (selectedObjects.includes(rootObj)) {
+                  selectedObjects = selectedObjects.filter(o => o !== rootObj);
+                } else {
+                  selectedObjects.push(rootObj);
+                }
+                if (selectedObjects.length > 0) {
+                   seleccionarObjeto(selectedObjects[selectedObjects.length - 1], true);
+                } else {
+                   deseleccionarObjeto();
+                }
+              } else {
+                selectedObjects = [];
+                seleccionarObjeto(rootObj);
+              }
+            } else if (currentMode === 'monitor') {
+              if (rootObj.userData && rootObj.userData.type === 'camera') {
+                seleccionarObjeto(rootObj);
+              } else {
+                deseleccionarObjeto();
+              }
+            }
+          } else {
+            if (!event.shiftKey) {
+              deseleccionarObjeto();
             }
           }
-        } else if (currentMode === 'edit') {
-          deseleccionarObjeto();
         }
       });
 
@@ -637,72 +2819,668 @@
       });
     }
 
-    function seleccionarObjeto(obj) {
+    function enfocarObjetoSeleccionado() {
+      if (!selectedObject) return;
+      const targetPos = {
+        x: selectedObject.position.x,
+        y: selectedObject.position.y + 4,
+        z: selectedObject.position.z + 8
+      };
+
+      if (typeof TWEEN !== 'undefined') {
+        new TWEEN.Tween(camera.position)
+          .to(targetPos, 800)
+          .easing(TWEEN.Easing.Cubic.Out)
+          .onUpdate(() => {
+            controls.target.set(selectedObject.position.x, selectedObject.position.y, selectedObject.position.z);
+            controls.update();
+          })
+          .start();
+      } else {
+        camera.position.set(targetPos.x, targetPos.y, targetPos.z);
+        controls.target.set(selectedObject.position.x, selectedObject.position.y, selectedObject.position.z);
+        controls.update();
+      }
+    }
+
+    function setGizmoMode(mode) {
+      if (!transformControls) return;
+      transformControls.setMode(mode);
+    }
+
+    // ACTIVACIÓN GARANTIZADA DEL MENU DE PROPIEDADES (INSPECTOR) Y SELECCIÓN
+    function seleccionarObjeto(obj, fromMultiSelect = false) {
+      if (!obj) return;
+
+      if (!obj.userData) obj.userData = {};
+      if (!obj.userData.type) obj.userData.type = 'objeto';
+      if (!obj.userData.name) obj.userData.name = obj.name || 'Elemento 3D';
+
       selectedObject = obj;
+      if (obj && obj.rotation) obj.rotation.order = 'YXZ';
+      if (!fromMultiSelect) {
+        selectedObjects = [obj];
+      } else if (!selectedObjects.includes(obj)) {
+        selectedObjects.push(obj);
+      }
+
+      if (currentMode === 'edit') {
+        transformControls.attach(obj);
+      } else {
+        transformControls.detach();
+      }
+
       const inspector = document.getElementById('inspector-panel');
       const secCam = document.getElementById('section-camera-props');
-      
-      document.getElementById('inp-nombre').value = obj.userData.name || '';
-      document.getElementById('inspector-title').innerText = 'Inspector: ' + obj.userData.type.toUpperCase();
+      const secRoom = document.getElementById('section-room-props');
 
+      const isMulti = selectedObjects.length > 1;
+      document.getElementById('inp-nombre').value = isMulti ? `Conjunto (${selectedObjects.length} elementos)` : (obj.userData.name || '');
+      document.getElementById('inspector-title').innerHTML = isMulti 
+        ? `<span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">widgets</span> CONJUNTO (${selectedObjects.length})` 
+        : `<span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">settings_suggest</span> ` + (obj.userData.type || 'OBJETO').toUpperCase();
+
+      sincronizarInspectorDesdeObjeto(obj);
+
+      if (secCam) {
+        secCam.style.display = (obj.userData.type === 'camera') ? 'block' : 'none';
+      }
+      if (secRoom) {
+        const isRoomObj = !!(obj.userData && (obj.userData.isRoom || ['habitacion_box', 'oficina_box_room', 'almacen_box_room', 'recetario_box_room'].includes(obj.userData.type)));
+        secRoom.style.display = isRoomObj ? 'block' : 'none';
+      }
       if (obj.userData.type === 'camera') {
-        secCam.style.display = 'block';
         document.getElementById('inp-fov').value = obj.userData.fov || 60;
         document.getElementById('val-fov').innerText = obj.userData.fov || 60;
         document.getElementById('inp-dist').value = obj.userData.dist || 8;
         document.getElementById('val-dist').innerText = obj.userData.dist || 8;
         document.getElementById('inp-img-url').value = obj.userData.imageUrl || '';
         document.getElementById('img-preview').src = obj.userData.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
-      } else {
-        secCam.style.display = 'none';
-      }
 
-      inspector.classList.remove('hidden');
+        if (currentMode === 'monitor') {
+          abrirModalCamara(obj.userData);
+        }
+      }
+      // Resaltado visual limpio con Bounding Box (BoxHelper)
+      if (selectionBoxHelper) {
+        scene.remove(selectionBoxHelper);
+        selectionBoxHelper.geometry.dispose();
+        selectionBoxHelper = null;
+      }
+      selectionBoxHelper = new THREE.BoxHelper(obj, 0x74c7ec);
+      selectionBoxHelper.material.depthTest = false;
+      selectionBoxHelper.material.transparent = true;
+      selectionBoxHelper.material.opacity = 0.85;
+      scene.add(selectionBoxHelper);
+
+      actualizarHUD();
+      
+      // VISIBILIDAD GARANTIZADA DEL PANEL INSPECTOR LATERAL DERECHO
+      if (inspector) {
+        inspector.style.display = 'block';
+        inspector.classList.remove('hidden');
+        inspector.style.transform = 'none';
+        inspector.style.opacity = '1';
+        inspector.style.pointerEvents = 'auto';
+      }
     }
 
     function deseleccionarObjeto() {
       selectedObject = null;
-      document.getElementById('inspector-panel').classList.add('hidden');
+      selectedObjects = [];
+      transformControls.detach();
+      if (selectionBoxHelper) {
+        scene.remove(selectionBoxHelper);
+        selectionBoxHelper.geometry.dispose();
+        selectionBoxHelper = null;
+      }
+      actualizarHUD();
+      const inspector = document.getElementById('inspector-panel');
+      if (inspector) {
+        inspector.classList.add('hidden');
+        inspector.style.transform = '';
+        inspector.style.opacity = '';
+        inspector.style.pointerEvents = '';
+        inspector.style.display = 'none';
+      }
     }
 
-    function actualizarObjetoSeleccionado() {
-      if (!selectedObject) return;
+    function abrirModalCamaraDesdePopup() {
+      if (selectedObject && selectedObject.userData && selectedObject.userData.type === 'camera') {
+        abrirModalCamara(selectedObject.userData);
+      }
+    }
 
-      selectedObject.userData.name = document.getElementById('inp-nombre').value;
+    let rotationSnapDegrees = 15;
 
-      if (selectedObject.userData.type === 'camera') {
-        const fov = parseInt(document.getElementById('inp-fov').value);
-        const dist = parseInt(document.getElementById('inp-dist').value);
-        const imgUrl = document.getElementById('inp-img-url').value;
+    function setRotationSnapAngle(grados) {
+      rotationSnapDegrees = grados;
+      if (transformControls) {
+        transformControls.setRotationSnap(grados > 0 ? (grados * Math.PI / 180) : null);
+      }
+      const badge = document.getElementById('label-snap-rot');
+      if (badge) badge.innerText = grados === 0 ? 'Libre' : `${grados}°`;
+    }
 
-        document.getElementById('val-fov').innerText = fov;
-        document.getElementById('val-dist').innerText = dist;
-        document.getElementById('img-preview').src = imgUrl;
+    function toggleModoEjesRotacion() {
+      const extraDiv = document.getElementById('rot-extra-axes');
+      const btn = document.getElementById('btn-toggle-rot-ejes');
+      if (!extraDiv) return;
+      const isHidden = extraDiv.style.display === 'none' || !extraDiv.style.display;
+      extraDiv.style.display = isHidden ? 'flex' : 'none';
+      if (btn) btn.innerText = isHidden ? 'Modo 1D (Y)' : 'Modo 3D (X,Y,Z)';
+    }
 
-        selectedObject.userData.fov = fov;
-        selectedObject.userData.dist = dist;
-        selectedObject.userData.imageUrl = imgUrl;
+    function sincronizarInspectorDesdeObjeto(obj) {
+      if (!obj) return;
+      if (obj.rotation) obj.rotation.order = 'YXZ';
 
-        // Actualizar Cono 3D
-        const coneMesh = selectedObject.getObjectByName('frustumCone');
-        if (coneMesh) {
-          coneMesh.geometry.dispose();
-          coneMesh.geometry = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
-          coneMesh.position.z = dist / 2;
+      document.getElementById('pos-x').value = obj.position.x.toFixed(1);
+      document.getElementById('pos-y').value = obj.position.y.toFixed(1);
+      document.getElementById('pos-z').value = obj.position.z.toFixed(1);
+
+      document.getElementById('scale-x').value = obj.scale.x.toFixed(1);
+      document.getElementById('scale-y').value = obj.scale.y.toFixed(1);
+      document.getElementById('scale-z').value = obj.scale.z.toFixed(1);
+
+      const euler = new THREE.Euler().copy(obj.rotation);
+      euler.reorder('YXZ');
+
+      const degY = Math.round((euler.y * 180 / Math.PI) % 360);
+      const valPosY = degY < 0 ? degY + 360 : degY;
+
+      const degX = Math.round((euler.x * 180 / Math.PI));
+      const degZ = Math.round((euler.z * 180 / Math.PI));
+
+      const elRotY = document.getElementById('rot-y');
+      if (elRotY) elRotY.value = valPosY;
+      const elRotYNum = document.getElementById('rot-y-num');
+      if (elRotYNum) elRotYNum.value = valPosY;
+      const elValRotY = document.getElementById('val-rot-y');
+      if (elValRotY) elValRotY.innerText = valPosY;
+
+      const elRotX = document.getElementById('rot-x');
+      if (elRotX) elRotX.value = degX;
+      const elRotXNum = document.getElementById('rot-x-num');
+      if (elRotXNum) elRotXNum.value = degX;
+      const elValRotX = document.getElementById('val-rot-x');
+      if (elValRotX) elValRotX.innerText = degX;
+
+      const elRotZ = document.getElementById('rot-z');
+      if (elRotZ) elRotZ.value = degZ;
+      const elRotZNum = document.getElementById('rot-z-num');
+      if (elRotZNum) elRotZNum.value = degZ;
+      const elValRotZ = document.getElementById('val-rot-z');
+      if (elValRotZ) elValRotZ.innerText = degZ;
+
+      const needle = document.getElementById('rot-compass-needle');
+      if (needle) needle.setAttribute('transform', `rotate(${valPosY} 55 55)`);
+      const valCompass = document.getElementById('rot-compass-val');
+      if (valCompass) valCompass.innerText = `${valPosY}°`;
+
+      const selMat = document.getElementById('inp-material-cad');
+      if (selMat) {
+        selMat.value = obj.userData ? (obj.userData.materialCad || '') : '';
+      }
+
+      const secRoom = document.getElementById('section-room-props');
+      const isRoomObj = !!(obj.userData && (obj.userData.isRoom || ['habitacion_box', 'oficina_box_room', 'almacen_box_room', 'recetario_box_room'].includes(obj.userData.type)));
+      if (secRoom) {
+        secRoom.style.display = isRoomObj ? 'block' : 'none';
+        if (isRoomObj) {
+          const doorWall = obj.userData.posicionParedPuerta || 'frontal';
+          const doorOffset = obj.userData.offsetPuerta || 0.0;
+          const doorW = obj.userData.anchoPuerta || 1.8;
+          const doorH = obj.userData.altoPuerta || 2.4;
+          const widthVal = obj.userData.ancho || 7.0;
+          const lengthVal = obj.userData.largo || 7.0;
+          const heightVal = obj.userData.alto || 3.2;
+
+          const elWall = document.getElementById('inp-room-door-wall');
+          if (elWall) elWall.value = doorWall;
+
+          const elOffset = document.getElementById('inp-room-door-offset');
+          if (elOffset) elOffset.value = doorOffset;
+          const elOffsetNum = document.getElementById('inp-room-door-offset-num');
+          if (elOffsetNum) elOffsetNum.value = doorOffset.toFixed(1);
+          const elValOffset = document.getElementById('val-room-door-offset');
+          if (elValOffset) elValOffset.innerText = doorOffset.toFixed(1);
+
+          const elDoorW = document.getElementById('inp-room-door-w');
+          if (elDoorW) elDoorW.value = doorW;
+          const elDoorWNum = document.getElementById('inp-room-door-w-num');
+          if (elDoorWNum) elDoorWNum.value = doorW.toFixed(1);
+          const elValDoorW = document.getElementById('val-room-door-w');
+          if (elValDoorW) elValDoorW.innerText = doorW.toFixed(1);
+
+          const elDoorH = document.getElementById('inp-room-door-h');
+          if (elDoorH) elDoorH.value = doorH;
+          const elDoorHNum = document.getElementById('inp-room-door-h-num');
+          if (elDoorHNum) elDoorHNum.value = doorH.toFixed(1);
+          const elValDoorH = document.getElementById('val-room-door-h');
+          if (elValDoorH) elValDoorH.innerText = doorH.toFixed(1);
+
+          const elWidth = document.getElementById('inp-room-width');
+          if (elWidth) elWidth.value = widthVal;
+          const elValWidth = document.getElementById('val-room-width');
+          if (elValWidth) elValWidth.innerText = widthVal.toFixed(1);
+
+          const elLength = document.getElementById('inp-room-length');
+          if (elLength) elLength.value = lengthVal;
+          const elValLength = document.getElementById('val-room-length');
+          if (elValLength) elValLength.innerText = lengthVal.toFixed(1);
+
+          const elHeight = document.getElementById('inp-room-height');
+          if (elHeight) elHeight.value = heightVal;
+          const elValHeight = document.getElementById('val-room-height');
+          if (elValHeight) elValHeight.innerText = heightVal.toFixed(1);
         }
       }
     }
 
-    function eliminarObjetoSeleccionado() {
+    function actualizarDimensionesHabitacion() {
+      if (!selectedObject || !selectedObject.userData || !selectedObject.userData.isRoom) return;
+
+      const doorWall = document.getElementById('inp-room-door-wall').value || 'frontal';
+      const doorOffset = parseFloat(document.getElementById('inp-room-door-offset').value) || 0;
+      const doorW = parseFloat(document.getElementById('inp-room-door-w').value) || 1.8;
+      const doorH = parseFloat(document.getElementById('inp-room-door-h').value) || 2.4;
+      const widthVal = parseFloat(document.getElementById('inp-room-width').value) || 7;
+      const lengthVal = parseFloat(document.getElementById('inp-room-length').value) || 7;
+      const heightVal = parseFloat(document.getElementById('inp-room-height').value) || 3.2;
+
+      document.getElementById('val-room-door-offset').innerText = doorOffset.toFixed(1);
+      document.getElementById('inp-room-door-offset-num').value = doorOffset.toFixed(1);
+
+      document.getElementById('val-room-door-w').innerText = doorW.toFixed(1);
+      document.getElementById('inp-room-door-w-num').value = doorW.toFixed(1);
+
+      document.getElementById('val-room-door-h').innerText = doorH.toFixed(1);
+      document.getElementById('inp-room-door-h-num').value = doorH.toFixed(1);
+
+      document.getElementById('val-room-width').innerText = widthVal.toFixed(1);
+      document.getElementById('val-room-length').innerText = lengthVal.toFixed(1);
+      document.getElementById('val-room-height').innerText = heightVal.toFixed(1);
+
+      selectedObject.userData.posicionParedPuerta = doorWall;
+      selectedObject.userData.offsetPuerta = doorOffset;
+      selectedObject.userData.anchoPuerta = doorW;
+      selectedObject.userData.altoPuerta = doorH;
+      selectedObject.userData.ancho = widthVal;
+      selectedObject.userData.largo = lengthVal;
+      selectedObject.userData.alto = heightVal;
+
+      reconstruirMallaHabitacion(selectedObject);
+      actualizarTodosLosConosCamara();
+    }
+
+    function actualizarDimensionesHabitacionDesdeNum() {
+      if (!selectedObject || !selectedObject.userData || !selectedObject.userData.isRoom) return;
+      const numOffset = parseFloat(document.getElementById('inp-room-door-offset-num').value) || 0;
+      const numW = parseFloat(document.getElementById('inp-room-door-w-num').value) || 1.8;
+      const numH = parseFloat(document.getElementById('inp-room-door-h-num').value) || 2.4;
+      document.getElementById('inp-room-door-offset').value = numOffset;
+      document.getElementById('inp-room-door-w').value = numW;
+      document.getElementById('inp-room-door-h').value = numH;
+      actualizarDimensionesHabitacion();
+    }
+
+    function aplicarRotacionEje(axis, degValue) {
       if (!selectedObject) return;
-      scene.remove(selectedObject);
-      objects = objects.filter(o => o !== selectedObject);
+      if (selectedObject.rotation) selectedObject.rotation.order = 'YXZ';
+      const radValue = degValue * Math.PI / 180;
+
+      if (selectedObjects.length > 1) {
+        const center = new THREE.Vector3();
+        selectedObjects.forEach(o => {
+          if (o.rotation) o.rotation.order = 'YXZ';
+          center.add(o.position);
+        });
+        center.divideScalar(selectedObjects.length);
+
+        const oldRad = selectedObject.rotation[axis];
+        const deltaRad = radValue - oldRad;
+
+        selectedObjects.forEach(o => {
+          o.rotation[axis] += deltaRad;
+          if (axis === 'y' && deltaRad !== 0) {
+            const relX = o.position.x - center.x;
+            const relZ = o.position.z - center.z;
+            const cos = Math.cos(deltaRad);
+            const sin = Math.sin(deltaRad);
+            o.position.x = center.x + (relX * cos - relZ * sin);
+            o.position.z = center.z + (relX * sin + relZ * cos);
+          }
+        });
+      } else {
+        selectedObject.rotation[axis] = radValue;
+        if (selectedObject.userData.type === 'camera' && axis === 'x') {
+          const pitch = Math.round(degValue);
+          selectedObject.userData.pitch = pitch;
+          const elPitch = document.getElementById('inp-pitch');
+          if (elPitch) elPitch.value = pitch;
+          const elValPitch = document.getElementById('val-pitch');
+          if (elValPitch) elValPitch.innerText = pitch;
+        }
+      }
+      actualizarTodosLosConosCamara();
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function actualizarRotDesdeSlider(axis = 'y') {
+      const el = document.getElementById(`rot-${axis}`);
+      if (!el) return;
+      const val = parseInt(el.value) || 0;
+      aplicarRotacionEje(axis, val);
+    }
+
+    function actualizarRotDesdeNum(axis = 'y') {
+      const el = document.getElementById(`rot-${axis}-num`);
+      if (!el) return;
+      let val = parseInt(el.value) || 0;
+      if (axis === 'y') val = Math.max(0, Math.min(360, val));
+      else val = Math.max(-180, Math.min(180, val));
+      aplicarRotacionEje(axis, val);
+    }
+
+    function orientarObjetoCardinal(grados) {
+      aplicarRotacionEje('y', grados);
+    }
+
+    function rotarObjetoRapido(gradosDelta) {
+      if (!selectedObject) return;
+      let actual = Math.round(selectedObject.rotation.y * 180 / Math.PI);
+      let nuevo = (actual + gradosDelta) % 360;
+      if (nuevo < 0) nuevo += 360;
+      aplicarRotacionEje('y', nuevo);
+    }
+
+    function nivelarObjeto() {
+      if (!selectedObject) return;
+      if (selectedObjects.length > 1) {
+        selectedObjects.forEach(o => {
+          o.rotation.x = 0;
+          o.rotation.z = 0;
+        });
+      } else {
+        selectedObject.rotation.x = 0;
+        selectedObject.rotation.z = 0;
+      }
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function reiniciarRotacion() {
+      if (!selectedObject) return;
+      if (selectedObjects.length > 1) {
+        selectedObjects.forEach(o => {
+          o.rotation.set(0, 0, 0);
+        });
+      } else {
+        selectedObject.rotation.set(0, 0, 0);
+      }
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function inicializarCompasRotacion() {
+      // Compás removido a petición de usuario
+    }
+
+    function actualizarObjetoDesdeInputs() {
+      if (!selectedObject) return;
+
+      selectedObject.userData.name = document.getElementById('inp-nombre').value;
+      selectedObject.position.x = parseFloat(document.getElementById('pos-x').value) || 0;
+      selectedObject.position.y = parseFloat(document.getElementById('pos-y').value) || 0;
+      selectedObject.position.z = parseFloat(document.getElementById('pos-z').value) || 0;
+
+      const sx = parseFloat(document.getElementById('scale-x').value) || 1;
+      const sy = parseFloat(document.getElementById('scale-y').value) || 1;
+      const sz = parseFloat(document.getElementById('scale-z').value) || 1;
+      selectedObject.scale.set(sx, sy, sz);
+
+      if (selectedObject.userData.type === 'camera') {
+        const fov = parseInt(document.getElementById('inp-fov').value) || 60;
+        const dist = parseInt(document.getElementById('inp-dist').value) || 8;
+        const pitch = parseInt(document.getElementById('inp-pitch')?.value) || 30;
+        const imgUrl = document.getElementById('inp-img-url').value;
+
+        document.getElementById('val-fov').innerText = fov;
+        document.getElementById('val-dist').innerText = dist;
+        if (document.getElementById('val-pitch')) document.getElementById('val-pitch').innerText = pitch;
+        document.getElementById('img-preview').src = imgUrl;
+
+        selectedObject.userData.fov = fov;
+        selectedObject.userData.dist = dist;
+        selectedObject.userData.pitch = pitch;
+        selectedObject.userData.imageUrl = imgUrl;
+
+        // Inclinación de la cámara (Pitch en eje X recto)
+        selectedObject.rotation.order = 'YXZ';
+        selectedObject.rotation.x = (pitch * Math.PI) / 180;
+
+        actualizarGeometriaConoCamara(selectedObject);
+        actualizarTodosLosConosCamara();
+      }
+    }
+
+    // CÁLCULO DE COLISIÓN Y ACOTIACIÓN INDIVIDUAL DE LÍNEAS DE CONOS CCTV (SISTEMA ANTI-TRASPASO MULTI-RAYO)
+    function actualizarGeometriaConoCamara(cam) {
+      if (!cam || !cam.userData || cam.userData.type !== 'camera') return;
+      const coneMesh = cam.getObjectByName('frustumCone');
+      if (!coneMesh) return;
+
+      const fov = cam.userData.fov || 60;
+      const maxDist = cam.userData.dist || 8;
+      const outerSegments = 24; // 24 líneas radiales de colisión
+
+      cam.updateMatrixWorld(true);
+
+      const lensWorldPos = new THREE.Vector3();
+      const lensChild = cam.children.find(c => c.material && c.position.z > 0.9);
+      if (lensChild) {
+        lensChild.getWorldPosition(lensWorldPos);
+      } else {
+        cam.getWorldPosition(lensWorldPos);
+      }
+
+      const camWorldQuat = new THREE.Quaternion();
+      cam.getWorldQuaternion(camWorldQuat);
+
+      const targets = objects.filter(o => o !== cam && !cam.children.includes(o) && o.visible);
+      if (floorMesh) targets.push(floorMesh);
+
+      // Forzar temporalmente DoubleSide en los materiales para detectar cualquier cara (frontal o trasera) de paredes y objetos
+      const savedSides = new Map();
+      targets.forEach(o => {
+        o.traverse(child => {
+          if (child.isMesh && child.material) {
+            savedSides.set(child.material, child.material.side);
+            child.material.side = THREE.DoubleSide;
+          }
+        });
+      });
+
+      const halfFovRad = ((fov * 0.5) * Math.PI) / 180;
+      const tanFov = Math.tan(halfFovRad);
+
+      const vertices = [];
+      const indices = [];
+
+      const apexLocal = new THREE.Vector3(0, -0.32, 0.98);
+      vertices.push(apexLocal.x, apexLocal.y, apexLocal.z); // Index 0
+
+      const outerVertexIndices = [];
+      for (let i = 0; i < outerSegments; i++) {
+        const angle = (i / outerSegments) * Math.PI * 2;
+        const dirLocal = new THREE.Vector3(
+          tanFov * Math.cos(angle),
+          tanFov * Math.sin(angle),
+          1.0
+        ).normalize();
+
+        const dirWorld = dirLocal.clone().applyQuaternion(camWorldQuat).normalize();
+
+        const rayLine = new THREE.Raycaster(lensWorldPos, dirWorld, 0.01, maxDist);
+        const hits = rayLine.intersectObjects(targets, true);
+
+        let lineDist = maxDist;
+        if (hits.length > 0) {
+          lineDist = Math.max(0.15, hits[0].distance - 0.08);
+        }
+
+        const endPtLocal = dirLocal.clone().multiplyScalar(lineDist).add(apexLocal);
+        vertices.push(endPtLocal.x, endPtLocal.y, endPtLocal.z);
+        outerVertexIndices.push(i + 1);
+      }
+
+      // Restaurar el estado 'side' de los materiales
+      savedSides.forEach((origSide, mat) => {
+        mat.side = origSide;
+      });
+
+      // Triángulos laterales del cono limpia (sin radios centrales que corten paredes)
+      for (let i = 0; i < outerSegments; i++) {
+        const curr = outerVertexIndices[i];
+        const next = outerVertexIndices[(i + 1) % outerSegments];
+
+        // Ápex del lente (0) -> Vértice Perimetral Actual (curr) -> Vértice Siguiente (next)
+        indices.push(0, curr, next);
+      }
+
+      const newGeo = new THREE.BufferGeometry();
+      newGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      newGeo.setIndex(indices);
+      newGeo.computeVertexNormals();
+
+      coneMesh.geometry.dispose();
+      coneMesh.geometry = newGeo;
+      coneMesh.position.set(0, 0, 0);
+      coneMesh.rotation.set(0, 0, 0);
+    }
+
+    function actualizarTodosLosConosCamara() {
+      const cams = objects.filter(o => o.userData && o.userData.type === 'camera');
+      cams.forEach(cam => actualizarGeometriaConoCamara(cam));
+    }
+
+    // GUARDAR CONJUNTO MULTISELECCIONADO COMO PREFAB PERSONALIZADO
+    function guardarConjuntoComoPrefab() {
+      if (selectedObjects.length === 0) return;
+      const nombrePrefab = prompt(`Ingresa un nombre para este Conjunto (${selectedObjects.length} elementos):`, `Conjunto ${selectedObjects.length} Muebles`);
+      if (!nombrePrefab) return;
+
+      const center = new THREE.Vector3();
+      selectedObjects.forEach(o => center.add(o.position));
+      center.divideScalar(selectedObjects.length);
+
+      const items = selectedObjects.map(o => ({
+        type: o.userData.type,
+        name: o.userData.name,
+        relPos: [o.position.x - center.x, o.position.y, o.position.z - center.z],
+        rot: [o.rotation.x, o.rotation.y, o.rotation.z],
+        scale: [o.scale.x, o.scale.y, o.scale.z]
+      }));
+
+      const prefabs = JSON.parse(localStorage.getItem('PREFABS_CUSTOM') || '[]');
+      prefabs.push({ id: 'custom_' + Date.now(), name: nombrePrefab, items: items });
+      localStorage.setItem('PREFABS_CUSTOM', JSON.stringify(prefabs));
+      renderizarMenuPrefabsPersonalizados();
+      alert(`Conjunto "${nombrePrefab}" de ${selectedObjects.length} objetos guardado exitosamente.`);
+    }
+
+    function renderizarMenuPrefabsPersonalizados() {
+      const container = document.getElementById('prefabs-custom-list');
+      if (!container) return;
+      container.innerHTML = '';
+      const prefabs = JSON.parse(localStorage.getItem('PREFABS_CUSTOM') || '[]');
+
+      if (prefabs.length > 0) {
+        prefabs.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = 'dropdown-item';
+          btn.innerHTML = `<span class="material-symbols-outlined" style="color:var(--accent-primary);">star</span> ${p.name}`;
+          btn.onclick = () => {
+            deseleccionarObjeto();
+            let newGroup = [];
+            if (p.items) {
+              p.items.forEach(item => {
+                const mesh = addStructure(item.type, false);
+                if (mesh) {
+                  mesh.userData.name = item.name;
+                  mesh.position.set(item.relPos[0], item.relPos[1], item.relPos[2]);
+                  if (item.rot) mesh.rotation.set(...item.rot);
+                  if (item.scale) mesh.scale.set(...item.scale);
+                  newGroup.push(mesh);
+                }
+              });
+              selectedObjects = newGroup;
+              if (newGroup.length > 0) seleccionarObjeto(newGroup[newGroup.length-1], true);
+            } else if (p.type) {
+              addStructure(p.type);
+            }
+          };
+          container.appendChild(btn);
+        });
+      }
+    }
+
+    function toggleLockObjeto() {
+      const targets = (selectedObjects && selectedObjects.length > 0) ? selectedObjects : (selectedObject ? [selectedObject] : []);
+      if (targets.length === 0) return;
+
+      const isLocked = !targets[0].userData.isLocked;
+      targets.forEach(obj => {
+        obj.userData.isLocked = isLocked;
+      });
+
+      const icon = document.getElementById('icon-lock-obj');
+      if (icon) icon.innerText = isLocked ? 'lock' : 'lock_open';
+
+      if (isLocked && transformControls) {
+        transformControls.detach();
+      } else if (!isLocked && selectedObject) {
+        transformControls.attach(selectedObject);
+      }
+    }
+
+    function centrarObjetoSeleccionado() {
+      const targets = (selectedObjects && selectedObjects.length > 0) ? selectedObjects : (selectedObject ? [selectedObject] : []);
+      if (targets.length === 0) return;
+
+      targets.forEach(obj => {
+        obj.position.x = 0;
+        obj.position.z = 0;
+      });
+
+      if (selectedObject) sincronizarInspectorDesdeObjeto(selectedObject);
+      if (selectionBoxHelper) selectionBoxHelper.update();
+    }
+
+    function toggleVisibilidadObjeto() {
+      const targets = (selectedObjects && selectedObjects.length > 0) ? selectedObjects : (selectedObject ? [selectedObject] : []);
+      if (targets.length === 0) return;
+
+      const newVis = !targets[0].visible;
+      targets.forEach(obj => {
+        obj.visible = newVis;
+      });
+    }
+
+    function eliminarObjetoSeleccionado() {
+      if (selectedObjects.length === 0) return;
+      transformControls.detach();
+      selectedObjects.forEach(obj => {
+        scene.remove(obj);
+        objects = objects.filter(o => o !== obj);
+      });
       deseleccionarObjeto();
     }
 
     function limpiarEscena() {
+      transformControls.detach();
       objects.forEach(obj => scene.remove(obj));
       objects = [];
+      actualizarHUD();
       deseleccionarObjeto();
     }
 
@@ -710,13 +3488,24 @@
       currentMode = mode;
       document.getElementById('btn-mode-edit').classList.toggle('active', mode === 'edit');
       document.getElementById('btn-mode-monitor').classList.toggle('active', mode === 'monitor');
-      document.getElementById('editor-tools').style.display = mode === 'edit' ? 'flex' : 'none';
-      deseleccionarObjeto();
+
+      const archTools = document.getElementById('editor-tools-arch');
+      const levelTools = document.getElementById('editor-tools-levels');
+      const mobTools = document.getElementById('editor-tools-mob');
+      const btnCam = document.getElementById('btn-add-camera');
+
+      if (archTools) archTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (levelTools) levelTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (mobTools) mobTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (btnCam) btnCam.style.display = mode === 'edit' ? 'inline-flex' : 'none';
+
+      document.getElementById('hud-mode').innerText = mode === 'edit' ? 'Edición 3D' : 'Monitoreo Vivo';
+      if (mode === 'monitor') deseleccionarObjeto();
     }
 
     function abrirModalCamara(data) {
       document.getElementById('modal-cam-title').innerText = data.name;
-      document.getElementById('modal-cam-details').innerText = `FOV: ${data.fov || 60}° | Alcance: ${data.dist || 8}m | Estado: Transmitiendo`;
+      document.getElementById('modal-cam-details').innerText = `Ubicación: ${tiendaActivaId} | FOV: ${data.fov || 60}° | Alcance: ${data.dist || 8}m`;
       document.getElementById('modal-cam-img').src = data.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop&q=80';
       document.getElementById('camera-modal').classList.add('show');
     }
@@ -725,12 +3514,31 @@
       document.getElementById('camera-modal').classList.remove('show');
     }
 
-    function cargarPlanoDemoInicial() {
-      addStructure('gondola');
-      addStructure('gondola');
-      addStructure('wall');
-      addStructure('camera');
-      deseleccionarObjeto();
+    function actualizarHUD() {
+      const cams = objects.filter(o => o.userData && o.userData.type === 'camera');
+      const hudObj = document.getElementById('hud-count-obj');
+      const hudCam = document.getElementById('hud-count-cam');
+      const hudSelected = document.getElementById('hud-count-selected');
+      const hudCoverage = document.getElementById('hud-coverage-pct');
+
+      if (hudObj) hudObj.innerText = objects.length;
+      if (hudCam) hudCam.innerText = cams.length;
+      if (hudSelected) hudSelected.innerText = selectedObjects.length;
+
+      const analysis = calcularCoberturaCCTV();
+      if (hudCoverage) {
+        hudCoverage.innerText = `${analysis.percentage}%`;
+        hudCoverage.style.color = analysis.percentage >= 75 ? 'var(--success)' : (analysis.percentage >= 40 ? 'var(--accent-primary)' : 'var(--danger)');
+      }
+    }
+
+    function capturarPantalla3D() {
+      renderer.render(scene, camera);
+      const dataURL = renderer.domElement.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'mapa_3d_' + tiendaActivaId.replace(/\s+/g, '_') + '_' + Date.now() + '.png';
+      link.href = dataURL;
+      link.click();
     }
 
     function guardarPlanoGAS() {
@@ -738,30 +3546,36 @@
         type: o.userData.type,
         name: o.userData.name,
         pos: [o.position.x, o.position.y, o.position.z],
+        rot: [o.rotation.x, o.rotation.y, o.rotation.z],
+        scale: [o.scale.x, o.scale.y, o.scale.z],
         fov: o.userData.fov,
         dist: o.userData.dist,
-        imageUrl: o.userData.imageUrl
+        imageUrl: o.userData.imageUrl,
+        materialCad: o.userData.materialCad
       }));
+
+      const claveStorage = 'MAPA_3D_' + tiendaActivaId;
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler((res) => alert(res.message))
-          .guardarMapaTienda('tienda_main', JSON.stringify(serializado));
+          .guardarMapaTienda(tiendaActivaId, JSON.stringify(serializado));
       } else {
-        localStorage.setItem('MAPA_3D_DEMO', JSON.stringify(serializado));
-        alert('Plano 3D guardado localmente.');
+        localStorage.setItem(claveStorage, JSON.stringify(serializado));
+        alert('Plano 3D guardado exitosamente para la tienda: ' + tiendaActivaId);
       }
     }
 
     function cargarPlanoGAS() {
+      const claveStorage = 'MAPA_3D_' + tiendaActivaId;
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler((res) => {
             if (res.data) rebuildSceneFromData(res.data);
           })
-          .cargarMapaTienda('tienda_main');
+          .cargarMapaTienda(tiendaActivaId);
       } else {
-        const local = localStorage.getItem('MAPA_3D_DEMO');
+        const local = localStorage.getItem(claveStorage);
         if (local) rebuildSceneFromData(JSON.parse(local));
       }
     }
@@ -769,17 +3583,402 @@
     function rebuildSceneFromData(data) {
       limpiarEscena();
       data.forEach(item => {
-        addStructure(item.type);
-        const last = objects[objects.length - 1];
-        last.userData.name = item.name;
-        last.position.set(...item.pos);
-        if (item.type === 'camera') {
-          last.userData.fov = item.fov;
-          last.userData.dist = item.dist;
-          last.userData.imageUrl = item.imageUrl;
+        const mesh = addStructure(item.type, false);
+        if (mesh) {
+          mesh.userData.name = item.name;
+          mesh.position.set(...item.pos);
+          mesh.rotation.order = 'YXZ';
+          if (item.rot) mesh.rotation.set(item.rot[0], item.rot[1], item.rot[2], 'YXZ');
+          if (item.scale) mesh.scale.set(...item.scale);
+          
+          if (item.materialCad) {
+            mesh.userData.materialCad = item.materialCad;
+            const newMat = obtenerMaterialCAD(item.materialCad);
+            mesh.traverse(child => {
+              if (child.isMesh && child.name !== 'frustumCone') child.material = newMat;
+            });
+          }
+
+          if (item.type === 'camera') {
+            mesh.userData.fov = item.fov;
+            mesh.userData.dist = item.dist;
+            mesh.userData.imageUrl = item.imageUrl;
+            
+            const coneMesh = mesh.getObjectByName('frustumCone');
+            if (coneMesh) {
+              coneMesh.geometry.dispose();
+              coneMesh.geometry = new THREE.ConeGeometry(item.dist * Math.tan((item.fov * Math.PI / 180) / 2), item.dist, 16, 1, true);
+              coneMesh.position.set(0, -0.32, item.dist / 2 + 0.98);
+            }
+          }
         }
       });
       deseleccionarObjeto();
+      actualizarHUD();
+    }
+
+    // =========================================================================
+    // IMPLEMENTACIÓN COMPLETA DE LAS 4 NUEVAS FUNCIONALIDADES AVANZADAS
+    // =========================================================================
+
+    // 1. MINIMAPA 2D EN ESQUINA (HUD 2D FLOOR RADAR)
+    function toggleMinimapa2D() {
+      minimapaVisible = !minimapaVisible;
+      const body = document.getElementById('minimap-body');
+      const icon = document.getElementById('minimap-toggle-icon');
+      if (body) body.style.display = minimapaVisible ? 'flex' : 'none';
+      if (icon) icon.innerText = minimapaVisible ? 'expand_more' : 'expand_less';
+    }
+
+    function dibujarMinimapa2D() {
+      const canvas = document.getElementById('minimap-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const cw = canvas.width;
+      const ch = canvas.height;
+
+      ctx.clearRect(0, 0, cw, ch);
+
+      // Dimensiones del piso de la tienda
+      const storeWidth = (floorMesh && floorMesh.geometry && floorMesh.geometry.parameters) ? floorMesh.geometry.parameters.width : 40;
+      const storeLength = (floorMesh && floorMesh.geometry && floorMesh.geometry.parameters) ? floorMesh.geometry.parameters.height : 30;
+
+      const pad = 12;
+      const scaleX = (cw - pad * 2) / storeWidth;
+      const scaleZ = (ch - pad * 2) / storeLength;
+      const scale = Math.min(scaleX, scaleZ);
+
+      const centerX = cw / 2;
+      const centerY = ch / 2;
+
+      function toCanvasCoords(wx, wz) {
+        return {
+          x: centerX + wx * scale,
+          y: centerY + wz * scale
+        };
+      }
+
+      // 1. Dibujar Contorno y Grid de Planta
+      const pTL = toCanvasCoords(-storeWidth / 2, -storeLength / 2);
+      const pBR = toCanvasCoords(storeWidth / 2, storeLength / 2);
+
+      ctx.strokeStyle = '#313244';
+      ctx.lineWidth = 1;
+      ctx.fillStyle = 'rgba(24, 24, 37, 0.85)';
+      ctx.fillRect(pTL.x, pTL.y, pBR.x - pTL.x, pBR.y - pTL.y);
+      ctx.strokeRect(pTL.x, pTL.y, pBR.x - pTL.x, pBR.y - pTL.y);
+
+      // Líneas de Rejilla Secundarias
+      ctx.strokeStyle = 'rgba(69, 71, 90, 0.4)';
+      ctx.beginPath();
+      for (let x = -storeWidth / 2 + 10; x < storeWidth / 2; x += 10) {
+        const p1 = toCanvasCoords(x, -storeLength / 2);
+        const p2 = toCanvasCoords(x, storeLength / 2);
+        ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+      }
+      for (let z = -storeLength / 2 + 10; z < storeLength / 2; z += 10) {
+        const p1 = toCanvasCoords(-storeWidth / 2, z);
+        const p2 = toCanvasCoords(storeWidth / 2, z);
+        ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+      }
+      ctx.stroke();
+
+      // 2. Dibujar Mobiliario y Paredes
+      objects.forEach(obj => {
+        if (!obj.visible) return;
+        const type = obj.userData ? obj.userData.type : '';
+        if (type === 'camera' || (obj.userData && obj.userData.isAlert)) return;
+
+        const pos = toCanvasCoords(obj.position.x, obj.position.z);
+        ctx.fillStyle = (type.includes('wall') || type.includes('room')) ? 'rgba(116, 199, 236, 0.45)' : 'rgba(137, 180, 250, 0.35)';
+        ctx.fillRect(pos.x - 3, pos.y - 3, 6, 6);
+      });
+
+      // 3. Dibujar Cámaras CCTV con Conos de Visión en 2D
+      objects.forEach(obj => {
+        if (!obj.visible || !obj.userData || obj.userData.type !== 'camera') return;
+        const pos = toCanvasCoords(obj.position.x, obj.position.z);
+
+        const worldDir = new THREE.Vector3(0, 0, 1).applyQuaternion(obj.getWorldQuaternion(new THREE.Quaternion())).normalize();
+        const angleRad = Math.atan2(worldDir.z, worldDir.x);
+        const fovRad = ((obj.userData.fov || 60) * Math.PI) / 180;
+        const coneRadius = (obj.userData.dist || 8) * scale;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        ctx.arc(pos.x, pos.y, coneRadius, angleRad - fovRad / 2, angleRad + fovRad / 2);
+        ctx.closePath();
+        ctx.fillStyle = cctvConesVisible ? 'rgba(166, 227, 161, 0.25)' : 'rgba(166, 227, 161, 0.05)';
+        ctx.fill();
+        ctx.strokeStyle = cctvConesVisible ? 'rgba(166, 227, 161, 0.7)' : 'rgba(166, 227, 161, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+
+        // Icono Punto de Cámara
+        ctx.fillStyle = '#a6e3a1';
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 4. Dibujar Marcadores 3D de Alertas Activas
+      const time = Date.now() * 0.0015;
+      objects.forEach(obj => {
+        if (!obj.visible || !obj.userData || !obj.userData.isAlert) return;
+        const pos = toCanvasCoords(obj.position.x, obj.position.z);
+        const color = obj.userData.alertColorHex || '#f38ba8';
+
+        const pulse = 4 + Math.sin(time * 1.2) * 1.8;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, pulse, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 5. Dibujar Posición y Frustum de Cámara del Usuario
+      if (camera && controls) {
+        const camPos = toCanvasCoords(camera.position.x, camera.position.z);
+        const targetPos = toCanvasCoords(controls.target.x, controls.target.z);
+
+        ctx.strokeStyle = 'rgba(249, 226, 175, 0.6)';
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(camPos.x, camPos.y);
+        ctx.lineTo(targetPos.x, targetPos.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#f9e2af';
+        ctx.beginPath();
+        ctx.arc(camPos.x, camPos.y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        const elPos = document.getElementById('minimap-cam-pos');
+        if (elPos) elPos.innerText = `X:${camera.position.x.toFixed(1)} Z:${camera.position.z.toFixed(1)}`;
+      }
+    }
+
+
+    // 2. MARCADORES 3D DE ALERTAS E INCIDENTES EN TIEMPO REAL
+    function addAlertMarker(tipoAlert, customPos = null) {
+      const specs = {
+        hurto: { name: 'Alerta Hurto / Robo', color: 0xf38ba8, hex: '#f38ba8', label: 'HURTO' },
+        riesgo_hurto: { name: 'Riesgo de Hurto', color: 0xf9e2af, hex: '#f9e2af', label: 'RIESGO HURTO' },
+        derrame: { name: 'Riesgo de Hurto', color: 0xf9e2af, hex: '#f9e2af', label: 'RIESGO HURTO' }
+      };
+
+      const spec = specs[tipoAlert] || specs.hurto;
+      const group = new THREE.Group();
+
+      // Pin Diamante 3D Flotante con Emisión
+      const diamondGeo = new THREE.OctahedronGeometry(0.45);
+      const diamondMat = new THREE.MeshStandardMaterial({
+        color: spec.color,
+        emissive: spec.color,
+        emissiveIntensity: 0.6,
+        roughness: 0.2,
+        metalness: 0.8
+      });
+      const diamondMesh = new THREE.Mesh(diamondGeo, diamondMat);
+      diamondMesh.position.y = 1.8;
+      diamondMesh.name = 'alertDiamond';
+      group.add(diamondMesh);
+
+      // Needle Vertical
+      const rodGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.8, 12);
+      const rodMat = new THREE.MeshStandardMaterial({ color: 0xcdd6f4, metalness: 0.9, roughness: 0.1 });
+      const rodMesh = new THREE.Mesh(rodGeo, rodMat);
+      rodMesh.position.y = 0.9;
+      group.add(rodMesh);
+
+      // Anillo de Piso Pulsante
+      const ringGeo = new THREE.RingGeometry(0.3, 0.6, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: spec.color, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = -Math.PI / 2;
+      ringMesh.position.y = 0.02;
+      ringMesh.name = 'alertFloorRing';
+      group.add(ringMesh);
+
+      const spawnX = customPos ? customPos.x : (Math.random() - 0.5) * 12;
+      const spawnZ = customPos ? customPos.z : (Math.random() - 0.5) * 12;
+      group.position.set(spawnX, 0, spawnZ);
+
+      group.userData = {
+        id: Date.now(),
+        type: 'alert_marker',
+        isAlert: true,
+        alertType: tipoAlert,
+        alertColorHex: spec.hex,
+        name: `${spec.name} (${objects.length + 1})`,
+        pos: [spawnX, 0, spawnZ]
+      };
+
+      scene.add(group);
+      objects.push(group);
+      actualizarHUD();
+
+      seleccionarObjeto(group);
+      return group;
+    }
+
+    function animarAlertas3D() {
+      const time = Date.now() * 0.0012;
+      objects.forEach(obj => {
+        if (!obj.userData || !obj.userData.isAlert) return;
+
+        const diamond = obj.getObjectByName('alertDiamond');
+        if (diamond) {
+          diamond.position.y = 1.8 + Math.sin(time * 1.5) * 0.12;
+          diamond.rotation.y += 0.01;
+        }
+
+        const ring = obj.getObjectByName('alertFloorRing');
+        if (ring) {
+          const s = 1.0 + Math.sin(time * 1.2) * 0.25;
+          ring.scale.setScalar(s);
+          ring.material.opacity = 0.45 + Math.cos(time * 1.2) * 0.2;
+        }
+      });
+    }
+
+
+    // 3. HERRAMIENTA DE MEDICIÓN DE DISTANCIAS EN 3D (REGLA / COTA CAD)
+    function toggleModoMedicion(forceState) {
+      modoMedicion = (forceState !== undefined) ? forceState : !modoMedicion;
+      const overlay = document.getElementById('measure-hud-overlay');
+      const btn = document.getElementById('btn-toggle-measure');
+
+      if (overlay) overlay.style.display = modoMedicion ? 'flex' : 'none';
+      if (btn) {
+        if (modoMedicion) btn.classList.add('active-tool');
+        else btn.classList.remove('active-tool');
+      }
+
+      if (!modoMedicion) {
+        if (tempMeasureMarker) {
+          scene.remove(tempMeasureMarker);
+          tempMeasureMarker = null;
+        }
+        medicionPuntos = [];
+      }
+    }
+
+    function crearCotaMedicion3D(ptA, ptB) {
+      const cotaGroup = new THREE.Group();
+      const dist = ptA.distanceTo(ptB);
+
+      // Línea principal de cota
+      const points = [ptA, ptB];
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xf9e2af, linewidth: 3 });
+      const lineMesh = new THREE.Line(lineGeo, lineMat);
+      cotaGroup.add(lineMesh);
+
+      // Marcadores Esféricos
+      const sphereGeo = new THREE.SphereGeometry(0.12, 16, 16);
+      const sphereMat = new THREE.MeshStandardMaterial({ color: 0xf9e2af, emissive: 0xf9e2af, emissiveIntensity: 0.5 });
+
+      const sphA = new THREE.Mesh(sphereGeo, sphereMat); sphA.position.copy(ptA);
+      const sphB = new THREE.Mesh(sphereGeo, sphereMat); sphB.position.copy(ptB);
+      cotaGroup.add(sphA);
+      cotaGroup.add(sphB);
+
+      // Etiqueta Sprite en Punto Medio
+      const midPoint = new THREE.Vector3().addVectors(ptA, ptB).multiplyScalar(0.5);
+      midPoint.y += 0.45;
+
+      const spriteLabel = crearSpriteTextoMedicion(`${dist.toFixed(2)} m`);
+      spriteLabel.position.copy(midPoint);
+      cotaGroup.add(spriteLabel);
+
+      scene.add(cotaGroup);
+      medicionesList.push(cotaGroup);
+
+      if (tempMeasureMarker) {
+        scene.remove(tempMeasureMarker);
+        tempMeasureMarker = null;
+      }
+    }
+
+    function crearSpriteTextoMedicion(text) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = 'rgba(24, 24, 37, 0.94)';
+      ctx.strokeStyle = '#f9e2af';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(16, 24, 224, 80, 20);
+      else ctx.rect(16, 24, 224, 80);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#f9e2af';
+      ctx.font = 'bold 36px Outfit, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 128, 64);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(2.2, 1.1, 1);
+      return sprite;
+    }
+
+    function limpiarMediciones3D() {
+      medicionesList.forEach(grp => {
+        grp.traverse(child => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) child.material.dispose();
+        });
+        scene.remove(grp);
+      });
+      medicionesList = [];
+      if (tempMeasureMarker) {
+        scene.remove(tempMeasureMarker);
+        tempMeasureMarker = null;
+      }
+      medicionPuntos = [];
+    }
+
+
+    // 4. CONMUTADOR DE CONOS DE VISIÓN CCTV
+    function toggleConosVisionCCTV(forceState) {
+      cctvConesVisible = (forceState !== undefined) ? forceState : !cctvConesVisible;
+
+      objects.forEach(obj => {
+        if (obj.userData && obj.userData.type === 'camera') {
+          const cone = obj.getObjectByName('frustumCone');
+          if (cone) cone.visible = cctvConesVisible;
+        }
+      });
+
+      const btnToolbar = document.getElementById('btn-toggle-cctv-cones');
+      const iconToolbar = document.getElementById('icon-toggle-cctv-cones');
+      const lblToolbar = document.getElementById('lbl-toggle-cctv-cones');
+
+      if (btnToolbar) {
+        if (cctvConesVisible) {
+          btnToolbar.style.borderColor = 'var(--success)';
+          if (iconToolbar) iconToolbar.style.color = 'var(--success)';
+          if (lblToolbar) lblToolbar.innerText = 'Conos CCTV';
+        } else {
+          btnToolbar.style.borderColor = 'var(--glass-border)';
+          if (iconToolbar) iconToolbar.style.color = 'var(--text-muted)';
+          if (lblToolbar) lblToolbar.innerText = 'Conos Ocultos';
+        }
+      }
     }
   </script>
 </body>

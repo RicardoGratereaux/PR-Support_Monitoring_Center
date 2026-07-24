@@ -1,0 +1,3027 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa 3D de Tiendas y Cámaras - Centro de Monitoreo</title>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Three.js, OrbitControls, TransformControls y TWEEN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+
+  <script>
+  (function () {
+    var t = localStorage.getItem("appTheme") || "dark";
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          brand: "#cbd5e1",
+        },
+      },
+    },
+  };
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  :root {
+    --accent-primary: #f9e2af;
+    --accent-glow: transparent;
+
+    --bg-main: #11111b;
+    --bg-gradient-1: rgba(180, 190, 254, 0.05);
+    --bg-gradient-2: rgba(137, 180, 250, 0.05);
+
+    --glass-bg: #1e1e2e;
+    --glass-bg-hover: #313244;
+    --glass-border: #45475a;
+    --glass-border-focus: #f9e2af;
+
+    --text-main: #cdd6f4;
+    --text-muted: #bac2de;
+
+    --danger: #f38ba8;
+    --danger-glow: transparent;
+    --warning: #f9e2af;
+    --warning-glow: transparent;
+    --success: #a6e3a1;
+    --success-glow: transparent;
+
+    --rosewater: #f5e0dc;
+    --flamingo: #f2cdcd;
+    --pink: #f5c2e7;
+    --maroon: #eba0ac;
+    --peach: #fab387;
+    --teal: #94e2d5;
+    --sky: #89dceb;
+    --sapphire: #74c7ec;
+    --blue: #89b4fa;
+    --lavender: #b4befe;
+
+    --surface-0: #313244;
+    --surface-1: #45475a;
+    --surface-2: #585b70;
+    --overlay-0: #6c7086;
+    --overlay-1: #7f849c;
+    --overlay-2: #9399b2;
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
+
+    --header-bg: rgba(24, 24, 37, 0.85);
+    --sidebar-bg: #181825;
+    --input-bg: #11111b;
+    --modal-bg: #181825;
+    --table-header-bg: #11111b;
+    --overlay-bg: rgba(17, 17, 27, 0.7);
+
+    --swal-popup-bg: #181825;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+    --scrollbar-hover: rgba(255, 255, 255, 0.2);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --btn-text-on-accent: #11111b;
+  }
+
+  [data-theme="light"] {
+    --accent-primary: #d20f39;
+    --accent-glow: rgba(221, 120, 120, 0.08);
+
+    --bg-main: #dce0e8;
+    --bg-gradient-1: rgba(230, 69, 83, 0.04);
+    --bg-gradient-2: rgba(30, 102, 245, 0.04);
+
+    --glass-bg: #e6e9ef;
+    --glass-bg-hover: #ccd0da;
+    --glass-border: #bcc0cc;
+    --glass-border-focus: #d20f39;
+
+    --text-main: #4c4f69;
+    --text-muted: #6c6f85;
+
+    --danger: #d20f39;
+    --danger-glow: rgba(210, 15, 57, 0.08);
+    --warning: #df8e1d;
+    --warning-glow: rgba(223, 142, 29, 0.08);
+    --success: #40a02b;
+    --success-glow: rgba(64, 160, 43, 0.08);
+
+    --rosewater: #dc8a78;
+    --flamingo: #dd7878;
+    --pink: #ea76cb;
+    --maroon: #e64553;
+    --peach: #fe640b;
+    --teal: #179299;
+    --sky: #04a5e5;
+    --sapphire: #209fb5;
+    --blue: #1e66f5;
+    --lavender: #7287fd;
+
+    --surface-0: #ccd0da;
+    --surface-1: #bcc0cc;
+    --surface-2: #acb0be;
+    --overlay-0: #9ca0b0;
+    --overlay-1: #8c8fa1;
+    --overlay-2: #7c7f93;
+    --base: #eff1f5;
+    --mantle: #e6e9ef;
+    --crust: #dce0e8;
+
+    --header-bg: rgba(230, 233, 239, 0.9);
+    --sidebar-bg: #e6e9ef;
+    --input-bg: #eff1f5;
+    --modal-bg: #eff1f5;
+    --table-header-bg: #9ca0b0;
+    --overlay-bg: rgba(204, 208, 218, 0.7);
+
+    --swal-popup-bg: #eff1f5;
+    --scrollbar-thumb: rgba(76, 79, 105, 0.15);
+    --scrollbar-hover: rgba(76, 79, 105, 0.3);
+    --shadow-color: rgba(76, 79, 105, 0.12);
+    --btn-text-on-accent: #eff1f5;
+    --color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  body {
+    font-family: "Inter", sans-serif;
+    background-color: var(--bg-main);
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    color: var(--text-main);
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleSpring {
+    0% {
+      opacity: 0;
+      transform: scale(0.92) translateY(10px);
+    }
+    70% {
+      transform: scale(1.02) translateY(-2px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes floatCard {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes pulseNeon {
+    0%,
+    100% {
+      box-shadow:
+        0 0 5px var(--accent-glow),
+        0 0 10px rgba(180, 190, 254, 0.1);
+    }
+    50% {
+      box-shadow:
+        0 0 15px var(--accent-glow),
+        0 0 25px rgba(180, 190, 254, 0.3);
+    }
+  }
+
+  @keyframes shimmerGleam {
+    0% {
+      transform: translateX(-100%) rotate(15deg);
+    }
+    100% {
+      transform: translateX(250%) rotate(15deg);
+    }
+  }
+
+  @keyframes iconBounce {
+    0% {
+      transform: scale(1) rotate(0deg);
+    }
+    50% {
+      transform: scale(1.25) rotate(12deg);
+    }
+    100% {
+      transform: scale(1.15) rotate(6deg);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-spring {
+    animation: scaleSpring 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-float {
+    animation: floatCard 4s ease-in-out infinite;
+  }
+
+  .top-bar {
+    background: var(--header-bg) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    height: 50px;
+    box-shadow: 0 4px 30px var(--shadow-color);
+  }
+
+  .top-bar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .top-bar-brand:hover {
+    transform: scale(1.02);
+  }
+
+  .burger-btn {
+    background: none;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .burger-btn:hover {
+    background: var(--glass-bg-hover);
+    color: var(--accent-primary);
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  .sidenav {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -280px;
+    width: 280px;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid var(--glass-border);
+    z-index: 999999;
+    transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 10px 0 40px var(--shadow-color);
+    padding-top: 25px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidenav.open {
+    left: 0;
+  }
+
+  .sidenav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px 24px 24px;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 20px;
+  }
+  .sidenav-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: -0.5px;
+  }
+
+  .close-sidenav-btn {
+    background: var(--glass-bg-hover);
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  .close-sidenav-btn:hover {
+    background: var(--danger-glow);
+    color: var(--danger);
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  .sidenav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 16px;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+  }
+
+  .nav-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 8px 16px 4px 16px;
+  }
+
+  .nav-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .nav-link:hover {
+    color: var(--accent-primary);
+    background: var(--accent-glow);
+    transform: translateX(8px);
+  }
+  .nav-link .material-symbols-outlined {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .nav-link:hover .material-symbols-outlined {
+    animation: iconBounce 0.4s ease forwards;
+    color: var(--accent-primary);
+  }
+  .nav-link.active {
+    color: var(--btn-text-on-accent);
+    background: var(--accent-primary);
+    font-weight: 600;
+    box-shadow: 0 4px 15px var(--accent-glow);
+  }
+
+  .sidenav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--overlay-bg);
+    z-index: 999998;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
+  }
+  .sidenav-overlay.show {
+    display: block;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-hover);
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea,
+  .input-filtro {
+    background-color: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    color-scheme: inherit;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    padding: 12px 16px;
+    font-family: "Inter", sans-serif;
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a1a1aa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px top 50%;
+    background-size: 10px auto;
+  }
+  select option {
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .select-filtro {
+    font-size: 13px;
+    padding: 10px 14px;
+    min-width: 140px;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus,
+  .input-filtro:focus {
+    border-color: var(--accent-primary);
+    background-color: var(--input-bg);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  @keyframes swalOriginExpand {
+    0% {
+      opacity: 0;
+      transform: scale(0.93) translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .swal2-popup.swal2-show,
+  .swal-origin-pop.swal2-show,
+  .modal-content.animate-spring {
+    animation: swalOriginExpand 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
+  }
+
+  .swal-glass-backdrop {
+    background: var(--overlay-bg) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+  .swal-glass-popup {
+    background: var(--swal-popup-bg) !important;
+    backdrop-filter: blur(24px) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 24px !important;
+    color: var(--text-main) !important;
+    box-shadow:
+      0 25px 50px var(--shadow-color),
+      inset 0 1px 0 var(--glass-border) !important;
+  }
+  .swal-glass-title {
+    color: var(--text-main) !important;
+    font-weight: 700 !important;
+    font-family: "Inter", sans-serif !important;
+  }
+  .swal-glass-text {
+    color: var(--text-muted) !important;
+    font-family: "Inter", sans-serif !important;
+  }
+  .swal-glass-confirm {
+    background: var(--accent-primary) !important;
+    color: var(--btn-text-on-accent) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 12px 28px !important;
+    font-weight: 600 !important;
+    font-family: "Inter", sans-serif !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease !important;
+  }
+  .swal-glass-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow) !important;
+  }
+
+  div:where(.swal2-icon).swal2-success [class^="swal2-success-line"] {
+    background-color: var(--accent-primary) !important;
+  }
+  div:where(.swal2-icon).swal2-success .swal2-success-ring {
+    border-color: var(--accent-primary) !important;
+  }
+  .swal2-success-circular-line-left,
+  .swal2-success-circular-line-right,
+  .swal2-success-fix {
+    background-color: transparent !important;
+  }
+
+  .swal-dark-popup {
+    background: var(--swal-popup-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+  }
+
+  .file-upload-wrapper {
+    position: relative;
+    margin-top: 10px;
+    width: 100%;
+  }
+  .file-upload-wrapper input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 35px 20px;
+    background: var(--glass-bg);
+    border: 2px dashed var(--glass-border);
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+  .file-upload-wrapper:hover .file-upload-label {
+    border-color: var(--accent-primary);
+    background: var(--accent-glow);
+    transform: scale(1.01);
+  }
+  .upload-icon {
+    font-size: 48px;
+    color: var(--accent-primary);
+    margin-bottom: 12px;
+  }
+  .file-counter {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--glass-bg-hover);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-top: 12px;
+  }
+  .file-counter.has-files {
+    background: var(--accent-glow);
+    color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
+  }
+  .lista-archivos {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .archivo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 14px 18px;
+    border-radius: 14px;
+    animation: fadeInUp 0.4s ease-out;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .archivo-item:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--accent-primary);
+    transform: translateX(5px);
+  }
+
+  .badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .badge-aprobado {
+    background: var(--accent-glow);
+    color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
+  }
+  .badge-rechazado {
+    background: var(--danger-glow);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+  .badge-pendiente {
+    background: var(--warning-glow);
+    color: var(--warning);
+    border: 1px solid var(--warning);
+  }
+
+  .table-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    margin-bottom: 25px;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    box-shadow: none;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--table-header-bg);
+    backdrop-filter: blur(10px);
+    color: var(--text-muted);
+    padding: 18px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  td {
+    border-bottom: 1px solid var(--glass-border);
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    color: var(--text-main);
+  }
+  tbody tr {
+    transition: all 0.2s ease;
+  }
+  tbody tr:hover {
+    background: var(--glass-bg-hover);
+    transform: scale(1.002);
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease;
+  }
+  .modal-content {
+    background: var(--modal-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    width: 90%;
+    max-width: 850px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 45px;
+    position: relative;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    color: var(--text-main);
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .close-modal {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+    background: var(--glass-bg-hover);
+    border-radius: 50%;
+    padding: 8px;
+    display: flex;
+    transition: all 0.3s ease;
+  }
+  .close-modal:hover {
+    background: var(--danger-glow);
+    color: var(--danger);
+    transform: rotate(90deg);
+  }
+
+  .modal-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 25px;
+    margin-bottom: 30px;
+    padding-right: 60px;
+  }
+  .info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .info-value {
+    font-size: 16px;
+    color: var(--text-main);
+    margin-bottom: 25px;
+    font-weight: 500;
+  }
+  .evidence-box {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 25px;
+  }
+
+  .obs-textarea {
+    width: 100%;
+    padding: 18px;
+    background: var(--glass-bg);
+    color: var(--text-main);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    resize: vertical;
+    min-height: 120px;
+    font-family: "Inter", sans-serif;
+    font-size: 15px;
+    box-sizing: border-box;
+    outline: none;
+    transition: 0.3s;
+  }
+  .obs-textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--input-bg);
+  }
+
+  .toolbar-tabla {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 20px var(--shadow-color);
+  }
+  .filtros-grupo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex-grow: 1;
+  }
+  .input-busqueda-wrapper {
+    position: relative;
+    flex-grow: 1;
+    max-width: 320px;
+  }
+  .input-busqueda-wrapper .material-symbols-outlined {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 20px;
+  }
+  .input-filtro {
+    padding: 12px 14px 12px 42px;
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .theme-toggle-track {
+    width: 52px;
+    height: 28px;
+    border-radius: 14px;
+    cursor: pointer;
+    background: var(--glass-bg-hover);
+    border: 1px solid var(--glass-border);
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+  .theme-toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .theme-toggle-track.active {
+    background: var(--accent-glow);
+    border-color: var(--accent-primary);
+  }
+  .theme-toggle-track.active::after {
+    left: 27px;
+    background: var(--accent-primary);
+  }
+</style>
+
+  <script>
+  const TIENDAS = {
+    farmacias: [
+      "FR-01 LITHEDA",
+      "FR-02 SENORIAL",
+      "FR-03 CAIMITO",
+      "FR-04 GURABO",
+      "FR-05 BARRIO OBRERO",
+      "FR-08 HUMACAO",
+      "FR-09 LAS PIEDRAS",
+      "FR-11 CATANO",
+      "FR-12 SANTURCE",
+      "FR-13 NARANJITO",
+      "FR-14 AIBONITO",
+      "FR-15 SALINAS",
+      "FR-16 SANTA ISABEL",
+      "FR-17 TRUJILLO ALTO",
+      "FR-18 GUAYNABO",
+      "FR-19 CAROLINA",
+      "FR-20 VIEQUES",
+      "FR-21 CAYEY",
+      "FR-23 JUNCOS",
+      "FR-24 BARRANQUITAS",
+    ],
+    chinatown: [
+      "CT-01 ARECIBO",
+      "CT-02 SALINAS",
+      "CT-03 TRUJILLO ALTO",
+      "CT-04 HUMACAO",
+      "CT-05 AGUADA",
+      "CT-06 BAYAMON",
+      "CT-07 CAROLINA",
+      "CT-08 FAJARDO",
+      "CT-09 GUAYAMA",
+      "CT-10 SANTURCE",
+      "CT-12 RIO GRANDE",
+      "CT-13 BARRANQUITAS",
+      "CT-14 PONCE",
+      "CT-15 COAMO",
+      "CT-16 LEVITTOWN",
+      "CT-17 VEGA ALTA",
+      "CT-18 BARRIO OBRERO",
+    ],
+    exchange: [
+      "QTD-01 CAROLINA",
+      "QTD-02 SAN JUAN",
+      "QTD-03 GURABO",
+      "QTD-04 JUANA DIAZ",
+      "QTD-05 AGUADILLA",
+      "QTD-06 VEGA BAJA",
+      "QTD-07 ARECIBO",
+      "QTD-08 CEIBA",
+      "QTD-09 MAYAGUEZ",
+      "QTD-10 CAYEY",
+    ],
+  };
+  const PUESTOS = {
+    RD01: ["FR-05", "FR-16", "FR-21", "QTD-06"],
+    RD02: ["FR-04", "FR24", "CT-18"],
+    RD03: ["FR-02", "FR-19", "CT-09"],
+    RD04: ["FR-01", "FR-08", "FR-23"],
+    RD05: ["FR-03", "FR-15", "FR-18", "FR-20", "CT-01"],
+    RD06: ["CT-02", "CT-14", "CT-15", "QTD-02"],
+    RD07: ["CT-05", "CT-07", "FR-09", "FR-14"],
+    RD08: ["CT-08", "CT-16", "CT-17", "QTD-09"],
+    RD09: ["CT-12", "QTD-01", "QTD-03", "AC-A", "AC-B"],
+    RD10: ["CT-03", "CT-06", "QTD-08"],
+    RD11: ["CT-04", "CT-10", "FR-17", "QTD-04"],
+    RD12: ["FR-11", "FR-13", "FR-21", "QTD-07"],
+    RD13: ["FR-12", "CT-13", "QTD-05", "QTD-10"],
+  };
+
+  function cargarTiendas(empresaId, tiendaId, posicionId) {
+    const empresa = document.getElementById(empresaId).value;
+    const selectTienda = document.getElementById(tiendaId);
+    selectTienda.innerHTML = '<option value="">Seleccione una tienda</option>';
+    if (posicionId) document.getElementById(posicionId).value = "";
+    if (!empresa) return;
+
+    TIENDAS[empresa].forEach((t) => {
+      let opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      selectTienda.appendChild(opt);
+    });
+  }
+
+  function actualizarPosicion(tiendaId, posicionId) {
+    const tiendaValue = document.getElementById(tiendaId).value;
+    const posicionInput = document.getElementById(posicionId);
+    if (!posicionInput) return;
+    if (!tiendaValue) {
+      posicionInput.value = "";
+      return;
+    }
+
+    const codigoLimpio = tiendaValue
+      .split(" ")[0]
+      .toUpperCase()
+      .replace("-", "");
+    let puestoFinal = "Personal de Turno";
+
+    for (const [puesto, lista] of Object.entries(PUESTOS)) {
+      if (
+        lista.some((t) => t.toUpperCase().replace("-", "") === codigoLimpio)
+      ) {
+        puestoFinal = puesto;
+        break;
+      }
+    }
+    posicionInput.value = puestoFinal;
+  }
+
+  function generarIniciales(nombreId, inicialesId) {
+    const nombre = document.getElementById(nombreId).value.trim();
+    const campoIniciales = document.getElementById(inicialesId);
+    if (!campoIniciales) return;
+    if (!nombre) {
+      campoIniciales.value = "";
+      return;
+    }
+
+    const iniciales = nombre
+      .split(/\s+/)
+      .map((palabra) => palabra.charAt(0).toUpperCase())
+      .join("")
+      .substring(0, 4);
+
+    campoIniciales.value = iniciales;
+  }
+</script>
+
+
+  <style>
+    :root {
+      --bg-main: #11111b;
+      --glass-bg: #1e1e2e;
+      --glass-bg-hover: #313244;
+      --glass-border: #45475a;
+      --glass-border-focus: #f9e2af;
+      --text-main: #cdd6f4;
+      --text-muted: #bac2de;
+      --accent-primary: #f9e2af;
+      --sapphire: #74c7ec;
+      --blue: #89b4fa;
+      --teal: #94e2d5;
+      --success: #a6e3a1;
+      --danger: #f38ba8;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    .mapa3d-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 50px);
+      margin-top: 50px;
+      position: relative;
+      overflow: visible;
+    }
+
+    .mapa3d-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: rgba(24, 24, 37, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      z-index: 2500;
+      gap: 10px;
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+
+    .toolbar-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .store-badge {
+      background: rgba(116, 199, 236, 0.15);
+      color: var(--sapphire);
+      border: 1px solid rgba(116, 199, 236, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .toolbar-actions-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tool-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tool-dropdown:hover,
+    .tool-dropdown:focus-within,
+    .tool-dropdown:active {
+      z-index: 99999 !important;
+    }
+
+    .btn-tool-dropdown {
+      background: var(--glass-bg);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-tool-dropdown:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--sapphire);
+      color: #fff;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 6px;
+      background: rgba(24, 24, 37, 0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 6px;
+      min-width: 220px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9000;
+    }
+
+    .tool-dropdown:hover .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(116, 199, 236, 0.15);
+      color: var(--sapphire);
+    }
+
+    .btn-action-primary {
+      background: linear-gradient(135deg, var(--sapphire), var(--blue));
+      color: #11111b;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 10px rgba(116, 199, 236, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .mode-switch-container {
+      display: flex;
+      background: var(--glass-bg);
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .mode-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, var(--sapphire), var(--blue));
+      color: #11111b;
+      box-shadow: 0 2px 8px rgba(116, 199, 236, 0.4);
+    }
+
+    .mapa3d-main {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #webgl-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #1e1e2e 0%, #181825 70%, #11111b 100%);
+    }
+
+    /* HUB MENU OVERLAY & CONFIGURADOR DE TIENDA */
+    .hub-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(17, 17, 27, 0.94);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100000;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    .hub-modal-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .hub-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      width: 680px;
+      max-width: 92vw;
+      padding: 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .hub-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .hub-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0 0 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .cadena-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .cadena-card {
+      background: var(--glass-bg-hover);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .cadena-card:hover {
+      background: rgba(116, 199, 236, 0.12);
+      border-color: var(--sapphire);
+    }
+
+    .cadena-card.active {
+      background: linear-gradient(135deg, rgba(116, 199, 236, 0.2), rgba(137, 180, 250, 0.3));
+      border-color: var(--sapphire);
+      box-shadow: 0 0 16px rgba(116, 199, 236, 0.3);
+    }
+
+    .cadena-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+      background: rgba(24, 24, 37, 0.6);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .hub-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: #181825;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 1rem;
+      box-sizing: border-box;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .hub-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn-hub-main {
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-hub-primary {
+      background: linear-gradient(135deg, var(--sapphire), var(--blue));
+      color: #11111b;
+    }
+
+    .btn-hub-secondary {
+      background: rgba(49, 50, 68, 0.8);
+      color: var(--success);
+      border: 1px solid rgba(166, 227, 161, 0.4);
+    }
+
+    /* Inspector Panel */
+    .inspector-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 330px;
+      background: rgba(30, 30, 46, 0.94);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 20;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-height: calc(100% - 28px);
+      overflow-y: auto;
+    }
+
+    .inspector-panel.hidden {
+      transform: translateX(370px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      display: block;
+      font-weight: 500;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 5px 8px;
+      background: #181825;
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.8rem;
+      box-sizing: border-box;
+    }
+
+    .coord-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+    }
+
+    .rot-quick-btn {
+      background: var(--glass-bg-hover);
+      color: var(--sapphire);
+      border: 1px solid rgba(116, 199, 236, 0.3);
+      padding: 4px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .hud-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(24, 24, 37, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 15;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+  <div class="top-bar-brand">
+    <button class="burger-btn" onclick="openSidenav()">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <span>Centro de Monitoreo</span>
+  </div>
+</div>
+
+<div id="mySidenav" class="sidenav">
+  <div class="sidenav-header">
+    <span class="sidenav-title">Navegación</span>
+    <button class="close-sidenav-btn" onclick="closeSidenav()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="sidenav-links">
+    <span class="text-muted nav-section-title"> Espacio Monitores </span>
+    <a
+      href="#?page=index"
+      target="_top"
+      class="nav-link "
+    >
+      <span class="material-symbols-outlined">edit_document</span> Nuevo Reporte
+    </a>
+    <a
+      href="#?page=misreportes"
+      target="_top"
+      class="nav-link "
+    >
+      <span class="material-symbols-outlined">folder_shared</span> Mis Reportes
+    </a>
+    <a
+      href="#?page=reposicion"
+      target="_top"
+      class="nav-link "
+    >
+      <span class="material-symbols-outlined">phone_in_talk</span> Reposición
+      Diaria
+    </a>
+    <a
+      href="#?page=mapa3d"
+      target="_top"
+      class="nav-link active"
+    >
+      <span class="material-symbols-outlined">view_in_ar</span> Mapa 3D Tiendas
+    </a>
+
+    <span class="text-muted nav-section-title" style="margin-top: 15px">
+      Espacio de supervisión
+    </span>
+    
+    <a
+      href="#?page=dashboard"
+      target="_top"
+      class="nav-link "
+    >
+      <span class="material-symbols-outlined">dashboard</span> Dashboard
+    </a>
+    <a
+      href="#?page=horarios"
+      target="_top"
+      class="nav-link "
+    >
+      <span class="material-symbols-outlined">edit_calendar</span>Horarios
+    </a>
+    
+
+    <div style="flex-grow: 1; min-height: 20px"></div>
+    <a
+      href="#?page=ajustes"
+      target="_top"
+      class="nav-link "
+      style="
+        margin-top: auto;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 12px;
+        border-radius: 0 0 16px 16px;
+      "
+    >
+      <span class="material-symbols-outlined">settings</span> Ajustes
+    </a>
+  </div>
+</div>
+
+<div id="sidenavOverlay" class="sidenav-overlay" onclick="closeSidenav()"></div>
+
+<script>
+  function openSidenav() {
+    document.getElementById("mySidenav").classList.add("open");
+    document.getElementById("sidenavOverlay").classList.add("show");
+  }
+
+  function closeSidenav() {
+    document.getElementById("mySidenav").classList.remove("open");
+    document.getElementById("sidenavOverlay").classList.remove("show");
+  }
+</script>
+
+
+  <!-- HUB INICIAL DE CONFIGURACIÓN Y DIMENSIONADO DE TIENDA -->
+  <div id="hub-modal" class="hub-modal-overlay">
+    <div class="hub-card">
+      <div class="hub-header">
+        <h2 class="hub-title">
+          <span class="material-symbols-outlined" style="color:var(--sapphire); font-size:2rem;">domain</span>
+          Configurador de Tiendas 3D
+        </h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">Define el local, dimensiones y ambiente de la sucursal antes de comenzar</p>
+      </div>
+
+      <!-- Selección de Cadena -->
+      <div class="cadena-grid">
+        <div class="cadena-card active" onclick="seleccionarCadena('farmacias', this)">
+          <span class="cadena-name">Farmacias Rey</span>
+        </div>
+        <div class="cadena-card" onclick="seleccionarCadena('chinatown', this)">
+          <span class="cadena-name">Chinatown & More</span>
+        </div>
+        <div class="cadena-card" onclick="seleccionarCadena('exchange', this)">
+          <span class="cadena-name">Exchange by Figna</span>
+        </div>
+      </div>
+
+      <select id="hub-select-tienda" class="hub-select"></select>
+
+      <!-- CONFIGURACIÓN DE DIMENSIONES Y AMBIENTE DE LA TIENDA -->
+      <div style="font-size:0.85rem; font-weight:700; color:var(--sapphire); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <span class="material-symbols-outlined" style="font-size:18px;">aspect_ratio</span> Dimensiones del Local y Estilo
+      </div>
+
+      <div class="config-grid">
+        <div>
+          <label class="form-label">Ancho Tienda (m)</label>
+          <input type="number" id="config-ancho" class="form-input" value="40" min="20" max="100">
+        </div>
+        <div>
+          <label class="form-label">Largo Tienda (m)</label>
+          <input type="number" id="config-largo" class="form-input" value="30" min="15" max="80">
+        </div>
+        <div>
+          <label class="form-label">Estilo de Piso / Iluminación</label>
+          <select id="config-estilo-piso" class="form-input">
+            <option value="ceramica">Cerámica Clara (Retail)</option>
+            <option value="concreto">Concreto Industrial</option>
+            <option value="marmol">Mármol Oscuro Tech</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="hub-actions">
+        <button class="btn-hub-main btn-hub-primary" onclick="iniciarExperiencia3D('edit')">
+          <span class="material-symbols-outlined">edit</span> Diseñar / Editar Mapa 3D
+        </button>
+        <button class="btn-hub-main btn-hub-secondary" onclick="iniciarExperiencia3D('monitor')">
+          <span class="material-symbols-outlined">videocam</span> Modo Monitoreo Vivo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mapa3d-wrapper">
+    <!-- TOOLBAR ORGANIZADO -->
+    <div class="mapa3d-toolbar">
+      <div class="toolbar-title">
+        <button class="btn-tool-dropdown" onclick="abrirHubSeleccion()" title="Configurar Tienda / Dimensiones">
+          <span class="material-symbols-outlined" style="font-size:16px;">swap_horiz</span>
+        </button>
+        <span id="label-tienda-activa" class="store-badge">FR-01 LITHEDA</span>
+      </div>
+
+      <div class="toolbar-actions-cluster">
+        <!-- Gizmos -->
+        <div class="tool-dropdown">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--sapphire);">open_with</span>
+            Gizmos <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="setGizmoMode('translate')">
+              <span class="material-symbols-outlined">open_with</span> Mover (Shift + T)
+            </button>
+            <button class="dropdown-item" onclick="setGizmoMode('rotate')">
+              <span class="material-symbols-outlined">sync</span> Rotar (Shift + R)
+            </button>
+            <button class="dropdown-item" onclick="setGizmoMode('scale')">
+              <span class="material-symbols-outlined">aspect_ratio</span> Escalar (Shift + S)
+            </button>
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--sapphire); padding:4px 12px; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+              <span>SNAP ROTACIÓN</span>
+              <span id="label-snap-rot" style="color:var(--text); font-weight:600;">15°</span>
+            </div>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(0)">
+              <span class="material-symbols-outlined" style="font-size:14px;">do_not_disturb_on</span> Libre (Sin Snap)
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(5)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 5°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(15)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 15°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(45)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 45°
+            </button>
+            <button class="dropdown-item" onclick="setRotationSnapAngle(90)">
+              <span class="material-symbols-outlined" style="font-size:14px;">straighten</span> Paso de 90°
+            </button>
+          </div>
+        </div>
+
+        <!-- Dropdown 1: Arquitectura y Zonas Preconstruidas -->
+        <div class="tool-dropdown" id="editor-tools-arch">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--accent-primary);">domain</span>
+            Arquitectura <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="addStructure('wall')">
+              <span class="material-symbols-outlined">door_sliding</span> Pared / Muro
+            </button>
+            <button class="dropdown-item" onclick="addStructure('column')">
+              <span class="material-symbols-outlined">view_column</span> Columna Soporte
+            </button>
+            <button class="dropdown-item" onclick="addStructure('puerta_entrada')">
+              <span class="material-symbols-outlined">sensor_door</span> Puerta Cristal
+            </button>
+
+            <!-- ZONAS Y CUADROS PREESTABLECIDOS -->
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--sapphire); padding:4px 12px; font-weight:700;">CUADROS PREESTABLECIDOS</div>
+            <button class="dropdown-item" onclick="addZonaPreestablecida('recetario')">
+              <span class="material-symbols-outlined">medical_services</span> Cuadro Área Recetario
+            </button>
+            <button class="dropdown-item" onclick="addZonaPreestablecida('almacen')">
+              <span class="material-symbols-outlined">inventory</span> Cuadro Cuarto Almacén
+            </button>
+            <button class="dropdown-item" onclick="addZonaPreestablecida('oficina_box')">
+              <span class="material-symbols-outlined">meeting_room</span> Cuadro Oficina Admin
+            </button>
+            <button class="dropdown-item" onclick="addStructure('parking_area')">
+              <span class="material-symbols-outlined">local_parking</span> Área de Parking
+            </button>
+          </div>
+        </div>
+
+        <!-- Dropdown 2: Mobiliario Comercial Ampliado -->
+        <div class="tool-dropdown" id="editor-tools-mob">
+          <button class="btn-tool-dropdown">
+            <span class="material-symbols-outlined" style="font-size:16px; color:var(--blue);">storefront</span>
+            Mobiliario <span class="material-symbols-outlined" style="font-size:14px;">expand_more</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" onclick="addStructure('gondola_doble')">
+              <span class="material-symbols-outlined">table_restaurant</span> Góndola Doble Central
+            </button>
+            <button class="dropdown-item" onclick="addStructure('gondola_pared')">
+              <span class="material-symbols-outlined">shelves</span> Estante Pared Alta
+            </button>
+            <button class="dropdown-item" onclick="addStructure('mostrador')">
+              <span class="material-symbols-outlined">point_of_sale</span> Caja Registradora POS
+            </button>
+            <button class="dropdown-item" onclick="addStructure('escritorio_oficina')">
+              <span class="material-symbols-outlined">desk</span> Escritorio Oficina / Admin
+            </button>
+            <button class="dropdown-item" onclick="addStructure('mesa_asientos')">
+              <span class="material-symbols-outlined">table_bar</span> Mesas y Asientos
+            </button>
+            <button class="dropdown-item" onclick="addStructure('carritos_compra')">
+              <span class="material-symbols-outlined">shopping_cart</span> Stack Carritos Compra
+            </button>
+
+            <button class="dropdown-item" onclick="addStructure('cajas_carton')">
+              <span class="material-symbols-outlined">package</span> Cajas de Cartón / Mercancía
+            </button>
+            <button class="dropdown-item" onclick="addStructure('nevera')">
+              <span class="material-symbols-outlined">kitchen</span> Nevera Exhibidora
+            </button>
+            <button class="dropdown-item" onclick="addStructure('isla_promo')">
+              <span class="material-symbols-outlined">view_in_ar</span> Isla Promocional
+            </button>
+
+            <div style="border-top:1px solid var(--glass-border); margin:4px 0;"></div>
+            <div style="font-size:0.72rem; color:var(--accent-primary); padding:4px 12px; font-weight:700;">MIS PREFABS CONJUNTOS</div>
+            <div id="prefabs-custom-list"></div>
+          </div>
+        </div>
+
+        <!-- Botón Directo: Añadir Cámara CCTV -->
+        <button class="btn-tool-dropdown" onclick="addStructure('camera')" style="color:var(--success); border-color:rgba(166,227,161,0.4);" id="btn-add-camera">
+          <span class="material-symbols-outlined" style="font-size:16px;">videocam</span> + Cámara CCTV
+        </button>
+
+        <!-- Conmutador Editor vs Monitoreo -->
+        <div class="mode-switch-container">
+          <button id="btn-mode-edit" class="mode-btn active" onclick="setMode('edit')">
+            <span class="material-symbols-outlined" style="font-size:15px;">edit</span> Editor
+          </button>
+          <button id="btn-mode-monitor" class="mode-btn" onclick="setMode('monitor')">
+            <span class="material-symbols-outlined" style="font-size:15px;">videocam</span> Monitoreo
+          </button>
+        </div>
+
+        <!-- Acciones Principales -->
+        <button class="btn-tool-dropdown" onclick="capturarPantalla3D()" title="Capturar Foto PNG">
+          <span class="material-symbols-outlined" style="font-size:16px;">photo_camera</span> Foto
+        </button>
+        <button class="btn-action-primary" onclick="guardarPlanoGAS()">
+          <span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar
+        </button>
+        <button class="btn-tool-dropdown" onclick="limpiarEscena()" style="color:var(--danger);" title="Limpiar Mapa">
+          <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas WebGL 3D -->
+    <div class="mapa3d-main">
+      <div id="webgl-container"></div>
+
+      <!-- HUD Informativo -->
+      <div class="hud-overlay">
+        <div>Tienda: <strong id="hud-store-name" style="color:var(--sapphire);">FR-01 LITHEDA</strong></div>
+        <div>Total Elementos: <strong id="hud-count-obj" style="color:var(--sapphire);">0</strong></div>
+        <div>Seleccionados: <strong id="hud-count-selected" style="color:var(--accent-primary);">0</strong></div>
+        <div>Modo: <strong id="hud-mode" style="color:#fff;">Edición 3D</strong></div>
+      </div>
+
+      <!-- Inspector Panel -->
+      <div id="inspector-panel" class="inspector-panel hidden">
+        <div class="panel-header">
+          <div class="panel-title" id="inspector-title">
+            <span class="material-symbols-outlined">settings_suggest</span> Inspector
+          </div>
+          <button class="btn-tool-dropdown" onclick="deseleccionarObjeto()" style="padding: 2px 6px;">✕</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre del Elemento / Conjunto</label>
+          <input type="text" id="inp-nombre" class="form-input" oninput="actualizarObjetoDesdeInputs()">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Posición (X, Y, Z)</label>
+          <div class="coord-grid">
+            <input type="number" step="0.5" id="pos-x" class="form-input" placeholder="X" oninput="actualizarObjetoDesdeInputs()">
+            <input type="number" step="0.5" id="pos-y" class="form-input" placeholder="Y" oninput="actualizarObjetoDesdeInputs()">
+            <input type="number" step="0.5" id="pos-z" class="form-input" placeholder="Z" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+        </div>
+
+        <!-- CONTROLES DE ROTACIÓN Y -->
+        <div class="form-group">
+          <label class="form-label">Rotación Y (<span id="val-rot-y">0</span>°)</label>
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+            <input type="range" id="rot-y" min="0" max="360" value="0" style="flex:1;" oninput="actualizarRotDesdeSlider('y')">
+            <input type="number" id="rot-y-num" min="0" max="360" value="0" class="form-input" style="width:60px;" oninput="actualizarRotDesdeNum('y')">
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-bottom:4px;">
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(0)" title="Orientar al Norte (0°)">N (0°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(90)" title="Orientar al Este (90°)">E (90°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(180)" title="Orientar al Sur (180°)">S (180°)</button>
+            <button class="rot-quick-btn" onclick="orientarObjetoCardinal(270)" title="Orientar al Oeste (270°)">W (270°)</button>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px;">
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-45)">-45°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(-15)">-15°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(15)">+15°</button>
+            <button class="rot-quick-btn" onclick="rotarObjetoRapido(45)">+45°</button>
+          </div>
+          <div style="font-size:0.66rem; color:var(--text-muted); margin-top:6px; text-align:center;">
+            💡 Atajos: <kbd style="background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:3px; font-family:monospace;">Q</kbd> / <kbd style="background:rgba(255,255,255,0.1); padding:1px 4px; border-radius:3px; font-family:monospace;">E</kbd> para girar objeto
+          </div>
+        </div>
+
+        <div id="section-camera-props" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Ángulo de Visión (FOV: <span id="val-fov">60</span>°)</label>
+            <input type="range" id="inp-fov" min="20" max="120" value="60" style="width:100%;" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Alcance del Cono (<span id="val-dist">8</span>m)</label>
+            <input type="range" id="inp-dist" min="3" max="25" value="8" style="width:100%;" oninput="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">URL Imagen de Captura de Cámara</label>
+            <input type="text" id="inp-img-url" class="form-input" placeholder="https://..." onchange="actualizarObjetoDesdeInputs()">
+          </div>
+
+          <div class="image-preview-box">
+            <img id="img-preview" src="" alt="Captura de Cámara">
+          </div>
+        </div>
+
+        <!-- GUARDAR CONJUNTO MULTISELECCIONADO COMO PREFAB -->
+        <div style="margin-top: 14px; border-top: 1px solid var(--glass-border); padding-top: 10px;">
+          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; margin-bottom:8px; color:var(--accent-primary); border-color:rgba(249,226,175,0.4);" onclick="guardarConjuntoComoPrefab()">
+            <span class="material-symbols-outlined" style="font-size:16px;">bookmark_add</span> ⭐ Guardar Conjunto como Prefab
+          </button>
+          <button class="btn-tool-dropdown" style="width:100%; justify-content:center; color: var(--danger); border-color: rgba(243,139,168,0.4);" onclick="eliminarObjetoSeleccionado()">
+            <span class="material-symbols-outlined" style="font-size:15px;">delete</span> Eliminar Seleccionado(s)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Inspección de Cámara -->
+  <div id="camera-modal" class="camera-modal-overlay">
+    <div class="camera-modal">
+      <button class="modal-close-btn" onclick="cerrarModalCamara()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <h3 id="modal-cam-title" style="margin:0; font-size:1.2rem; color:#fff;">Cámara CCTV Monitoreo</h3>
+        <span style="background:rgba(166,227,161,0.2); color:var(--success); padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">● EN VIVO</span>
+      </div>
+      <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px;" id="modal-cam-details">FOV: 60° | Alcance: 8m</div>
+      <img id="modal-cam-img" class="camera-modal-img" src="" alt="Transmisión">
+    </div>
+  </div>
+
+  <script>
+    let scene, camera, renderer, controls, transformControls;
+    let currentMode = 'edit';
+    let objects = [];
+    let selectedObjects = []; // Arreglo para Selección Múltiple!
+    let selectedObject = null;
+    let raycaster, mouse;
+    let cadenaSeleccionada = 'farmacias';
+    let tiendaActivaId = 'FR-01 LITHEDA';
+    let floorMesh = null;
+
+    const TIENDAS_DATA = (typeof TIENDAS !== 'undefined') ? TIENDAS : {
+      farmacias: ["FR-01 LITHEDA", "FR-02 SENORIAL", "FR-03 CAIMITO", "FR-04 GURABO", "FR-05 BARRIO OBRERO", "FR-08 HUMACAO", "FR-18 GUAYNABO"],
+      chinatown: ["CT-01 ARECIBO", "CT-02 SALINAS", "CT-03 TRUJILLO ALTO", "CT-04 HUMACAO", "CT-06 BAYAMON", "CT-14 PONCE"],
+      exchange: ["QTD-01 CAROLINA", "QTD-02 SAN JUAN", "QTD-03 GURABO", "QTD-07 ARECIBO", "QTD-09 MAYAGUEZ"]
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      poblarSelectTiendas('farmacias');
+      initThreeJS();
+      crearPisoTienda(40, 30, 'ceramica');
+      setupEventListeners();
+      renderizarMenuPrefabsPersonalizados();
+    });
+
+    function seleccionarCadena(cadena, element) {
+      cadenaSeleccionada = cadena;
+      document.querySelectorAll('.cadena-card').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      poblarSelectTiendas(cadena);
+    }
+
+    function poblarSelectTiendas(cadena) {
+      const select = document.getElementById('hub-select-tienda');
+      select.innerHTML = '';
+      const lista = TIENDAS_DATA[cadena] || [];
+      lista.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+    }
+
+    function abrirHubSeleccion() {
+      document.getElementById('hub-modal').classList.remove('hidden');
+    }
+
+    function iniciarExperiencia3D(modo) {
+      const select = document.getElementById('hub-select-tienda');
+      tiendaActivaId = select.value || 'FR-01 LITHEDA';
+
+      const ancho = parseFloat(document.getElementById('config-ancho').value) || 40;
+      const largo = parseFloat(document.getElementById('config-largo').value) || 30;
+      const estilo = document.getElementById('config-estilo-piso').value || 'ceramica';
+
+      crearPisoTienda(ancho, largo, estilo);
+
+      document.getElementById('label-tienda-activa').innerText = tiendaActivaId;
+      document.getElementById('hud-store-name').innerText = tiendaActivaId;
+      document.getElementById('hub-modal').classList.add('hidden');
+
+      setMode(modo);
+      cargarPlanoGAS();
+    }
+
+    function initThreeJS() {
+      const container = document.getElementById('webgl-container');
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x11111b);
+      scene.fog = new THREE.FogExp2(0x11111b, 0.015);
+
+      camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 18, 22);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02;
+
+      transformControls = new THREE.TransformControls(camera, renderer.domElement);
+      transformControls.size = 0.85;
+      transformControls.addEventListener('change', () => {
+        if (selectedObject) sincronizarInspectorDesdeObjeto(selectedObject);
+      });
+      transformControls.addEventListener('dragging-changed', (event) => {
+        controls.enabled = !event.value;
+      });
+      scene.add(transformControls);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0x74c7ec, 1.2);
+      dirLight.position.set(15, 25, 15);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      scene.add(dirLight);
+
+      const gridHelper = new THREE.GridHelper(40, 40, 0x74c7ec, 0x313244);
+      gridHelper.position.y = 0.01;
+      scene.add(gridHelper);
+
+      raycaster = new THREE.Raycaster();
+      mouse = new THREE.Vector2();
+
+      inicializarCompasRotacion();
+
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 't' || e.key === 'T') setGizmoMode('translate');
+        if (e.key === 'r' || e.key === 'R') setGizmoMode('rotate');
+        if (e.key === 's' || e.key === 'S') setGizmoMode('scale');
+        if (e.key === 'f' || e.key === 'F') enfocarObjetoSeleccionado();
+
+        if (selectedObject) {
+          if (e.key === 'q' || e.key === 'Q') {
+            const step = e.shiftKey ? -90 : -rotationSnapDegrees;
+            rotarObjetoRapido(step);
+            return;
+          }
+          if (e.key === 'e' || e.key === 'E') {
+            const step = e.shiftKey ? 90 : rotationSnapDegrees;
+            rotarObjetoRapido(step);
+            return;
+          }
+        }
+      });
+
+      animate();
+    }
+
+    function crearPisoTienda(ancho = 40, largo = 30, estilo = 'ceramica') {
+      if (floorMesh) scene.remove(floorMesh);
+
+      const floorGeo = new THREE.PlaneGeometry(ancho, largo);
+      let colorPiso = 0x1e1e2e;
+      if (estilo === 'concreto') colorPiso = 0x313244;
+      else if (estilo === 'marmol') colorPiso = 0x181825;
+
+      const floorMat = new THREE.MeshStandardMaterial({ color: colorPiso, roughness: 0.4, metalness: 0.2 });
+      floorMesh = new THREE.Mesh(floorGeo, floorMat);
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.receiveShadow = true;
+      scene.add(floorMesh);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function crearMallaCamaraCCTV() {
+      const group = new THREE.Group();
+      const baseGeo = new THREE.CylinderGeometry(0.25, 0.3, 0.1, 16);
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0x45475a, metalness: 0.8, roughness: 0.3 });
+      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+      baseMesh.rotation.x = Math.PI / 2;
+      group.add(baseMesh);
+
+      const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 12);
+      const armMesh = new THREE.Mesh(armGeo, baseMat);
+      armMesh.rotation.x = Math.PI / 4;
+      armMesh.position.set(0, -0.18, 0.2);
+      group.add(armMesh);
+
+      const bodyGeo = new THREE.CylinderGeometry(0.3, 0.26, 0.85, 16);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x313244, metalness: 0.7, roughness: 0.2 });
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.rotation.x = Math.PI / 2;
+      bodyMesh.position.set(0, -0.32, 0.55);
+      group.add(bodyMesh);
+
+      const shieldGeo = new THREE.CylinderGeometry(0.33, 0.33, 0.75, 16, 1, false, 0, Math.PI);
+      const shieldMat = new THREE.MeshStandardMaterial({ color: 0x181825, metalness: 0.5 });
+      const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+      shieldMesh.rotation.x = Math.PI / 2;
+      shieldMesh.rotation.z = Math.PI;
+      shieldMesh.position.set(0, -0.28, 0.58);
+      group.add(shieldMesh);
+
+      const lensGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 16);
+      const lensMat = new THREE.MeshStandardMaterial({ color: 0x11111b, roughness: 0.1 });
+      const lensMesh = new THREE.Mesh(lensGeo, lensMat);
+      lensMesh.rotation.x = Math.PI / 2;
+      lensMesh.position.set(0, -0.32, 0.98);
+      group.add(lensMesh);
+
+      const ledGeo = new THREE.SphereGeometry(0.04, 8, 8);
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0xa6e3a1 });
+      const ledMesh = new THREE.Mesh(ledGeo, ledMat);
+      ledMesh.position.set(0.16, -0.16, 0.98);
+      group.add(ledMesh);
+
+      return group;
+    }
+
+    // AÑADIR ESTRUCTURAS Y ZONAS PREESTABLECIDAS
+    function addZonaPreestablecida(tipoZona) {
+      if (currentMode !== 'edit') return;
+      if (tipoZona === 'recetario') {
+        addStructure('wall'); objects[objects.length-1].position.set(-8, 1.75, -6); objects[objects.length-1].scale.set(1,1,1);
+        addStructure('mostrador'); objects[objects.length-1].position.set(-6, 0.6, -3);
+        addStructure('gondola_pared'); objects[objects.length-1].position.set(-10, 0, -8);
+      } else if (tipoZona === 'almacen') {
+        addStructure('wall'); objects[objects.length-1].position.set(10, 1.75, -8);
+        addStructure('cajas_carton'); objects[objects.length-1].position.set(8, 0, -10);
+        addStructure('tarima_pallet'); objects[objects.length-1].position.set(11, 0, -10);
+      } else if (tipoZona === 'oficina_box') {
+        addStructure('wall'); objects[objects.length-1].position.set(-10, 1.75, 8);
+        addStructure('escritorio_oficina'); objects[objects.length-1].position.set(-10, 0, 8);
+      }
+    }
+
+    function crearMallaPuerta() {
+      const group = new THREE.Group();
+
+      const anchoMarco = 1.2;
+      const altoMarco = 2.4;
+      const grosorMarco = 0.2;
+      const grosorPerfil = 0.08;
+
+      const matMarco = new THREE.MeshStandardMaterial({ color: 0x313244, roughness: 0.5, metalness: 0.6 });
+      const matHoja = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.4, metalness: 0.2 });
+      const matPomo = new THREE.MeshStandardMaterial({ color: 0xf9e2af, metalness: 0.9, roughness: 0.2 });
+
+      const jambaIzq = new THREE.Mesh(new THREE.BoxGeometry(grosorPerfil, altoMarco, grosorMarco), matMarco);
+      jambaIzq.position.set(-anchoMarco / 2 + grosorPerfil / 2, altoMarco / 2, 0);
+      jambaIzq.castShadow = true;
+      group.add(jambaIzq);
+
+      const jambaDer = new THREE.Mesh(new THREE.BoxGeometry(grosorPerfil, altoMarco, grosorMarco), matMarco);
+      jambaDer.position.set(anchoMarco / 2 - grosorPerfil / 2, altoMarco / 2, 0);
+      jambaDer.castShadow = true;
+      group.add(jambaDer);
+
+      const dintel = new THREE.Mesh(new THREE.BoxGeometry(anchoMarco, grosorPerfil, grosorMarco), matMarco);
+      dintel.position.set(0, altoMarco - grosorPerfil / 2, 0);
+      dintel.castShadow = true;
+      group.add(dintel);
+
+      const anchoHoja = anchoMarco - (grosorPerfil * 2);
+      const altoHoja = altoMarco - grosorPerfil;
+      const grosorHoja = 0.05;
+
+      const hojaGroup = new THREE.Group();
+      hojaGroup.position.set(-anchoMarco / 2 + grosorPerfil, 0, 0);
+
+      const hojaMesh = new THREE.Mesh(new THREE.BoxGeometry(anchoHoja, altoHoja, grosorHoja), matHoja);
+      hojaMesh.position.set(anchoHoja / 2, altoHoja / 2, 0);
+      hojaMesh.castShadow = true;
+      hojaGroup.add(hojaMesh);
+
+      const pomoGeo = new THREE.SphereGeometry(0.04, 16, 16);
+      const pomoMesh = new THREE.Mesh(pomoGeo, matPomo);
+      pomoMesh.position.set(anchoHoja - 0.1, altoHoja / 2, 0.04);
+      hojaGroup.add(pomoMesh);
+
+      const pomoMesh2 = pomoMesh.clone();
+      pomoMesh2.position.z = -0.04;
+      hojaGroup.add(pomoMesh2);
+
+      hojaGroup.rotation.y = Math.PI / 7;
+
+      group.add(hojaGroup);
+      return group;
+    }
+
+    function addStructure(type) {
+      if (currentMode !== 'edit') return;
+
+      let mesh, data = { id: Date.now(), type: type, name: '', pos: [0, 0, 0] };
+
+      if (type === 'puerta') {
+        mesh = crearMallaPuerta();
+        data.name = 'Puerta ' + (objects.length + 1);
+      } else if (type === 'gondola_doble') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(4, 2.2, 1.4);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x89b4fa, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.1;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+        mesh = group;
+        data.name = 'Góndola Doble ' + (objects.length + 1);
+      } else if (type === 'gondola_pared') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(3.5, 2.8, 0.6);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x74c7ec, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.4;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+        mesh = group;
+        data.name = 'Estante Pared ' + (objects.length + 1);
+      } else if (type === 'mostrador') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(3, 1.2, 1.2);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0xf9e2af, roughness: 0.3 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 0.6;
+        bodyMesh.castShadow = true;
+        group.add(bodyMesh);
+
+        const posGeo = new THREE.BoxGeometry(0.5, 0.4, 0.1);
+        const posMat = new THREE.MeshStandardMaterial({ color: 0x181825 });
+        const posMesh = new THREE.Mesh(posGeo, posMat);
+        posMesh.position.set(0.8, 1.4, 0);
+        group.add(posMesh);
+
+        mesh = group;
+        data.name = 'Caja POS ' + (objects.length + 1);
+      } else if (type === 'escritorio_oficina') {
+        const group = new THREE.Group();
+        const deskGeo = new THREE.BoxGeometry(3.5, 1.1, 1.6);
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0xb4befe, roughness: 0.3 });
+        const deskMesh = new THREE.Mesh(deskGeo, deskMat);
+        deskMesh.position.y = 0.55;
+        group.add(deskMesh);
+
+        const monGeo = new THREE.BoxGeometry(0.8, 0.5, 0.08);
+        const monMat = new THREE.MeshStandardMaterial({ color: 0x11111b });
+        const monMesh = new THREE.Mesh(monGeo, monMat);
+        monMesh.position.set(0, 1.4, 0);
+        group.add(monMesh);
+
+        mesh = group;
+        data.name = 'Escritorio Oficina ' + (objects.length + 1);
+      } else if (type === 'mesa_asientos') {
+        const group = new THREE.Group();
+        const tableGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.9, 16);
+        const tableMat = new THREE.MeshStandardMaterial({ color: 0xfab387, roughness: 0.4 });
+        const tableMesh = new THREE.Mesh(tableGeo, tableMat);
+        tableMesh.position.y = 0.45;
+        group.add(tableMesh);
+        mesh = group;
+        data.name = 'Mesa y Asientos ' + (objects.length + 1);
+      } else if (type === 'carritos_compra') {
+        const group = new THREE.Group();
+        for (let i = 0; i < 4; i++) {
+          const cartGeo = new THREE.BoxGeometry(0.9, 1.1, 1.2);
+          const cartMat = new THREE.MeshStandardMaterial({ color: 0x9399b2, metalness: 0.8 });
+          const cartMesh = new THREE.Mesh(cartGeo, cartMat);
+          cartMesh.position.set(0, 0.55, i * 0.5);
+          group.add(cartMesh);
+        }
+        mesh = group;
+        data.name = 'Stack Carritos ' + (objects.length + 1);
+      } else if (type === 'cajas_carton') {
+        const group = new THREE.Group();
+        const boxGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+        const boxMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 });
+        const b1 = new THREE.Mesh(boxGeo, boxMat); b1.position.set(0, 0.6, 0); group.add(b1);
+        const b2 = new THREE.Mesh(boxGeo, boxMat); b2.position.set(1.3, 0.6, 0); group.add(b2);
+        const b3 = new THREE.Mesh(boxGeo, boxMat); b3.position.set(0.6, 1.8, 0); group.add(b3);
+        mesh = group;
+        data.name = 'Stack Cajas Cartón ' + (objects.length + 1);
+      } else if (type === 'parking_area') {
+        const geo = new THREE.PlaneGeometry(12, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x313244, roughness: 0.8 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.position.y = 0.02;
+        data.name = 'Área Parking ' + (objects.length + 1);
+      } else if (type === 'arbol_planta') {
+        const group = new THREE.Group();
+        const potGeo = new THREE.CylinderGeometry(0.7, 0.5, 1.2, 16);
+        const potMat = new THREE.MeshStandardMaterial({ color: 0x45475a });
+        const potMesh = new THREE.Mesh(potGeo, potMat);
+        potMesh.position.y = 0.6;
+        group.add(potMesh);
+
+        const treeGeo = new THREE.ConeGeometry(1.8, 3.5, 16);
+        const treeMat = new THREE.MeshStandardMaterial({ color: 0xa6e3a1, roughness: 0.5 });
+        const treeMesh = new THREE.Mesh(treeGeo, treeMat);
+        treeMesh.position.y = 2.8;
+        group.add(treeMesh);
+
+        mesh = group;
+        data.name = 'Árbol Planta 3D ' + (objects.length + 1);
+      } else if (type === 'nevera') {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(2, 3, 1.2);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x45475a, roughness: 0.2 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+        bodyMesh.position.y = 1.5;
+        group.add(bodyMesh);
+
+        const glassGeo = new THREE.BoxGeometry(1.8, 2.6, 0.1);
+        const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x74c7ec, transparent: true, opacity: 0.4 });
+        const glassMesh = new THREE.Mesh(glassGeo, glassMat);
+        glassMesh.position.set(0, 1.5, 0.6);
+        group.add(glassMesh);
+
+        mesh = group;
+        data.name = 'Nevera Exhibidora ' + (objects.length + 1);
+      } else if (type === 'isla_promo') {
+        const geo = new THREE.CylinderGeometry(1.5, 1.8, 1, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xf5c2e7, roughness: 0.3 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.5;
+        mesh.castShadow = true;
+        data.name = 'Isla Promocional ' + (objects.length + 1);
+      } else if (type === 'tarima_pallet') {
+        const geo = new THREE.BoxGeometry(2.5, 0.3, 2.5);
+        const mat = new THREE.MeshStandardMaterial({ color: 0xfab387, roughness: 0.8 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 0.15;
+        mesh.castShadow = true;
+        data.name = 'Paleta Almacén ' + (objects.length + 1);
+      } else if (type === 'puerta_entrada') {
+        const group = new THREE.Group();
+        const doorGeo = new THREE.BoxGeometry(3.5, 3.2, 0.15);
+        const doorMat = new THREE.MeshPhysicalMaterial({ color: 0x94e2d5, transparent: true, opacity: 0.4 });
+        const doorMesh = new THREE.Mesh(doorGeo, doorMat);
+        doorMesh.position.y = 1.6;
+        group.add(doorMesh);
+        mesh = group;
+        data.name = 'Puerta Cristal ' + (objects.length + 1);
+      } else if (type === 'wall') {
+        const geo = new THREE.BoxGeometry(8, 3.5, 0.4);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x585b70, roughness: 0.6 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 1.75;
+        mesh.castShadow = true;
+        data.name = 'Pared ' + (objects.length + 1);
+      } else if (type === 'column') {
+        const geo = new THREE.CylinderGeometry(0.6, 0.6, 5, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x6c7086, roughness: 0.5 });
+        mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = 2.5;
+        mesh.castShadow = true;
+        data.name = 'Columna ' + (objects.length + 1);
+      } else if (type === 'camera') {
+        const group = crearMallaCamaraCCTV();
+
+        const fov = 60, dist = 8;
+        const coneGeo = new THREE.ConeGeometry(dist * Math.tan((fov * Math.PI / 180) / 2), dist, 16, 1, true);
+        const coneMat = new THREE.MeshBasicMaterial({ color: 0xa6e3a1, wireframe: true, transparent: true, opacity: 0.35 });
+        const coneMesh = new THREE.Mesh(coneGeo, coneMat);
+        coneMesh.rotation.x = -Math.PI / 2;
+        coneMesh.position.set(0, -0.32, dist / 2 + 0.98);
+        coneMesh.name = 'frustumCone';
+        group.add(coneMesh);
+
+        group.position.set((Math.random() - 0.5) * 8, 4, (Math.random() - 0.5) * 8);
+        mesh = group;
+        data.name = 'Cámara CCTV ' + (objects.length + 1);
+        data.fov = fov;
+        data.dist = dist;
+        data.imageUrl = 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
+      }
+
+      mesh.rotation.order = 'YXZ';
+      mesh.userData = Object.assign({}, mesh.userData || {}, data);
+      scene.add(mesh);
+      objects.push(mesh);
+      actualizarHUD();
+      seleccionarObjeto(mesh);
+    }
+
+    function setupEventListeners() {
+      const container = document.getElementById('webgl-container');
+
+      container.addEventListener('dblclick', () => {
+        if (selectedObject) enfocarObjetoSeleccionado();
+      });
+
+      container.addEventListener('click', (event) => {
+        if (transformControls.dragging) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(objects, true);
+
+        if (intersects.length > 0) {
+          let rootObj = intersects[0].object;
+          while (rootObj.parent && rootObj.parent !== scene) {
+            rootObj = rootObj.parent;
+          }
+          if (currentMode === 'edit') {
+            if (event.shiftKey) {
+              // SELECCIÓN MÚLTIPLE CON TECLA SHIFT!
+              if (selectedObjects.includes(rootObj)) {
+                selectedObjects = selectedObjects.filter(o => o !== rootObj);
+              } else {
+                selectedObjects.push(rootObj);
+              }
+              if (selectedObjects.length > 0) seleccionarObjeto(selectedObjects[selectedObjects.length - 1]);
+            } else {
+              selectedObjects = [rootObj];
+              seleccionarObjeto(rootObj);
+            }
+          } else if (currentMode === 'monitor') {
+            if (rootObj.userData.type === 'camera') {
+              abrirModalCamara(rootObj.userData);
+            }
+          }
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      });
+    }
+
+    function enfocarObjetoSeleccionado() {
+      if (!selectedObject) return;
+      const targetPos = {
+        x: selectedObject.position.x,
+        y: selectedObject.position.y + 4,
+        z: selectedObject.position.z + 8
+      };
+
+      if (typeof TWEEN !== 'undefined') {
+        new TWEEN.Tween(camera.position)
+          .to(targetPos, 800)
+          .easing(TWEEN.Easing.Cubic.Out)
+          .onUpdate(() => {
+            controls.target.set(selectedObject.position.x, selectedObject.position.y, selectedObject.position.z);
+            controls.update();
+          })
+          .start();
+      } else {
+        camera.position.set(targetPos.x, targetPos.y, targetPos.z);
+        controls.target.set(selectedObject.position.x, selectedObject.position.y, selectedObject.position.z);
+        controls.update();
+      }
+    }
+
+    function setGizmoMode(mode) {
+      if (!transformControls) return;
+      transformControls.setMode(mode);
+    }
+
+    function seleccionarObjeto(obj) {
+      selectedObject = obj;
+      if (!selectedObjects.includes(obj)) selectedObjects.push(obj);
+      transformControls.attach(obj);
+
+      const inspector = document.getElementById('inspector-panel');
+      const secCam = document.getElementById('section-camera-props');
+
+      document.getElementById('inp-nombre').value = selectedObjects.length > 1 ? `Conjunto (${selectedObjects.length} elementos)` : (obj.userData.name || '');
+      document.getElementById('inspector-title').innerText = selectedObjects.length > 1 ? `Inspector: CONJUNTO (${selectedObjects.length})` : 'Inspector: ' + obj.userData.type.toUpperCase();
+
+      sincronizarInspectorDesdeObjeto(obj);
+
+      if (obj.userData.type === 'camera') {
+        secCam.style.display = 'block';
+        document.getElementById('inp-fov').value = obj.userData.fov || 60;
+        document.getElementById('val-fov').innerText = obj.userData.fov || 60;
+        document.getElementById('inp-dist').value = obj.userData.dist || 8;
+        document.getElementById('val-dist').innerText = obj.userData.dist || 8;
+        document.getElementById('inp-img-url').value = obj.userData.imageUrl || '';
+        document.getElementById('img-preview').src = obj.userData.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=600&auto=format&fit=crop&q=80';
+      } else {
+        secCam.style.display = 'none';
+      }
+
+      actualizarHUD();
+      inspector.classList.remove('hidden');
+    }
+
+    function sincronizarInspectorDesdeObjeto(obj) {
+      document.getElementById('pos-x').value = obj.position.x.toFixed(1);
+      document.getElementById('pos-y').value = obj.position.y.toFixed(1);
+    let rotationSnapDegrees = 15;
+
+    function setRotationSnapAngle(grados) {
+      rotationSnapDegrees = grados;
+      if (transformControls) {
+        transformControls.setRotationSnap(grados > 0 ? (grados * Math.PI / 180) : null);
+      }
+      const badge = document.getElementById('label-snap-rot');
+      if (badge) badge.innerText = grados === 0 ? 'Libre' : `${grados}°`;
+    }
+
+    function toggleModoEjesRotacion() {
+      const extraDiv = document.getElementById('rot-extra-axes');
+      const btn = document.getElementById('btn-toggle-rot-ejes');
+      if (!extraDiv) return;
+      const isHidden = extraDiv.style.display === 'none' || !extraDiv.style.display;
+      extraDiv.style.display = isHidden ? 'flex' : 'none';
+      if (btn) btn.innerText = isHidden ? 'Modo 1D (Y)' : 'Modo 3D (X,Y,Z)';
+    }
+
+    function sincronizarInspectorDesdeObjeto(obj) {
+      if (!obj) return;
+      if (obj.rotation) obj.rotation.order = 'YXZ';
+
+      document.getElementById('pos-x').value = obj.position.x.toFixed(1);
+      document.getElementById('pos-y').value = obj.position.y.toFixed(1);
+      document.getElementById('pos-z').value = obj.position.z.toFixed(1);
+
+      const euler = new THREE.Euler().copy(obj.rotation);
+      euler.reorder('YXZ');
+
+      const degY = Math.round((euler.y * 180 / Math.PI) % 360);
+      const valPosY = degY < 0 ? degY + 360 : degY;
+
+      const degX = Math.round((euler.x * 180 / Math.PI));
+      const degZ = Math.round((euler.z * 180 / Math.PI));
+
+      const elRotY = document.getElementById('rot-y');
+      if (elRotY) elRotY.value = valPosY;
+      const elRotYNum = document.getElementById('rot-y-num');
+      if (elRotYNum) elRotYNum.value = valPosY;
+      const elValRotY = document.getElementById('val-rot-y');
+      if (elValRotY) elValRotY.innerText = valPosY;
+
+      const elRotX = document.getElementById('rot-x');
+      if (elRotX) elRotX.value = degX;
+      const elRotXNum = document.getElementById('rot-x-num');
+      if (elRotXNum) elRotXNum.value = degX;
+      const elValRotX = document.getElementById('val-rot-x');
+      if (elValRotX) elValRotX.innerText = degX;
+
+      const elRotZ = document.getElementById('rot-z');
+      if (elRotZ) elRotZ.value = degZ;
+      const elRotZNum = document.getElementById('rot-z-num');
+      if (elRotZNum) elRotZNum.value = degZ;
+      const elValRotZ = document.getElementById('val-rot-z');
+      if (elValRotZ) elValRotZ.innerText = degZ;
+
+      const needle = document.getElementById('rot-compass-needle');
+      if (needle) needle.setAttribute('transform', `rotate(${valPosY} 55 55)`);
+      const valCompass = document.getElementById('rot-compass-val');
+      if (valCompass) valCompass.innerText = `${valPosY}°`;
+    }
+
+    function deseleccionarObjeto() {
+      selectedObject = null;
+      selectedObjects = [];
+      transformControls.detach();
+      actualizarHUD();
+      document.getElementById('inspector-panel').classList.add('hidden');
+    }
+
+    function aplicarRotacionEje(axis, degValue) {
+      if (!selectedObject) return;
+      if (selectedObject.rotation) selectedObject.rotation.order = 'YXZ';
+      const radValue = degValue * Math.PI / 180;
+
+      if (selectedObjects.length > 1) {
+        const center = new THREE.Vector3();
+        selectedObjects.forEach(o => {
+          if (o.rotation) o.rotation.order = 'YXZ';
+          center.add(o.position);
+        });
+        center.divideScalar(selectedObjects.length);
+
+        const oldRad = selectedObject.rotation[axis];
+        const deltaRad = radValue - oldRad;
+
+        selectedObjects.forEach(o => {
+          o.rotation[axis] += deltaRad;
+          if (axis === 'y' && deltaRad !== 0) {
+            const relX = o.position.x - center.x;
+            const relZ = o.position.z - center.z;
+            const cos = Math.cos(deltaRad);
+            const sin = Math.sin(deltaRad);
+            o.position.x = center.x + (relX * cos - relZ * sin);
+            o.position.z = center.z + (relX * sin + relZ * cos);
+          }
+        });
+      } else {
+        selectedObject.rotation[axis] = radValue;
+        if (selectedObject.userData.type === 'camera' && axis === 'x') {
+          const pitch = Math.round(degValue);
+          selectedObject.userData.pitch = pitch;
+          const elPitch = document.getElementById('inp-pitch');
+          if (elPitch) elPitch.value = pitch;
+          const elValPitch = document.getElementById('val-pitch');
+          if (elValPitch) elValPitch.innerText = pitch;
+        }
+      }
+      actualizarTodosLosConosCamara();
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    // CÁLCULO DE COLISIÓN Y ACOTIACIÓN INDIVIDUAL DE LÍNEAS DE CONOS CCTV (SISTEMA ANTI-TRASPASO MULTI-RAYO)
+    function actualizarGeometriaConoCamara(cam) {
+      if (!cam || !cam.userData || cam.userData.type !== 'camera') return;
+      const coneMesh = cam.getObjectByName('frustumCone');
+      if (!coneMesh) return;
+
+      const fov = cam.userData.fov || 60;
+      const maxDist = cam.userData.dist || 8;
+      const outerSegments = 24; // 24 líneas radiales de colisión
+
+      cam.updateMatrixWorld(true);
+
+      const lensWorldPos = new THREE.Vector3();
+      const lensChild = cam.children.find(c => c.material && c.position.z > 0.9);
+      if (lensChild) {
+        lensChild.getWorldPosition(lensWorldPos);
+      } else {
+        cam.getWorldPosition(lensWorldPos);
+      }
+
+      const camWorldQuat = new THREE.Quaternion();
+      cam.getWorldQuaternion(camWorldQuat);
+
+      const targets = objects.filter(o => o !== cam && !cam.children.includes(o) && o.visible);
+      if (floorMesh) targets.push(floorMesh);
+
+      // Forzar temporalmente DoubleSide en los materiales para detectar cualquier cara (frontal o trasera) de paredes y objetos
+      const savedSides = new Map();
+      targets.forEach(o => {
+        o.traverse(child => {
+          if (child.isMesh && child.material) {
+            savedSides.set(child.material, child.material.side);
+            child.material.side = THREE.DoubleSide;
+          }
+        });
+      });
+
+      const halfFovRad = ((fov * 0.5) * Math.PI) / 180;
+      const tanFov = Math.tan(halfFovRad);
+
+      const vertices = [];
+      const indices = [];
+
+      const apexLocal = new THREE.Vector3(0, -0.32, 0.98);
+      vertices.push(apexLocal.x, apexLocal.y, apexLocal.z); // Index 0
+
+      const outerVertexIndices = [];
+      for (let i = 0; i < outerSegments; i++) {
+        const angle = (i / outerSegments) * Math.PI * 2;
+        const dirLocal = new THREE.Vector3(
+          tanFov * Math.cos(angle),
+          tanFov * Math.sin(angle),
+          1.0
+        ).normalize();
+
+        const dirWorld = dirLocal.clone().applyQuaternion(camWorldQuat).normalize();
+
+        const rayLine = new THREE.Raycaster(lensWorldPos, dirWorld, 0.01, maxDist);
+        const hits = rayLine.intersectObjects(targets, true);
+
+        let lineDist = maxDist;
+        if (hits.length > 0) {
+          lineDist = Math.max(0.15, hits[0].distance - 0.08);
+        }
+
+        const endPtLocal = dirLocal.clone().multiplyScalar(lineDist).add(apexLocal);
+        vertices.push(endPtLocal.x, endPtLocal.y, endPtLocal.z);
+        outerVertexIndices.push(i + 1);
+      }
+
+      // Restaurar el estado 'side' de los materiales
+      savedSides.forEach((origSide, mat) => {
+        mat.side = origSide;
+      });
+
+      // Triángulos laterales del cono limpia (sin radios centrales que corten paredes)
+      for (let i = 0; i < outerSegments; i++) {
+        const curr = outerVertexIndices[i];
+        const next = outerVertexIndices[(i + 1) % outerSegments];
+
+        // Ápex del lente (0) -> Vértice Perimetral Actual (curr) -> Vértice Siguiente (next)
+        indices.push(0, curr, next);
+      }
+
+      const newGeo = new THREE.BufferGeometry();
+      newGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      newGeo.setIndex(indices);
+      newGeo.computeVertexNormals();
+
+      coneMesh.geometry.dispose();
+      coneMesh.geometry = newGeo;
+      coneMesh.position.set(0, 0, 0);
+      coneMesh.rotation.set(0, 0, 0);
+    }
+
+      if (selectedObjects.length > 1) {
+        const center = new THREE.Vector3();
+        selectedObjects.forEach(o => {
+          if (o.rotation) o.rotation.order = 'YXZ';
+          center.add(o.position);
+        });
+        center.divideScalar(selectedObjects.length);
+
+        const oldRad = selectedObject.rotation[axis];
+        const deltaRad = radValue - oldRad;
+
+        selectedObjects.forEach(o => {
+          o.rotation[axis] += deltaRad;
+          if (axis === 'y' && deltaRad !== 0) {
+            const relX = o.position.x - center.x;
+            const relZ = o.position.z - center.z;
+            const cos = Math.cos(deltaRad);
+            const sin = Math.sin(deltaRad);
+            o.position.x = center.x + (relX * cos - relZ * sin);
+            o.position.z = center.z + (relX * sin + relZ * cos);
+          }
+        });
+      } else {
+        selectedObject.rotation[axis] = radValue;
+        if (selectedObject.userData.type === 'camera' && axis === 'x') {
+          const pitch = Math.round(degValue);
+          selectedObject.userData.pitch = pitch;
+          const elPitch = document.getElementById('inp-pitch');
+          if (elPitch) elPitch.value = pitch;
+          const elValPitch = document.getElementById('val-pitch');
+          if (elValPitch) elValPitch.innerText = pitch;
+        }
+      }
+      actualizarTodosLosConosCamara();
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function actualizarRotDesdeSlider(axis = 'y') {
+      const el = document.getElementById(`rot-${axis}`);
+      if (!el) return;
+      const val = parseInt(el.value) || 0;
+      aplicarRotacionEje(axis, val);
+    }
+
+    function actualizarRotDesdeNum(axis = 'y') {
+      const el = document.getElementById(`rot-${axis}-num`);
+      if (!el) return;
+      let val = parseInt(el.value) || 0;
+      if (axis === 'y') val = Math.max(0, Math.min(360, val));
+      else val = Math.max(-180, Math.min(180, val));
+      aplicarRotacionEje(axis, val);
+    }
+
+    function orientarObjetoCardinal(grados) {
+      aplicarRotacionEje('y', grados);
+    }
+
+    function rotarObjetoRapido(gradosDelta) {
+      if (!selectedObject) return;
+      let actual = Math.round(selectedObject.rotation.y * 180 / Math.PI);
+      let nuevo = (actual + gradosDelta) % 360;
+      if (nuevo < 0) nuevo += 360;
+      aplicarRotacionEje('y', nuevo);
+    }
+
+    function nivelarObjeto() {
+      if (!selectedObject) return;
+      if (selectedObjects.length > 1) {
+        selectedObjects.forEach(o => {
+          o.rotation.x = 0;
+          o.rotation.z = 0;
+        });
+      } else {
+        selectedObject.rotation.x = 0;
+        selectedObject.rotation.z = 0;
+      }
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+    function reiniciarRotacion() {
+      if (!selectedObject) return;
+      if (selectedObjects.length > 1) {
+        selectedObjects.forEach(o => {
+          o.rotation.set(0, 0, 0);
+        });
+      } else {
+        selectedObject.rotation.set(0, 0, 0);
+      }
+      sincronizarInspectorDesdeObjeto(selectedObject);
+    }
+
+        if (!selectedObject) return;
+        const rect = dial.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+
+        let rad = Math.atan2(dy, dx) + Math.PI / 2;
+        if (rad < 0) rad += Math.PI * 2;
+        let deg = Math.round(rad * 180 / Math.PI) % 360;
+
+        if (rotationSnapDegrees > 0) {
+          deg = Math.round(deg / rotationSnapDegrees) * rotationSnapDegrees % 360;
+        }
+        aplicarRotacionEje('y', deg);
+      };
+
+      dial.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        dial.setPointerCapture(e.pointerId);
+        handlePointer(e);
+      });
+
+      dial.addEventListener('pointermove', (e) => {
+        if (isDragging) handlePointer(e);
+      });
+
+      const stopDrag = (e) => {
+        if (isDragging) {
+          isDragging = false;
+          try { dial.releasePointerCapture(e.pointerId); } catch(err){}
+        }
+      };
+      dial.addEventListener('pointerup', stopDrag);
+      dial.addEventListener('pointercancel', stopDrag);
+    }
+
+    function actualizarObjetoDesdeInputs() {
+      if (!selectedObject) return;
+
+      selectedObject.userData.name = document.getElementById('inp-nombre').value;
+      selectedObject.position.x = parseFloat(document.getElementById('pos-x').value) || 0;
+      selectedObject.position.y = parseFloat(document.getElementById('pos-y').value) || 0;
+      selectedObject.position.z = parseFloat(document.getElementById('pos-z').value) || 0;
+
+      if (selectedObject.userData.type === 'camera') {
+        const fov = parseInt(document.getElementById('inp-fov').value);
+        const dist = parseInt(document.getElementById('inp-dist').value);
+        const imgUrl = document.getElementById('inp-img-url').value;
+
+document.getElementById('val-fov').innerText = fov;
+        document.getElementById('val-dist').innerText = dist;
+        document.getElementById('img-preview').src = imgUrl;
+
+        selectedObject.userData.fov = fov;
+        selectedObject.userData.dist = dist;
+        selectedObject.userData.imageUrl = imgUrl;
+
+        actualizarGeometriaConoCamara(selectedObject);
+        actualizarTodosLosConosCamara();
+      }
+    }
+
+    function guardarConjuntoComoPrefab() {
+      if (selectedObjects.length === 0) return;
+      const nombrePrefab = prompt(`Ingresa un nombre para este Conjunto (${selectedObjects.length} elementos):`, `Conjunto ${selectedObjects.length} Muebles`);
+      if (!nombrePrefab) return;
+
+      // Calcular centro relativo del grupo
+      const center = new THREE.Vector3();
+      selectedObjects.forEach(o => center.add(o.position));
+      center.divideScalar(selectedObjects.length);
+
+      const items = selectedObjects.map(o => ({
+        type: o.userData.type,
+        name: o.userData.name,
+        relPos: [o.position.x - center.x, o.position.y, o.position.z - center.z],
+        rot: [o.rotation.x, o.rotation.y, o.rotation.z]
+      }));
+
+      const prefabs = JSON.parse(localStorage.getItem('PREFABS_CUSTOM') || '[]');
+      prefabs.push({ id: 'custom_' + Date.now(), name: nombrePrefab, items: items });
+      localStorage.setItem('PREFABS_CUSTOM', JSON.stringify(prefabs));
+      renderizarMenuPrefabsPersonalizados();
+      alert(`Conjunto "${nombrePrefab}" de ${selectedObjects.length} objetos guardado exitosamente.`);
+    }
+
+    function renderizarMenuPrefabsPersonalizados() {
+      const container = document.getElementById('prefabs-custom-list');
+      if (!container) return;
+      container.innerHTML = '';
+      const prefabs = JSON.parse(localStorage.getItem('PREFABS_CUSTOM') || '[]');
+
+      if (prefabs.length > 0) {
+        prefabs.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = 'dropdown-item';
+          btn.innerHTML = `<span class="material-symbols-outlined" style="color:var(--accent-primary);">star</span> ${p.name}`;
+          btn.onclick = () => {
+            if (p.items) {
+              p.items.forEach(item => {
+                addStructure(item.type);
+                const last = objects[objects.length - 1];
+                last.userData.name = item.name;
+                last.position.set(item.relPos[0], item.relPos[1], item.relPos[2]);
+                if (item.rot) last.rotation.set(...item.rot);
+              });
+            } else if (p.type) {
+              addStructure(p.type);
+            }
+          };
+          container.appendChild(btn);
+        });
+      }
+    }
+
+    function eliminarObjetoSeleccionado() {
+      if (selectedObjects.length === 0) return;
+      transformControls.detach();
+      selectedObjects.forEach(obj => {
+        scene.remove(obj);
+        objects = objects.filter(o => o !== obj);
+      });
+      deseleccionarObjeto();
+    }
+
+    function limpiarEscena() {
+      transformControls.detach();
+      objects.forEach(obj => scene.remove(obj));
+      objects = [];
+      actualizarHUD();
+      deseleccionarObjeto();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('btn-mode-edit').classList.toggle('active', mode === 'edit');
+      document.getElementById('btn-mode-monitor').classList.toggle('active', mode === 'monitor');
+
+      const archTools = document.getElementById('editor-tools-arch');
+      const mobTools = document.getElementById('editor-tools-mob');
+      const btnCam = document.getElementById('btn-add-camera');
+
+      if (archTools) archTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (mobTools) mobTools.style.display = mode === 'edit' ? 'inline-block' : 'none';
+      if (btnCam) btnCam.style.display = mode === 'edit' ? 'inline-flex' : 'none';
+
+      document.getElementById('hud-mode').innerText = mode === 'edit' ? 'Edición 3D' : 'Monitoreo Vivo';
+      if (mode === 'monitor') deseleccionarObjeto();
+    }
+
+    function abrirModalCamara(data) {
+      document.getElementById('modal-cam-title').innerText = data.name;
+      document.getElementById('modal-cam-details').innerText = `Ubicación: ${tiendaActivaId} | FOV: ${data.fov || 60}° | Alcance: ${data.dist || 8}m`;
+      document.getElementById('modal-cam-img').src = data.imageUrl || 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop&q=80';
+      document.getElementById('camera-modal').classList.add('show');
+    }
+
+    function cerrarModalCamara() {
+      document.getElementById('camera-modal').classList.remove('show');
+    }
+
+    function actualizarHUD() {
+      const cams = objects.filter(o => o.userData.type === 'camera');
+      document.getElementById('hud-count-obj').innerText = objects.length;
+      document.getElementById('hud-count-cam').innerText = cams.length;
+      document.getElementById('hud-count-selected').innerText = selectedObjects.length;
+    }
+
+    function capturarPantalla3D() {
+      renderer.render(scene, camera);
+      const dataURL = renderer.domElement.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'mapa_3d_' + tiendaActivaId.replace(/\s+/g, '_') + '_' + Date.now() + '.png';
+      link.href = dataURL;
+      link.click();
+    }
+
+    function guardarPlanoGAS() {
+      const serializado = objects.map(o => ({
+        type: o.userData.type,
+        name: o.userData.name,
+        pos: [o.position.x, o.position.y, o.position.z],
+        rot: [o.rotation.x, o.rotation.y, o.rotation.z],
+        scale: [o.scale.x, o.scale.y, o.scale.z],
+        fov: o.userData.fov,
+        dist: o.userData.dist,
+        imageUrl: o.userData.imageUrl
+      }));
+
+      const claveStorage = 'MAPA_3D_' + tiendaActivaId;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => alert(res.message))
+          .guardarMapaTienda(tiendaActivaId, JSON.stringify(serializado));
+      } else {
+        localStorage.setItem(claveStorage, JSON.stringify(serializado));
+        alert('Plano 3D guardado exitosamente para la tienda: ' + tiendaActivaId);
+      }
+    }
+
+    function cargarPlanoGAS() {
+      const claveStorage = 'MAPA_3D_' + tiendaActivaId;
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res.data) rebuildSceneFromData(res.data);
+          })
+          .cargarMapaTienda(tiendaActivaId);
+      } else {
+        const local = localStorage.getItem(claveStorage);
+        if (local) rebuildSceneFromData(JSON.parse(local));
+      }
+    }
+
+    function rebuildSceneFromData(data) {
+      limpiarEscena();
+      data.forEach(item => {
+        addStructure(item.type);
+        const last = objects[objects.length - 1];
+        last.userData.name = item.name;
+        last.position.set(...item.pos);
+        if (item.rot) last.rotation.set(...item.rot);
+        if (item.scale) last.scale.set(...item.scale);
+        if (item.type === 'camera') {
+          last.userData.fov = item.fov;
+          last.userData.dist = item.dist;
+          last.userData.imageUrl = item.imageUrl;
+        }
+      });
+      deseleccionarObjeto();
+      actualizarHUD();
+    }
+  </script>
+</body>
+</html>
